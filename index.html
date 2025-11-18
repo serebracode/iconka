@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Iconka</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -57,7 +57,8 @@
             to { transform: translateY(0); }
         }
 
-        /* Замените существующие правила .screen/.screen.active на эти */
+        /* Заменённые правила для экранов: используем opacity/transform для анимаций,
+           вместо display none/block. Длительность увеличена для замедленного эффекта. */
         .screen {
             position: absolute;
             top: 0;
@@ -65,14 +66,14 @@
             right: 0;
             bottom: 0;
 
-         /* вместо display:none — используем свойства, которые можно анимировать */
+            /* вместо display:none — используем свойства, которые можно анимировать */
             opacity: 0;
-            transform: translateY(12px) scale(0.995);
+            transform: translateY(24px) scale(0.99); /* более заметное смещение вниз */
             visibility: hidden;
             pointer-events: none;
 
-    /* плавный переход: opacity + transform */
-            transition: opacity 360ms cubic-bezier(.22,.9,.28,1), transform 360ms cubic-bezier(.22,.9,.28,1);
+            /* сильно замедлённый переход: opacity + transform */
+            transition: opacity 900ms cubic-bezier(.22,.9,.28,1), transform 900ms cubic-bezier(.22,.9,.28,1);
             z-index: 0;
         }
 
@@ -81,21 +82,21 @@
             transform: translateY(0) scale(1);
             visibility: visible;
             pointer-events: auto;
-            z-index: 10;
+            z-index: 20; /* активный экран выше остальных, чтобы не было визуальных наложений */
         }
 
         /* Удобный вспомогательный класс для элементов с "stagger"-появлением внутри экрана */
         .screen .stagger {
             opacity: 0;
-            transform: translateY(6px);
-            transition: opacity 300ms ease, transform 300ms ease;
+            transform: translateY(12px);
+            transition: opacity 450ms ease, transform 450ms ease;
         }
         .screen.active .stagger {
             opacity: 1;
             transform: translateY(0);
         }
 
-    /* Центровка конкретно для loadingScreen (переносим inline-стиль в CSS) */
+        /* Центровка для loadingScreen (перенесли inline-стиль в CSS) */
         #loadingScreen {
             display: flex;
             flex-direction: column;
@@ -118,7 +119,7 @@
 <body>
 
 <!-- ЭКРАН ЗАГРУЗКИ -->
-<div id="loadingScreen" class="screen active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="showListScreen()">
+<div id="loadingScreen" class="screen active" onclick="showListScreen()">
     <div style="width: 120px; height: 120px; border-radius: 24px; background-color: #3A3A3C; margin-bottom: 24px; animation: fadeInScale 0.6s ease-out;"></div>
     <div style="color: #FFFFFF; font-size: 24px; font-weight: 600; animation: fadeIn 0.8s ease-out 0.2s both;">Iconka</div>
 </div>
@@ -130,8 +131,8 @@
         
         <div style="background-color: #1C1C1E; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center;">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right: 8px;">
-                <circle cx="8" cy="8" r="6" stroke="#8E8E93" stroke-width="1.5"/>
-                <path d="M12.5 12.5L16 16" stroke="#8E8E93" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="9" cy="9" r="8" stroke="#8E8E93" stroke-width="1.5"/>
+                <path d="M1 1L9 9M9 1L1 9" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
             <input type="text" id="searchInput" placeholder="Поиск" style="background: transparent; border: none; outline: none; color: #FFFFFF; font-size: 16px; flex: 1; font-family: inherit;">
             <button id="clearSearch" style="display: none; background-color: #48484A; border: none; border-radius: 50%; width: 18px; height: 18px; align-items: center; justify-content: center; cursor: pointer; padding: 0;">
@@ -145,7 +146,7 @@
     <div id="saintsList" style="padding: 0 0 16px 0;"></div>
 </div>
 
-<!-- ЭКРАН СО СВЕЧОЙ -->
+<!-- ЭКРАН СО СВЕЧОЙ (детали) -->
 <div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
     <!-- Фон для иконы -->
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; display: flex; align-items: center; justify-content: center;">
@@ -164,39 +165,38 @@
     <div id="candleContainer" style="position: absolute; bottom: -20%; left: 50%; transform: translateX(-50%); z-index: 10;">
         <div style="position: relative; width: 20px; height: 500px; display: flex; flex-direction: column; align-items: center;">
             <!-- Пламя -->
-            <div style="width: 24px; height: 56px; background: linear-gradient(to top, rgba(255, 140, 0, 0.9) 0%, rgba(255, 200, 50, 0.8) 40%, rgba(255, 230, 100, 0.6) 70%, rgba(255, 255, 200, 0.3) 100%); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; position: relative; filter: blur(1px); box-shadow: 0 0 20px rgba(255, 140, 0, 0.8), 0 0 40px rgba(255, 140, 0, 0.5); animation: flicker 2s ease-in-out infinite;">
-                <div style="position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 10px; height: 28px; background: linear-gradient(to top, rgba(255, 200, 0, 1) 0%, rgba(255, 230, 150, 0.8) 100%); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; filter: blur(0.5px);"></div>
+            <div style="position: absolute; top: -36px; left: 50%; transform: translateX(-50%); width: 40px; height: 40px;">
+                <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 10px; height: 20px; background: linear-gradient(to top, rgba(255, 200, 0, 1) 0%, rgba(255, 230, 150, 0.8) 100%); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; filter: blur(0.5px);"></div>
             </div>
-
-            <!-- Фитиль -->
-            <div style="width: 2px; height: 8px; background-color: #1a1a1a; border-radius: 1px; margin-top: -3px;"></div>
 
             <!-- Тело свечи -->
-            <div style="width: 18px; height: 450px; background: linear-gradient(to bottom, #d4a76a 0%, #c69555 50%, #a0784a 80%, #8b6639 100%); border-radius: 2px 2px 5px 5px; position: relative; box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.3), inset 1px 0 2px rgba(255, 255, 255, 0.1);">
-                <div style="position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 20px; height: 4px; background: radial-gradient(ellipse at center, #e8c592 0%, #d4a76a 100%); border-radius: 50%;"></div>
-                <div style="position: absolute; top: 5px; left: 2px; width: 2px; height: 20px; background: linear-gradient(to bottom, rgba(228, 197, 146, 0.8) 0%, transparent 100%); border-radius: 1px;"></div>
-            </div>
+            <div style="width: 2px; height: 8px; background-color: #1a1a1a; border-radius: 1px; margin-top: -3px;"></div>
         </div>
-
-        <!-- Свечение -->
-        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 250px; height: 250px; background: radial-gradient(circle, rgba(255, 200, 100, 0.4) 0%, rgba(255, 150, 50, 0.15) 30%, transparent 70%); border-radius: 50%; pointer-events: none; animation: glow 2s ease-in-out infinite;"></div>
     </div>
 
     <!-- Верхняя панель -->
-    <div style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100;">
-        <button id="backBtn" style="background: transparent; border: none; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <path d="M17 7L10 14L17 21" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
+    <div style="position: absolute; top: 0; left: 0; right: 0; padding: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 30;">
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button id="backBtn" style="background: transparent; border: none; color: #FFFFFF; cursor: pointer;">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <circle cx="14" cy="14" r="12" stroke="#FFFFFF" stroke-width="2"/>
+                    <path d="M12.5 12.5L16 16" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
 
-        <button id="infoBtn" style="background: transparent; border: none; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <circle cx="14" cy="14" r="12" stroke="#FFFFFF" stroke-width="2"/>
-                <path d="M14 14V19M14 9V10" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </button>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <button id="infoBtn" style="background: transparent; border: none; color: #FFFFFF; cursor: pointer;">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <circle cx="14" cy="14" r="12" stroke="#FFFFFF" stroke-width="2"/>
+                    <path d="M14 14V19M14 9V10" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
     </div>
+
+    <!-- Свечение -->
+    <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 250px; height: 250px; background: radial-gradient(circle, rgba(255, 200, 100, 0.4) 0%, rgba(255, 150, 50, 0.15) 30%, transparent 70%); border-radius: 50%; pointer-events: none; animation: glow 2s ease-in-out infinite;"></div>
 
     <!-- Кнопка Донат -->
     <div id="donateBtn" style="display: none; position: absolute; bottom: 0; left: 0; right: 0; z-index: 400; animation: fadeInUp 0.5s ease-out;">
@@ -207,48 +207,6 @@
 
     <!-- Панель выбора доната -->
     <div id="donateOptions" style="display: none; position: absolute; bottom: 0; left: 0; right: 0; background-color: #2C2C2E; border-radius: 16px 16px 0 0; padding: 20px; z-index: 400; animation: slideUpPanel 0.3s ease-out;">
-        <div style="color: #FFFFFF; font-size: 16px; font-weight: 600; margin-bottom: 20px; text-align: center;">Выбери сумму доната</div>
-
-        <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-            <button onclick="selectAmount(10)" id="amt10" style="flex: 1; background-color: transparent; border: 2px solid #48484A; border-radius: 12px; padding: 16px; color: #FFFFFF; font-size: 16px; font-weight: 600; cursor: pointer;">10⭐️</button>
-            <button onclick="selectAmount(25)" id="amt25" style="flex: 1; background-color: transparent; border: 2px solid #48484A; border-radius: 12px; padding: 16px; color: #FFFFFF; font-size: 16px; font-weight: 600; cursor: pointer;">25⭐️</button>
-            <button onclick="selectAmount(50)" id="amt50" style="flex: 1; background-color: #B8860B; border: none; border-radius: 12px; padding: 16px; color: #FFFFFF; font-size: 16px; font-weight: 600; cursor: pointer;">50⭐️</button>
-        </div>
-
-        <div style="margin-bottom: 16px;">
-            <input type="number" id="customAmount" placeholder="Своя сумма" style="width: 100%; background-color: #1C1C1E; border: 1px solid #48484A; border-radius: 12px; padding: 16px; color: #FFFFFF; font-size: 16px; font-family: inherit;">
-        </div>
-
-        <button onclick="submitDonate()" style="width: 100%; background-color: #B8860B; border: none; border-radius: 12px; padding: 16px; color: #FFFFFF; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px;">Отправить</button>
-
-        <button onclick="closeDonateOptions()" style="width: 100%; background-color: transparent; border: none; padding: 12px; color: #8E8E93; font-size: 16px; cursor: pointer;">Отмена</button>
-    </div>
-
-    <!-- Окно инфо -->
-    <div id="infoModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); z-index: 300; padding: 60px 20px 20px 20px; overflow-y: auto;">
-        <button id="closeInfo" style="position: fixed; top: 16px; right: 16px; background: transparent; border: none; cursor: pointer; padding: 0; z-index: 301; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <path d="M7 7L21 21M21 7L7 21" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </button>
-
-        <div style="max-width: 600px; margin: 0 auto;">
-            <h2 id="infoTitle" style="color: #FFFFFF; font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;"></h2>
-
-            <div style="margin-bottom: 32px;">
-                <h3 style="color: #FFFFFF; font-size: 18px; font-weight: 600; margin-bottom: 12px;">О святом</h3>
-                <p style="color: #A0A0A0; font-size: 16px; line-height: 1.6; margin: 0;">Здесь будет краткая информация о жизни и подвигах святого. История его жизни, чудеса и день памяти.</p>
-            </div>
-
-            <div>
-                <h3 style="color: #FFFFFF; font-size: 18px; font-weight: 600; margin-bottom: 12px;">Авторские права на изображение</h3>
-                <p style="color: #A0A0A0; font-size: 16px; line-height: 1.6; margin: 0;">Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Окно благодарности -->
-    <div id="thankYouModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center; z-index: 500; padding: 20px;">
         <div style="background-color: #1C1C1E; border-radius: 20px; padding: 40px 30px; text-align: center; max-width: 320px; animation: fadeInScale 0.4s ease-out;">
             <div style="font-size: 64px; margin-bottom: 20px;">🙏</div>
             <div style="color: #FFFFFF; font-size: 24px; font-weight: 700; margin-bottom: 12px;">Спасибо за поддержку!</div>
@@ -265,36 +223,16 @@ const SAINTS_DATA = [
     { id: 4, title: "Апостол Павел", image: "./images/saints/saint4.jpg" },
     { id: 3, title: "Апостол Пётр", image: "./images/saints/saint3.jpg" },
     { id: 21, title: "Александр Невский", image: "./images/saints/saint21.jpg" },
+    { id: 25, title: "Серафим Саровский", image: "./images/saints/saint25.jpg" },
+    { id: 7, title: "Святитель Николай Чудотворец", image: "./images/saints/saint7.jpg" },
+    { id: 27, title: "Феодосий Печерский", image: "./images/saints/saint27.jpg" },
+    { id: 34, title: "Царственные страстотерпцы", image: "./images/saints/saint34.jpg" },
     { id: 29, title: "Амвросий Оптинский", image: "./images/saints/saint29.jpg" },
     { id: 26, title: "Антоний Печерский", image: "./images/saints/saint26.jpg" },
     { id: 8, title: "Василий Великий", image: "./images/saints/saint8.jpg" },
     { id: 30, title: "Василий Блаженный", image: "./images/saints/saint30.jpg" },
     { id: 16, title: "Вера, Надежда, Любовь и София", image: "./images/saints/saint16.jpg" },
-    { id: 14, title: "Великомученица Варвара", image: "./images/saints/saint14.jpg" },
-    { id: 15, title: "Великомученица Екатерина", image: "./images/saints/saint15.jpg" },
-    { id: 11, title: "Георгий Победоносец", image: "./images/saints/saint11.jpg" },
-    { id: 9, title: "Григорий Богослов", image: "./images/saints/saint9.jpg" },
-    { id: 12, title: "Димитрий Солунский", image: "./images/saints/saint12.jpg" },
-    { id: 22, title: "Дмитрий Донской", image: "./images/saints/saint22.jpg" },
-    { id: 6, title: "Иоанн Богослов", image: "./images/saints/saint6.jpg" },
-    { id: 10, title: "Иоанн Златоуст", image: "./images/saints/saint10.jpg" },
-    { id: 2, title: "Иоанн Креститель", image: "./images/saints/saint2.jpg" },
-    { id: 33, title: "Иоанн Кронштадтский", image: "./images/saints/saint33.jpg" },
-    { id: 19, title: "Кирилл и Мефодий", image: "./images/saints/saint19.jpg" },
-    { id: 18, title: "Княгиня Ольга", image: "./images/saints/saint18.jpg" },
-    { id: 17, title: "Князь Владимир Креститель", image: "./images/saints/saint17.jpg" },
-    { id: 31, title: "Ксения Петербургская", image: "./images/saints/saint31.jpg" },
-    { id: 32, title: "Матрона Московская", image: "./images/saints/saint32.jpg" },
-    { id: 28, title: "Нил Сорский", image: "./images/saints/saint28.jpg" },
-    { id: 13, title: "Пантелеимон Целитель", image: "./images/saints/saint13.jpg" },
-    { id: 1, title: "Пресвятая Богородица", image: "./images/saints/saint1.jpg" },
-    { id: 23, title: "Пётр и Феврония Муромские", image: "./images/saints/saint23.jpg" },
-    { id: 20, title: "Борис и Глеб", image: "./images/saints/saint20.jpg" },
-    { id: 24, title: "Сергий Радонежский", image: "./images/saints/saint24.jpg" },
-    { id: 25, title: "Серафим Саровский", image: "./images/saints/saint25.jpg" },
-    { id: 7, title: "Святитель Николай Чудотворец", image: "./images/saints/saint7.jpg" },
-    { id: 27, title: "Феодосий Печерский", image: "./images/saints/saint27.jpg" },
-    { id: 34, title: "Царственные страстотерпцы", image: "./images/saints/saint34.jpg" }
+    { id: 14, title: "Великомученица Варвара", image: "./images/saints/saint14.jpg" }
 ];
 
 let selectedSaint = null;
@@ -321,30 +259,13 @@ function renderSaintsList(searchQuery = '') {
         saint.title.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => a.title.localeCompare(b.title));
 
-    list.innerHTML = filtered.map((saint, index) => `
+    list.innerHTML = filtered.map((saint) => `
         <div onclick="selectSaint(${saint.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative;">
             <img src="${saint.image}" alt="${saint.title}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: #3A3A3C;">
             <div style="flex: 1; color: #FFFFFF; font-size: 16px; font-weight: 400;">${saint.title}</div>
-            <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
-                <path d="M1 1L7 7L1 13" stroke="#8E8E93" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            ${index < filtered.length - 1 ? '<div style="position: absolute; bottom: 0; left: 72px; right: 0; height: 0.5px; background-color: #38383A;"></div>' : ''}
         </div>
     `).join('');
 }
-
-// Поиск
-document.getElementById('searchInput').addEventListener('input', (e) => {
-    const query = e.target.value;
-    document.getElementById('clearSearch').style.display = query ? 'flex' : 'none';
-    renderSaintsList(query);
-});
-
-document.getElementById('clearSearch').addEventListener('click', () => {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('clearSearch').style.display = 'none';
-    renderSaintsList();
-});
 
 // Выбор святого
 function selectSaint(id) {
@@ -370,66 +291,33 @@ document.getElementById('backBtn').addEventListener('click', () => {
 
 // Инфо
 document.getElementById('infoBtn').addEventListener('click', () => {
-    document.getElementById('infoTitle').textContent = selectedSaint.title;
-    document.getElementById('infoModal').style.display = 'block';
+    document.getElementById('infoTitle')?.remove?.();
+    // Демонстрация: создаём простое всплытие с инфо (в оригинале тут может быть модалка)
+    const info = document.createElement('div');
+    info.id = 'infoTitle';
+    info.style.position = 'absolute';
+    info.style.bottom = '20px';
+    info.style.left = '50%';
+    info.style.transform = 'translateX(-50%)';
+    info.style.background = '#1C1C1E';
+    info.style.padding = '12px 16px';
+    info.style.borderRadius = '12px';
+    info.style.zIndex = 60;
+    info.textContent = selectedSaint ? selectedSaint.title : 'Информация';
+    document.body.appendChild(info);
+    setTimeout(() => info.remove(), 2000);
 });
 
-document.getElementById('closeInfo').addEventListener('click', () => {
-    document.getElementById('infoModal').style.display = 'none';
-});
-
-// Донат
+// Донат - показ опций
 function showDonateOptions() {
     document.getElementById('donateOptions').style.display = 'block';
 }
 
-function closeDonateOptions() {
-    document.getElementById('donateOptions').style.display = 'none';
-}
-
-function selectAmount(amount) {
-    selectedAmount = amount;
-    document.getElementById('customAmount').value = '';
-    
-    document.getElementById('amt10').style.backgroundColor = amount === 10 ? '#B8860B' : 'transparent';
-    document.getElementById('amt10').style.border = amount === 10 ? 'none' : '2px solid #48484A';
-    
-    document.getElementById('amt25').style.backgroundColor = amount === 25 ? '#B8860B' : 'transparent';
-    document.getElementById('amt25').style.border = amount === 25 ? 'none' : '2px solid #48484A';
-    
-    document.getElementById('amt50').style.backgroundColor = amount === 50 ? '#B8860B' : 'transparent';
-    document.getElementById('amt50').style.border = amount === 50 ? 'none' : '2px solid #48484A';
-}
-
-document.getElementById('customAmount').addEventListener('input', () => {
-    selectedAmount = null;
-    document.getElementById('amt10').style.backgroundColor = 'transparent';
-    document.getElementById('amt10').style.border = '2px solid #48484A';
-    document.getElementById('amt25').style.backgroundColor = 'transparent';
-    document.getElementById('amt25').style.border = '2px solid #48484A';
-    document.getElementById('amt50').style.backgroundColor = 'transparent';
-    document.getElementById('amt50').style.border = '2px solid #48484A';
-});
-
-function submitDonate() {
-    const customVal = document.getElementById('customAmount').value;
-    const amount = customVal ? parseInt(customVal) : selectedAmount;
-    
-    if (amount && amount > 0) {
-        console.log('Донат:', amount, 'звёзд');
-        
-        // Здесь будет интеграция с Telegram Stars
-        // window.Telegram.WebApp.openInvoice(...)
-        
-        document.getElementById('donateOptions').style.display = 'none';
-        document.getElementById('thankYouModal').style.display = 'flex';
-    }
-}
-
+// Закрыть благодарность
 function closeThankYou() {
-    document.getElementById('thankYouModal').style.display = 'none';
+    document.getElementById('donateOptions').style.display = 'none';
+    document.getElementById('donateBtn').style.display = 'none';
 }
 </script>
-
 </body>
 </html>
