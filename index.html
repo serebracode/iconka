@@ -35,13 +35,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        @keyframes flicker {
-            0%, 100% { transform: scaleY(1) scaleX(1); }
-            25% { transform: scaleY(1.05) scaleX(0.98); }
-            50% { transform: scaleY(0.98) scaleX(1.02); }
-            75% { transform: scaleY(1.02) scaleX(0.99); }
-        }
-
         @keyframes glow {
             0%, 100% { opacity: 0.8; transform: translateX(-50%) scale(1); }
             50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
@@ -142,9 +135,9 @@
             z-index: 2;
         }
 
-        /* Candle video styles */
+        /* Видео свеча */
         .candle-video {
-            width: 140px; /* adjust size to taste */
+            width: 140px;
             height: auto;
             object-fit: cover;
             border-radius: 10px;
@@ -155,7 +148,7 @@
             transform-origin: center bottom;
             z-index: 10;
         }
-        /* when near-candle, slightly enlarge video to emphasize proximity */
+
         #detailScreen.near-candle .candle-video {
             transform: scale(1.06);
             transition: transform 600ms ease, filter 600ms ease;
@@ -228,14 +221,14 @@
         <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; height: 60%; background: radial-gradient(ellipse at center bottom, rgba(255, 200, 100, 0.25) 0%, rgba(255, 180, 80, 0.15) 20%, transparent 50%); z-index: 3; pointer-events: none;"></div>
     </div>
 
-    <!-- Видео свечи (использует файл в repo: video/001.mp4) -->
+    <!-- ВИДЕО СВЕЧА (заменяет векторную) -->
     <div id="candleContainer" style="position: absolute; bottom: -10%; left: 50%; transform: translateX(-50%); z-index: 12; display:flex; align-items:flex-end; justify-content:center; pointer-events:none;">
-        <!-- video/001.mp4 : убедитесь, что в репозитории файл назван именно так -->
-        <video id="candleVideo" class="candle-video" autoplay muted loop playsinline preload="auto">
-            <source src="video/001.mp4" type="video/mp4">
-            <!-- fallback: статическое изображение -->
-            <img src="images/candle-fallback.jpg" alt="candle" style="width:140px; border-radius:10px;">
+        <video id="candleVideo" class="candle-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+            <source src="./video/001.mp4" type="video/mp4">
         </video>
+        
+        <!-- Свечение вокруг видео -->
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 250px; height: 250px; background: radial-gradient(circle, rgba(255, 200, 100, 0.4) 0%, rgba(255, 150, 50, 0.15) 30%, transparent 70%); border-radius: 50%; pointer-events: none; animation: glow 2s ease-in-out infinite;"></div>
     </div>
 
     <!-- Верхняя панель -->
@@ -357,7 +350,6 @@ let selectedSaint = null;
 let selectedAmount = 50;
 let donateTimeout = null;
 let nearTimeout = null;
-let hideTimeout = null;
 
 // Telegram WebApp
 if (window.Telegram?.WebApp) {
@@ -375,7 +367,7 @@ function showListScreen() {
 // Рендер списка святых
 function renderSaintsList(searchQuery = '') {
     const list = document.getElementById('saintsList');
-    const filtered = SAINTS_DATA.filter(saint =>
+    const filtered = SAINTS_DATA.filter(saint => 
         saint.title.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => a.title.localeCompare(b.title));
 
@@ -411,36 +403,32 @@ function selectSaint(id) {
     const detail = document.getElementById('detailScreen');
     detail.classList.add('active');
 
-    // Подготовка иконы: сбрасываем видимость, ставим src, запускаем анимацию после загрузки
+    // Подготовка иконы
     const img = document.getElementById('saintIcon');
     img.classList.remove('icon-visible');
-    // Очистим предыдущий src (чтобы onload сработал повторно в некоторых случаях)
     img.removeAttribute('src');
-    // Небольшая задержка, чтобы браузер успел применить класс removal
+    
     setTimeout(() => {
         img.src = selectedSaint.image;
     }, 20);
 
-    // Когда изображение загрузилось — показать его из мрака
     img.onload = () => {
-        // немножко задержим видимость, чтобы эффект был плавнее
         setTimeout(() => img.classList.add('icon-visible'), 60);
     };
 
-    // Включаем/перезапускаем видео свечи (если доступно)
-    const candleVideo = document.getElementById('candleVideo');
-    if (candleVideo) {
-        // try to play (some browsers require user gesture; muted autoplay works)
-        candleVideo.currentTime = 0;
-        const playPromise = candleVideo.play();
-        if (playPromise && playPromise.catch) {
+    // Запуск видео свечи
+    const video = document.getElementById('candleVideo');
+    if (video) {
+        video.currentTime = 0;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
             playPromise.catch(() => {
-                // autoplay might be blocked — leave it muted and try later when user interacts
+                // Автовоспроизведение может быть заблокировано - это нормально
             });
         }
     }
 
-    // Через небольшой таймаут пометить, что икона "ближе к свече" — усилить яркость и уменьшить виньетку
+    // "Ближе к свече"
     if (nearTimeout) clearTimeout(nearTimeout);
     nearTimeout = setTimeout(() => {
         detail.classList.add('near-candle');
@@ -459,21 +447,15 @@ document.getElementById('backBtn').addEventListener('click', () => {
     detail.classList.remove('active', 'near-candle');
     document.getElementById('listScreen').classList.add('active');
 
-    // спрячем иконку и очистим src (опционально)
     const img = document.getElementById('saintIcon');
     img.classList.remove('icon-visible');
-    // удаляем src немного позже, чтобы пользователь увидел уход анимации
     setTimeout(() => { img.removeAttribute('src'); }, 400);
 
-    // Остановим/поставим на паузу видео свечи, чтобы сэкономить ресурсы
-    const candleVideo = document.getElementById('candleVideo');
-    if (candleVideo) {
-        try {
-            candleVideo.pause();
-            candleVideo.currentTime = 0;
-        } catch (e) {
-            // ignore
-        }
+    // Остановить видео
+    const video = document.getElementById('candleVideo');
+    if (video) {
+        video.pause();
+        video.currentTime = 0;
     }
 
     document.getElementById('donateBtn').style.display = 'none';
