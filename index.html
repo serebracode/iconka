@@ -57,20 +57,51 @@
             to { transform: translateY(0); }
         }
 
+        /* Замените существующие правила .screen/.screen.active на эти */
         .screen {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            width: 100%;
-            height: 100vh;
-            display: none;
-            overflow-y: auto;
+
+         /* вместо display:none — используем свойства, которые можно анимировать */
+            opacity: 0;
+            transform: translateY(12px) scale(0.995);
+            visibility: hidden;
+            pointer-events: none;
+
+    /* плавный переход: opacity + transform */
+            transition: opacity 360ms cubic-bezier(.22,.9,.28,1), transform 360ms cubic-bezier(.22,.9,.28,1);
+            z-index: 0;
         }
 
         .screen.active {
-            display: block;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            visibility: visible;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* Удобный вспомогательный класс для элементов с "stagger"-появлением внутри экрана */
+        .screen .stagger {
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 300ms ease, transform 300ms ease;
+        }
+        .screen.active .stagger {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    /* Центровка конкретно для loadingScreen (переносим inline-стиль в CSS) */
+        #loadingScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
 
         /* Скрыть input number arrows */
