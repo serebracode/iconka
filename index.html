@@ -73,7 +73,18 @@
             display: block;
         }
 
-        /* --- New styles for icon appearance + vignette --- */
+        /* --- Icon appearance & vignette (modified) --- */
+
+        /* durations: doubled (медленнее в 2 раза) */
+        /* filter transition (brightness/blur) */
+        :root {
+            --icon-filter-dur: 2800ms;     /* 1400ms * 2 */
+            --icon-transform-dur: 1900ms;  /* 950ms * 2 */
+            --icon-opacity-dur: 1800ms;    /* 900ms * 2 */
+            --icon-near-delay: 800ms;      /* оставляем прежнюю задержку (можно менять) */
+            --list-stagger-step: 80ms;     /* шаг для микроанимации списка */
+            --list-item-duration: 600ms;   /* совпадает с loadingScreen fadeInScale */
+        }
 
         /* Wrapper to contain image and vignette */
         .icon-wrapper {
@@ -86,8 +97,9 @@
             z-index: 1;
         }
 
-        /* The icon itself: start "in darkness" (low brightness, blurred, slightly scaled down).
-           Transition to visible state when class .icon-visible is added. */
+        /* The icon itself:
+           starts "in darkness" (low brightness, blurred, slightly scaled down).
+           transitions are slowed (doubled). */
         #saintIcon {
             width: 100%;
             height: auto;
@@ -96,7 +108,10 @@
             filter: brightness(0) blur(12px) contrast(0.95) saturate(0.9);
             transform: scale(0.98);
             opacity: 0.5;
-            transition: filter 1400ms ease, transform 950ms cubic-bezier(.22,.9,.28,1), opacity 900ms ease;
+            transition:
+                filter var(--icon-filter-dur) ease,
+                transform var(--icon-transform-dur) cubic-bezier(.22,.9,.28,1),
+                opacity var(--icon-opacity-dur) ease;
             will-change: filter, transform, opacity;
         }
 
@@ -107,7 +122,7 @@
             opacity: 1;
         }
 
-        /* Extra "closer to candle" boost — stronger brightness & slight scale up */
+        /* When closer to candle — extra boost (kept at same tempo, shorter transition for realism) */
         #detailScreen.near-candle #saintIcon.icon-visible {
             filter: brightness(1.12) blur(0) contrast(1.06) saturate(1.05);
             transform: scale(1.06);
@@ -122,15 +137,15 @@
             background: radial-gradient(circle at center, rgba(0,0,0,0) 42%, rgba(0,0,0,0.32) 60%, rgba(0,0,0,0.6) 78%, rgba(0,0,0,0.85) 92%);
             mix-blend-mode: multiply;
             opacity: 1;
-            transition: opacity 900ms ease;
+            transition: opacity var(--icon-opacity-dur) ease;
         }
 
-        /* When closer to candle, slightly reduce vignette darkness to simulate local illumination */
+        /* Near candle reduces vignette a bit */
         #detailScreen.near-candle .icon-vignette {
             opacity: 0.6;
         }
 
-        /* A soft global overlay to darken beyond icon (keeps original look) */
+        /* Soft global overlay to darken beyond icon */
         .detail-overlay {
             position: absolute;
             top: 0;
@@ -149,6 +164,13 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+        }
+
+        /* Microanimation for list items (same as loading screen fadeInScale),
+           with a small stagger based on index. */
+        .list-item {
+            animation: fadeInScale var(--list-item-duration) ease-out both;
+            transform-origin: center;
         }
 
         /* Скрыть input number arrows */
@@ -174,7 +196,7 @@
 <div id="listScreen" class="screen">
     <div style="padding: 12px 16px; position: sticky; top: 0; z-index: 50; background-color: #000000;">
         <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 12px 0; letter-spacing: -0.5px;">Святые</h1>
-
+        
         <div style="background-color: #1C1C1E; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center;">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right: 8px;">
                 <circle cx="8" cy="8" r="6" stroke="#8E8E93" stroke-width="1.5"/>
@@ -197,13 +219,13 @@
     <!-- Фон для иконы -->
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; display: flex; align-items: center; justify-content: center;">
         <div class="icon-wrapper" aria-hidden="false">
-            <img id="saintIcon" alt="Икона" src="">
+            <img id="saintIcon" style="opacity: 0.5; z-index: 1;" alt="Икона">
             <div class="icon-vignette"></div>
         </div>
-
+        
         <!-- Затемнение по краям (виньетка экрана) -->
         <div class="detail-overlay"></div>
-
+        
         <!-- Освещение от свечи снизу -->
         <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; height: 60%; background: radial-gradient(ellipse at center bottom, rgba(255, 200, 100, 0.25) 0%, rgba(255, 180, 80, 0.15) 20%, transparent 50%); z-index: 3; pointer-events: none;"></div>
     </div>
@@ -349,8 +371,9 @@ let selectedSaint = null;
 let selectedAmount = 50;
 let donateTimeout = null;
 let nearTimeout = null;
+let hideTimeout = null;
 
-// Telegram WebApp
+// Телеграм WebApp
 if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.ready();
     window.Telegram.WebApp.expand();
@@ -363,15 +386,17 @@ function showListScreen() {
     renderSaintsList();
 }
 
-// Рендер списка святых
+// Рендер списка святых с микроанимацией (stagger)
 function renderSaintsList(searchQuery = '') {
     const list = document.getElementById('saintsList');
     const filtered = SAINTS_DATA.filter(saint => 
         saint.title.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => a.title.localeCompare(b.title));
 
-    list.innerHTML = filtered.map((saint, index) => `
-        <div onclick="selectSaint(${saint.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative;">
+    list.innerHTML = filtered.map((saint, index) => {
+        const delay = index * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--list-stagger-step') || 80);
+        return `
+        <div onclick="selectSaint(${saint.id})" class="list-item" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative; animation-delay: ${delay}ms;">
             <img src="${saint.image}" alt="${saint.title}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: #3A3A3C;">
             <div style="flex: 1; color: #FFFFFF; font-size: 16px; font-weight: 400;">${saint.title}</div>
             <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
@@ -379,7 +404,7 @@ function renderSaintsList(searchQuery = '') {
             </svg>
             ${index < filtered.length - 1 ? '<div style="position: absolute; bottom: 0; left: 72px; right: 0; height: 0.5px; background-color: #38383A;"></div>' : ''}
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // Поиск
@@ -395,34 +420,36 @@ document.getElementById('clearSearch').addEventListener('click', () => {
     renderSaintsList();
 });
 
-// Выбор святого
+// Выбор святого: появление иконы из мрака (замедлено в 2 раза)
 function selectSaint(id) {
     selectedSaint = SAINTS_DATA.find(s => s.id === id);
     document.getElementById('listScreen').classList.remove('active');
     const detail = document.getElementById('detailScreen');
     detail.classList.add('active');
 
-    // Подготовка иконы: сбрасываем видимость, ставим src, запускаем анимацию после загрузки
+    // Подготовка иконы: сбросим классы/таймауты и назначим src
     const img = document.getElementById('saintIcon');
     img.classList.remove('icon-visible');
-    // Очистим предыдущий src (чтобы onload сработал повторно в некоторых случаях)
+    detail.classList.remove('near-candle');
+    if (hideTimeout) { clearTimeout(hideTimeout); hideTimeout = null; }
+    // сбрасываем src чтобы onload сработал надёжно
     img.removeAttribute('src');
-    // Небольшая задержка, чтобы браузер успел применить класс removal
+
+    // немного задержим установку src, чтобы сброс классов применился
     setTimeout(() => {
         img.src = selectedSaint.image;
     }, 20);
 
-    // Когда изображение загрузилось — показать его из мрака
     img.onload = () => {
-        // немножко задержим видимость, чтобы эффект был плавнее
+        // через короткую задержку добавляем класс, чтобы запустить медленный переход (в 2 раза медленнее)
         setTimeout(() => img.classList.add('icon-visible'), 60);
     };
 
-    // Через небольшой таймаут пометить, что икона "ближе к свече" — усилить яркость и уменьшить виньетку
+    // Через небольшую задержку отмечаем, что икона "ближе к свече" — дает дополнительную подсветку
     if (nearTimeout) clearTimeout(nearTimeout);
     nearTimeout = setTimeout(() => {
         detail.classList.add('near-candle');
-    }, 800);
+    }, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--icon-near-delay')) || 800);
 
     // Показать кнопку доната через 10 секунд
     if (donateTimeout) clearTimeout(donateTimeout);
@@ -431,20 +458,40 @@ function selectSaint(id) {
     }, 10000);
 }
 
-// Назад
+// Назад: плавный уход иконы во мрак, затем переключение на список
 document.getElementById('backBtn').addEventListener('click', () => {
     const detail = document.getElementById('detailScreen');
-    detail.classList.remove('active', 'near-candle');
-    document.getElementById('listScreen').classList.add('active');
-
-    // спрячем иконку и очистим src (опционально)
     const img = document.getElementById('saintIcon');
-    img.classList.remove('icon-visible');
-    // удаляем src немного позже, чтобы пользователь увидел уход анимации
-    setTimeout(() => { img.removeAttribute('src'); }, 400);
 
-    document.getElementById('donateBtn').style.display = 'none';
-    document.getElementById('donateOptions').style.display = 'none';
+    // Убираем near-candle сразу
+    detail.classList.remove('near-candle');
+
+    // Запускаем уход: удаляем класс видимости — начнётся переход в "мрак"
+    img.classList.remove('icon-visible');
+
+    // Отключаем кнопку назад на время анимации (предотвращение повторных нажатий)
+    document.getElementById('backBtn').disabled = true;
+
+    // Подождём, пока анимация скрытия завершится (берём длительность transform)
+    const hideDelay = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--icon-transform-dur')) || 1900;
+
+    // После окончания анимации переключаем экраны и очищаем src
+    if (hideTimeout) clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(() => {
+        detail.classList.remove('active');
+        document.getElementById('listScreen').classList.add('active');
+
+        // прячем элементы доната/опций
+        document.getElementById('donateBtn').style.display = 'none';
+        document.getElementById('donateOptions').style.display = 'none';
+
+        // очищаем src, чтобы освободить память и позволить эффекту загрузки повториться позже
+        img.removeAttribute('src');
+
+        document.getElementById('backBtn').disabled = false;
+        hideTimeout = null;
+    }, hideDelay);
+    
     if (donateTimeout) { clearTimeout(donateTimeout); donateTimeout = null; }
     if (nearTimeout) { clearTimeout(nearTimeout); nearTimeout = null; }
 });
@@ -510,6 +557,9 @@ function submitDonate() {
 function closeThankYou() {
     document.getElementById('thankYouModal').style.display = 'none';
 }
+
+// Инициализация списка при старте
+renderSaintsList();
 </script>
 
 </body>
