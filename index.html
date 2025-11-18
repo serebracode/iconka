@@ -142,6 +142,26 @@
             z-index: 2;
         }
 
+        /* Candle video styles */
+        .candle-video {
+            width: 140px; /* adjust size to taste */
+            height: auto;
+            object-fit: cover;
+            border-radius: 10px;
+            filter: saturate(1.05) brightness(1.05);
+            box-shadow: 0 8px 40px rgba(255,140,0,0.12), 0 4px 20px rgba(255,140,0,0.08);
+            pointer-events: none;
+            display: block;
+            transform-origin: center bottom;
+            z-index: 10;
+        }
+        /* when near-candle, slightly enlarge video to emphasize proximity */
+        #detailScreen.near-candle .candle-video {
+            transform: scale(1.06);
+            transition: transform 600ms ease, filter 600ms ease;
+            filter: saturate(1.08) brightness(1.12);
+        }
+
         /* Centering/loading screen helper remains inline in HTML but it's safe to have this too */
         #loadingScreen {
             display: flex;
@@ -208,26 +228,14 @@
         <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; height: 60%; background: radial-gradient(ellipse at center bottom, rgba(255, 200, 100, 0.25) 0%, rgba(255, 180, 80, 0.15) 20%, transparent 50%); z-index: 3; pointer-events: none;"></div>
     </div>
 
-    <!-- Свеча -->
-    <div id="candleContainer" style="position: absolute; bottom: -20%; left: 50%; transform: translateX(-50%); z-index: 10;">
-        <div style="position: relative; width: 20px; height: 500px; display: flex; flex-direction: column; align-items: center;">
-            <!-- Пламя -->
-            <div style="width: 24px; height: 56px; background: linear-gradient(to top, rgba(255, 140, 0, 0.9) 0%, rgba(255, 200, 50, 0.8) 40%, rgba(255, 230, 100, 0.6) 70%, rgba(255, 255, 200, 0.3) 100%); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; position: relative; filter: blur(1px); box-shadow: 0 0 20px rgba(255, 140, 0, 0.8), 0 0 40px rgba(255, 140, 0, 0.5); animation: flicker 2s ease-in-out infinite;">
-                <div style="position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 10px; height: 28px; background: linear-gradient(to top, rgba(255, 200, 0, 1) 0%, rgba(255, 230, 150, 0.8) 100%); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; filter: blur(0.5px);"></div>
-            </div>
-
-            <!-- Фитиль -->
-            <div style="width: 2px; height: 8px; background-color: #1a1a1a; border-radius: 1px; margin-top: -3px;"></div>
-
-            <!-- Тело свечи -->
-            <div style="width: 18px; height: 450px; background: linear-gradient(to bottom, #d4a76a 0%, #c69555 50%, #a0784a 80%, #8b6639 100%); border-radius: 2px 2px 5px 5px; position: relative; box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.3), inset 1px 0 2px rgba(255, 255, 255, 0.1);">
-                <div style="position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 20px; height: 4px; background: radial-gradient(ellipse at center, #e8c592 0%, #d4a76a 100%); border-radius: 50%;"></div>
-                <div style="position: absolute; top: 5px; left: 2px; width: 2px; height: 20px; background: linear-gradient(to bottom, rgba(228, 197, 146, 0.8) 0%, transparent 100%); border-radius: 1px;"></div>
-            </div>
-        </div>
-
-        <!-- Свечение -->
-        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 250px; height: 250px; background: radial-gradient(circle, rgba(255, 200, 100, 0.4) 0%, rgba(255, 150, 50, 0.15) 30%, transparent 70%); border-radius: 50%; pointer-events: none; animation: glow 2s ease-in-out infinite;"></div>
+    <!-- Видео свечи (использует файл в repo: video/001.mp4) -->
+    <div id="candleContainer" style="position: absolute; bottom: -10%; left: 50%; transform: translateX(-50%); z-index: 12; display:flex; align-items:flex-end; justify-content:center; pointer-events:none;">
+        <!-- video/001.mp4 : убедитесь, что в репозитории файл назван именно так -->
+        <video id="candleVideo" class="candle-video" autoplay muted loop playsinline preload="auto">
+            <source src="video/001.mp4" type="video/mp4">
+            <!-- fallback: статическое изображение -->
+            <img src="images/candle-fallback.jpg" alt="candle" style="width:140px; border-radius:10px;">
+        </video>
     </div>
 
     <!-- Верхняя панель -->
@@ -349,6 +357,7 @@ let selectedSaint = null;
 let selectedAmount = 50;
 let donateTimeout = null;
 let nearTimeout = null;
+let hideTimeout = null;
 
 // Telegram WebApp
 if (window.Telegram?.WebApp) {
@@ -366,7 +375,7 @@ function showListScreen() {
 // Рендер списка святых
 function renderSaintsList(searchQuery = '') {
     const list = document.getElementById('saintsList');
-    const filtered = SAINTS_DATA.filter(saint => 
+    const filtered = SAINTS_DATA.filter(saint =>
         saint.title.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => a.title.localeCompare(b.title));
 
@@ -418,6 +427,19 @@ function selectSaint(id) {
         setTimeout(() => img.classList.add('icon-visible'), 60);
     };
 
+    // Включаем/перезапускаем видео свечи (если доступно)
+    const candleVideo = document.getElementById('candleVideo');
+    if (candleVideo) {
+        // try to play (some browsers require user gesture; muted autoplay works)
+        candleVideo.currentTime = 0;
+        const playPromise = candleVideo.play();
+        if (playPromise && playPromise.catch) {
+            playPromise.catch(() => {
+                // autoplay might be blocked — leave it muted and try later when user interacts
+            });
+        }
+    }
+
     // Через небольшой таймаут пометить, что икона "ближе к свече" — усилить яркость и уменьшить виньетку
     if (nearTimeout) clearTimeout(nearTimeout);
     nearTimeout = setTimeout(() => {
@@ -442,6 +464,17 @@ document.getElementById('backBtn').addEventListener('click', () => {
     img.classList.remove('icon-visible');
     // удаляем src немного позже, чтобы пользователь увидел уход анимации
     setTimeout(() => { img.removeAttribute('src'); }, 400);
+
+    // Остановим/поставим на паузу видео свечи, чтобы сэкономить ресурсы
+    const candleVideo = document.getElementById('candleVideo');
+    if (candleVideo) {
+        try {
+            candleVideo.pause();
+            candleVideo.currentTime = 0;
+        } catch (e) {
+            // ignore
+        }
+    }
 
     document.getElementById('donateBtn').style.display = 'none';
     document.getElementById('donateOptions').style.display = 'none';
