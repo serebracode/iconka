@@ -101,6 +101,7 @@
          class="animated"
          style="width: 107px; 
                 height: 107px; 
+                border-radius: 24px;
                 margin-bottom: 27px; 
                 animation: fadeInScale 0.6s ease-out;">
     
@@ -208,62 +209,36 @@
             </svg>
         </button>
 
-        <div style="max-width: 600px; margin: 0 auto;">
-            <h2 id="infoTitle" style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;"></h2>
-
-            <div style="margin-bottom: 32px;">
-                <h3 style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 18px; font-weight: 600; margin-bottom: 12px;">О святом</h3>
-                <p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6; margin: 0;">Здесь будет краткая информация о жизни и подвигах святого. История его жизни, чудеса и день памяти.</p>
-            </div>
-
-            <div>
-                <h3 style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 18px; font-weight: 600; margin-bottom: 12px;">Авторские права на изображение</h3>
-                <p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6; margin: 0;">Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.</p>
-            </div>
-        </div>
+        <!-- Содержимое генерируется динамически из saints.json -->
+        <div style="max-width: 600px; margin: 0 auto;"></div>
     </div>
 </div>
 
 <script>
-// Данные святых
-const SAINTS_DATA = [
-    { id: 5, title: "Апостол Андрей Первозванный", image: "./images/saints/saint5.jpg" },
-    { id: 4, title: "Апостол Павел", image: "./images/saints/saint4.jpg" },
-    { id: 3, title: "Апостол Пётр", image: "./images/saints/saint3.jpg" },
-    { id: 21, title: "Александр Невский", image: "./images/saints/saint21.jpg" },
-    { id: 29, title: "Амвросий Оптинский", image: "./images/saints/saint29.jpg" },
-    { id: 26, title: "Антоний Печерский", image: "./images/saints/saint26.jpg" },
-    { id: 8, title: "Василий Великий", image: "./images/saints/saint8.jpg" },
-    { id: 30, title: "Василий Блаженный", image: "./images/saints/saint30.jpg" },
-    { id: 16, title: "Вера, Надежда, Любовь и София", image: "./images/saints/saint16.jpg" },
-    { id: 14, title: "Великомученица Варвара", image: "./images/saints/saint14.jpg" },
-    { id: 15, title: "Великомученица Екатерина", image: "./images/saints/saint15.jpg" },
-    { id: 11, title: "Георгий Победоносец", image: "./images/saints/saint11.jpg" },
-    { id: 9, title: "Григорий Богослов", image: "./images/saints/saint9.jpg" },
-    { id: 12, title: "Димитрий Солунский", image: "./images/saints/saint12.jpg" },
-    { id: 22, title: "Дмитрий Донской", image: "./images/saints/saint22.jpg" },
-    { id: 6, title: "Иоанн Богослов", image: "./images/saints/saint6.jpg" },
-    { id: 10, title: "Иоанн Златоуст", image: "./images/saints/saint10.jpg" },
-    { id: 2, title: "Иоанн Креститель", image: "./images/saints/saint2.jpg" },
-    { id: 33, title: "Иоанн Кронштадтский", image: "./images/saints/saint33.jpg" },
-    { id: 19, title: "Кирилл и Мефодий", image: "./images/saints/saint19.jpg" },
-    { id: 18, title: "Княгиня Ольга", image: "./images/saints/saint18.jpg" },
-    { id: 17, title: "Князь Владимир Креститель", image: "./images/saints/saint17.jpg" },
-    { id: 31, title: "Ксения Петербургская", image: "./images/saints/saint31.jpg" },
-    { id: 32, title: "Матрона Московская", image: "./images/saints/saint32.jpg" },
-    { id: 28, title: "Нил Сорский", image: "./images/saints/saint28.jpg" },
-    { id: 13, title: "Пантелеимон Целитель", image: "./images/saints/saint13.jpg" },
-    { id: 1, title: "Пресвятая Богородица", image: "./images/saints/saint1.jpg" },
-    { id: 23, title: "Пётр и Феврония Муромские", image: "./images/saints/saint23.jpg" },
-    { id: 20, title: "Борис и Глеб", image: "./images/saints/saint20.jpg" },
-    { id: 24, title: "Сергий Радонежский", image: "./images/saints/saint24.jpg" },
-    { id: 25, title: "Серафим Саровский", image: "./images/saints/saint25.jpg" },
-    { id: 7, title: "Святитель Николай Чудотворец", image: "./images/saints/saint7.jpg" },
-    { id: 27, title: "Феодосий Печерский", image: "./images/saints/saint27.jpg" },
-    { id: 34, title: "Царственные страстотерпцы", image: "./images/saints/saint34.jpg" }
-];
-
+// ============================================
+// ЗАГРУЗКА ДАННЫХ О СВЯТЫХ
+// ============================================
+let SAINTS_DATA = [];
 let selectedSaint = null;
+
+// Загрузить данные из JSON
+async function loadSaintsData() {
+    try {
+        const response = await fetch('./data/saints.json');
+        if (!response.ok) {
+            throw new Error('Failed to load saints data');
+        }
+        const data = await response.json();
+        SAINTS_DATA = data.saints;
+        console.log('Saints data loaded:', SAINTS_DATA.length, 'saints');
+    } catch (error) {
+        console.error('Error loading saints data:', error);
+        // Fallback - минимальные данные если не загрузилось
+        SAINTS_DATA = [
+            { id: 1, title: "Пресвятая Богородица", image: "./images/saints/saint1.jpg", description: "Матерь Божия, высшая из всех сотворённых существ." }
+        ];
+    }
+}
 
 // ============================================
 // TELEGRAM MINI APP ИНТЕГРАЦИЯ
@@ -359,6 +334,8 @@ document.getElementById('clearSearch').addEventListener('click', () => {
 // Выбор святого
 function selectSaint(id) {
     selectedSaint = SAINTS_DATA.find(s => s.id === id);
+    if (!selectedSaint) return;
+    
     document.getElementById('listScreen').classList.remove('active');
     document.getElementById('detailScreen').classList.add('active');
     document.getElementById('saintIcon').src = selectedSaint.image;
@@ -382,7 +359,32 @@ document.getElementById('backBtn').addEventListener('click', () => {
 
 // Инфо
 document.getElementById('infoBtn').addEventListener('click', () => {
+    if (!selectedSaint) return;
+    
     document.getElementById('infoTitle').textContent = selectedSaint.title;
+    
+    // Обновить содержимое модального окна
+    const descriptionHTML = `
+        <div style="margin-bottom: 32px;">
+            <h3 style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 18px; font-weight: 600; margin-bottom: 12px;">О святом</h3>
+            <p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">${selectedSaint.description || 'Информация скоро будет добавлена.'}</p>
+            ${selectedSaint.feast_day ? `<p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 14px; margin: 8px 0 0 0;"><strong style="color: var(--tg-theme-text-color, #FFFFFF);">День памяти:</strong> ${selectedSaint.feast_day}</p>` : ''}
+            ${selectedSaint.patronage ? `<p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 14px; margin: 8px 0 0 0;"><strong style="color: var(--tg-theme-text-color, #FFFFFF);">Покровительство:</strong> ${selectedSaint.patronage}</p>` : ''}
+        </div>
+        
+        <div>
+            <h3 style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 18px; font-weight: 600; margin-bottom: 12px;">Авторские права на изображение</h3>
+            <p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6; margin: 0;">Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.</p>
+        </div>
+    `;
+    
+    // Обновить модальное окно
+    const modalContent = document.querySelector('#infoModal > div');
+    modalContent.innerHTML = `
+        <h2 id="infoTitle" style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;">${selectedSaint.title}</h2>
+        ${descriptionHTML}
+    `;
+    
     document.getElementById('infoModal').style.display = 'block';
     
     // Haptic feedback
@@ -400,12 +402,19 @@ document.getElementById('closeInfo').addEventListener('click', () => {
     }
 });
 
-// Debug info (можно удалить в продакшене)
-console.log('Iconka Mini App loaded', {
-    saints: SAINTS_DATA.length,
-    telegram: !!tg,
-    version: tg?.version
-});
+// ============================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================
+(async function init() {
+    await loadSaintsData();
+    
+    // Debug info (можно удалить в продакшене)
+    console.log('Iconka Mini App loaded', {
+        saints: SAINTS_DATA.length,
+        telegram: !!tg,
+        version: tg?.version
+    });
+})();
 </script>
 
 </body>
