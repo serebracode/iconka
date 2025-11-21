@@ -133,7 +133,7 @@
         </div>
     </div>
 
-    <div id="saintsList" class="safe-area-bottom" style="padding: 0 0 16px 0;"></div>
+    <div id="iconsList" class="safe-area-bottom" style="padding: 0 0 16px 0;"></div>
 </div>
 
 <!-- ЭКРАН СО СВЕЧОЙ -->
@@ -145,7 +145,7 @@
     <div style="position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
         
         <!-- СЛОЙ 1: ИКОНА (нижний слой, без эффектов) -->
-        <img id="saintIcon" 
+        <img id="iconImage" 
              style="position: relative;
                     width: 70%; 
                     height: auto; 
@@ -231,7 +231,7 @@
             </svg>
         </button>
 
-        <!-- Содержимое генерируется динамически из saints.json -->
+        <!-- Содержимое генерируется динамически из icons.json -->
         <div style="max-width: 600px; margin: 0 auto;"></div>
     </div>
 </div>
@@ -240,25 +240,25 @@
 // ============================================
 // ЗАГРУЗКА ДАННЫХ О СВЯТЫХ
 // ============================================
-let SAINTS_DATA = [];
-let selectedSaint = null;
+let ICONS_DATA = [];
+let selectedIcon = null;
 let candleVisible = false; // Состояние свечи
 
 // Загрузить данные из JSON
-async function loadSaintsData() {
+async function loadIconsData() {
     try {
-        const response = await fetch('./data/saints.json');
+        const response = await fetch('./data/icons.json');
         if (!response.ok) {
-            throw new Error('Failed to load saints data');
+            throw new Error('Failed to load icons data');
         }
         const data = await response.json();
-        SAINTS_DATA = data.saints;
-        console.log('Saints data loaded:', SAINTS_DATA.length, 'saints');
+        ICONS_DATA = data.icons;
+        console.log('Icons data loaded:', ICONS_DATA.length, 'icons');
     } catch (error) {
-        console.error('Error loading saints data:', error);
+        console.error('Error loading icons data:', error);
         // Fallback - минимальные данные если не загрузилось
-        SAINTS_DATA = [
-            { id: 1, title: "Пресвятая Богородица", image: "./images/saints/saint1.jpg", description: "Матерь Божия, высшая из всех сотворённых существ." }
+        ICONS_DATA = [
+            { id: 1, title: "Владимирская икона Божией Матери", image: "./icons/vladimirskaya.jpg", description: "Один из главных образов православия." }
         ];
     }
 }
@@ -319,23 +319,23 @@ if (tg) {
 function showListScreen() {
     document.getElementById('loadingScreen').classList.remove('active');
     document.getElementById('listScreen').classList.add('active');
-    renderSaintsList();
+    renderIconsList();
 }
 
-// Рендер списка святых
-function renderSaintsList(searchQuery = '') {
-    const list = document.getElementById('saintsList');
-    const filtered = SAINTS_DATA.filter(saint => 
-        saint.title.toLowerCase().includes(searchQuery.toLowerCase())
+// Рендер списка икон
+function renderIconsList(searchQuery = '') {
+    const list = document.getElementById('iconsList');
+    const filtered = ICONS_DATA.filter(icon => 
+        icon.title.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => a.title.localeCompare(b.title));
 
-    list.innerHTML = filtered.map((saint, index) => `
-        <div onclick="selectSaint(${saint.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: var(--tg-theme-bg-color, #000000); position: relative;">
-            <img src="${saint.image}" 
+    list.innerHTML = filtered.map((icon, index) => `
+        <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: var(--tg-theme-bg-color, #000000); position: relative;">
+            <img src="${icon.image}" 
                  onerror="this.src='./id/iconka_noicon.svg'" 
-                 alt="${saint.title}" 
+                 alt="${icon.title}" 
                  style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: var(--tg-theme-secondary-bg-color, #3A3A3C);">
-            <div style="flex: 1; color: var(--tg-theme-text-color, #FFFFFF); font-size: 16px; font-weight: 400;">${saint.title}</div>
+            <div style="flex: 1; color: var(--tg-theme-text-color, #FFFFFF); font-size: 16px; font-weight: 400;">${icon.title}</div>
             <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
                 <path d="M1 1L7 7L1 13" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -348,23 +348,23 @@ function renderSaintsList(searchQuery = '') {
 document.getElementById('searchInput').addEventListener('input', (e) => {
     const query = e.target.value;
     document.getElementById('clearSearch').style.display = query ? 'flex' : 'none';
-    renderSaintsList(query);
+    renderIconsList(query);
 });
 
 document.getElementById('clearSearch').addEventListener('click', () => {
     document.getElementById('searchInput').value = '';
     document.getElementById('clearSearch').style.display = 'none';
-    renderSaintsList();
+    renderIconsList();
 });
 
-// Выбор святого
-function selectSaint(id) {
-    selectedSaint = SAINTS_DATA.find(s => s.id === id);
-    if (!selectedSaint) return;
+// Выбор иконы
+function selectIcon(id) {
+    selectedIcon = ICONS_DATA.find(s => s.id === id);
+    if (!selectedIcon) return;
     
     document.getElementById('listScreen').classList.remove('active');
     document.getElementById('detailScreen').classList.add('active');
-    document.getElementById('saintIcon').src = selectedSaint.image;
+    document.getElementById('iconImage').src = selectedIcon.image;
     
     // Скрыть свечу по умолчанию
     candleVisible = false;
@@ -374,20 +374,20 @@ function selectSaint(id) {
     document.getElementById('closeIcon').style.display = 'none';
     
     // Заполнить информацию внизу
-    document.getElementById('iconInfoTitle').textContent = selectedSaint.title;
+    document.getElementById('iconInfoTitle').textContent = selectedIcon.title;
     
     const infoContent = `
-        ${selectedSaint.description ? `<p style="margin: 0 0 16px 0;">${selectedSaint.description}</p>` : ''}
-        ${selectedSaint.feast_day ? `
+        ${selectedIcon.description ? `<p style="margin: 0 0 16px 0;">${selectedIcon.description}</p>` : ''}
+        ${selectedIcon.feast_day ? `
             <div style="margin: 16px 0;">
                 <strong style="color: var(--tg-theme-text-color, #FFFFFF);">День памяти:</strong>
-                <p style="margin: 8px 0 0 0;">${selectedSaint.feast_day}</p>
+                <p style="margin: 8px 0 0 0;">${selectedIcon.feast_day}</p>
             </div>
         ` : ''}
-        ${selectedSaint.patronage ? `
+        ${selectedIcon.patronage ? `
             <div style="margin: 16px 0;">
                 <strong style="color: var(--tg-theme-text-color, #FFFFFF);">Покровительство:</strong>
-                <p style="margin: 8px 0 0 0;">${selectedSaint.patronage}</p>
+                <p style="margin: 8px 0 0 0;">${selectedIcon.patronage}</p>
             </div>
         ` : ''}
         <div style="margin: 24px 0 0 0; padding-top: 24px; border-top: 1px solid var(--tg-theme-secondary-bg-color, #38383A);">
@@ -450,11 +450,11 @@ document.getElementById('toggleCandleBtn').addEventListener('click', () => {
 // ИНИЦИАЛИЗАЦИЯ
 // ============================================
 (async function init() {
-    await loadSaintsData();
+    await loadIconsData();
     
     // Debug info (можно удалить в продакшене)
     console.log('Iconka Mini App loaded', {
-        saints: SAINTS_DATA.length,
+        icons: ICONS_DATA.length,
         telegram: !!tg,
         version: tg?.version
     });
