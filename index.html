@@ -117,7 +117,7 @@
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
     <div id="listHeader" class="safe-area-top" style="padding-left: 16px; padding-right: 16px; padding-top: 12px; padding-bottom: 12px; position: sticky; top: 0; z-index: 50; background-color: var(--tg-theme-bg-color, #000000);">
-        <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 12px 0; letter-spacing: -0.5px; color: var(--tg-theme-text-color, #FFFFFF);">Святые</h1>
+        <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 12px 0; letter-spacing: -0.5px; color: var(--tg-theme-text-color, #FFFFFF);">Иконы</h1>
         
         <div id="searchContainer" style="background-color: var(--tg-theme-secondary-bg-color, #1C1C1E); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center;">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right: 8px;">
@@ -137,71 +137,93 @@
 </div>
 
 <!-- ЭКРАН СО СВЕЧОЙ -->
-<div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
+<div id="detailScreen" class="screen" style="position: absolute; overflow-y: auto; overflow-x: hidden;">
     <!-- Черный фон -->
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--tg-theme-bg-color, #000000);"></div>
 
-    <!-- СЛОЙ 1: ИКОНА (нижний слой, без эффектов) -->
-    <img id="saintIcon" 
-         style="position: absolute; 
-                top: 50%; 
-                left: 50%; 
-                transform: translate(-50%, -50%); 
-                width: 70%; 
-                height: auto; 
-                max-height: 70%; 
-                object-fit: contain; 
-                z-index: 1;" 
-         alt="Икона">
-
-    <!-- СЛОЙ 2: GIF СВЕЧА с альфа-каналом (средний слой) -->
-    <div style="position: absolute; 
-                bottom: 0; 
-                left: 50%; 
-                transform: translateX(-50%); 
-                z-index: 10; 
-                display: flex; 
-                align-items: flex-end; 
-                justify-content: center; 
-                pointer-events: none;">
-        <img src="./video/3.png" 
-             alt="Свеча" 
-             style="width: auto; 
-                    height: 100vh; 
+    <!-- Контейнер для иконы и свечи -->
+    <div style="position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+        
+        <!-- СЛОЙ 1: ИКОНА (нижний слой, без эффектов) -->
+        <img id="saintIcon" 
+             style="position: relative;
+                    width: 70%; 
+                    height: auto; 
+                    max-height: 70vh; 
                     object-fit: contain; 
-                    display: block;">
+                    z-index: 1;" 
+             alt="Икона">
+
+        <!-- СЛОЙ 2: GIF СВЕЧА с альфа-каналом (средний слой) - СКРЫТА ПО УМОЛЧАНИЮ -->
+        <div id="candleLayer" style="position: absolute; 
+                    bottom: 0; 
+                    left: 50%; 
+                    transform: translateX(-50%); 
+                    z-index: 10; 
+                    display: flex; 
+                    align-items: flex-end; 
+                    justify-content: center; 
+                    pointer-events: none;
+                    opacity: 0;
+                    transition: opacity 0.5s ease-in-out;">
+            <img src="./video/3.png" 
+                 alt="Свеча" 
+                 style="width: auto; 
+                        height: 100vh; 
+                        object-fit: contain; 
+                        display: block;">
+        </div>
+
+        <!-- СЛОЙ 3: ВЕКТОРНОЕ СВЕЧЕНИЕ (верхний слой) - СКРЫТО ПО УМОЛЧАНИЮ -->
+        <div id="glowLayer" class="animated" style="position: absolute; 
+                    bottom: 32%; 
+                    left: 50%; 
+                    transform: translateX(-50%); 
+                    width: 250px; 
+                    height: 250px; 
+                    background: radial-gradient(circle, rgba(255, 200, 100, 0.7) 0%, rgba(255, 150, 50, 0.3) 30%, transparent 70%); 
+                    border-radius: 50%; 
+                    pointer-events: none; 
+                    animation: glow 6s ease-in-out infinite; 
+                    z-index: 20;
+                    opacity: 0;
+                    transition: opacity 0.5s ease-in-out;"></div>
     </div>
 
-    <!-- СЛОЙ 3: ВЕКТОРНОЕ СВЕЧЕНИЕ (верхний слой) -->
-    <div class="animated" style="position: absolute; 
-                bottom: 32%; 
-                left: 50%; 
-                transform: translateX(-50%); 
-                width: 250px; 
-                height: 250px; 
-                background: radial-gradient(circle, rgba(255, 200, 100, 0.7) 0%, rgba(255, 150, 50, 0.3) 30%, transparent 70%); 
-                border-radius: 50%; 
-                pointer-events: none; 
-                animation: glow 6s ease-in-out infinite; 
-                z-index: 20;"></div>
+    <!-- Информация об иконе (появляется при скролле вниз) -->
+    <div id="iconInfo" style="position: relative; background-color: var(--tg-theme-bg-color, #000000); padding: 32px 20px; z-index: 5; min-height: 50vh;">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <h2 id="iconInfoTitle" style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;"></h2>
+
+            <div id="iconInfoContent" style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6;">
+                <!-- Контент генерируется динамически -->
+            </div>
+        </div>
+    </div>
 
     <!-- Верхняя панель -->
-    <div class="safe-area-top" style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100;">
+    <div class="safe-area-top" style="position: fixed; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100;">
         <button id="backBtn" style="background: transparent; border: none; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                 <path d="M17 7L10 14L17 21" stroke="var(--tg-theme-text-color, #FFFFFF)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
 
-        <button id="infoBtn" style="background: transparent; border: none; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <!-- Кнопка переключения (i) ↔ (x) -->
+        <button id="toggleCandleBtn" style="background: transparent; border: none; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+            <!-- Иконка (i) - показывается по умолчанию -->
+            <svg id="infoIcon" width="28" height="28" viewBox="0 0 28 28" fill="none">
                 <circle cx="14" cy="14" r="12" stroke="var(--tg-theme-text-color, #FFFFFF)" stroke-width="2"/>
                 <path d="M14 14V19M14 9V10" stroke="var(--tg-theme-text-color, #FFFFFF)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <!-- Иконка (x) - скрыта по умолчанию -->
+            <svg id="closeIcon" width="28" height="28" viewBox="0 0 28 28" fill="none" style="display: none;">
+                <path d="M7 7L21 21M21 7L7 21" stroke="var(--tg-theme-text-color, #FFFFFF)" stroke-width="2" stroke-linecap="round"/>
             </svg>
         </button>
     </div>
 
-    <!-- Окно инфо -->
+    <!-- Окно инфо (старое, больше не используется, но оставлю на случай) -->
     <div id="infoModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); z-index: 300; padding: 60px 20px 20px 20px; overflow-y: auto;">
         <button id="closeInfo" class="safe-area-top" style="position: fixed; top: 16px; right: 16px; background: transparent; border: none; cursor: pointer; padding: 0; z-index: 301; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -220,6 +242,7 @@
 // ============================================
 let SAINTS_DATA = [];
 let selectedSaint = null;
+let candleVisible = false; // Состояние свечи
 
 // Загрузить данные из JSON
 async function loadSaintsData() {
@@ -308,7 +331,10 @@ function renderSaintsList(searchQuery = '') {
 
     list.innerHTML = filtered.map((saint, index) => `
         <div onclick="selectSaint(${saint.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: var(--tg-theme-bg-color, #000000); position: relative;">
-            <img src="${saint.image}" alt="${saint.title}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: var(--tg-theme-secondary-bg-color, #3A3A3C);">
+            <img src="${saint.image}" 
+                 onerror="this.src='./id/iconka_noicon.svg'" 
+                 alt="${saint.title}" 
+                 style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: var(--tg-theme-secondary-bg-color, #3A3A3C);">
             <div style="flex: 1; color: var(--tg-theme-text-color, #FFFFFF); font-size: 16px; font-weight: 400;">${saint.title}</div>
             <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
                 <path d="M1 1L7 7L1 13" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -340,6 +366,40 @@ function selectSaint(id) {
     document.getElementById('detailScreen').classList.add('active');
     document.getElementById('saintIcon').src = selectedSaint.image;
     
+    // Скрыть свечу по умолчанию
+    candleVisible = false;
+    document.getElementById('candleLayer').style.opacity = '0';
+    document.getElementById('glowLayer').style.opacity = '0';
+    document.getElementById('infoIcon').style.display = 'block';
+    document.getElementById('closeIcon').style.display = 'none';
+    
+    // Заполнить информацию внизу
+    document.getElementById('iconInfoTitle').textContent = selectedSaint.title;
+    
+    const infoContent = `
+        ${selectedSaint.description ? `<p style="margin: 0 0 16px 0;">${selectedSaint.description}</p>` : ''}
+        ${selectedSaint.feast_day ? `
+            <div style="margin: 16px 0;">
+                <strong style="color: var(--tg-theme-text-color, #FFFFFF);">День памяти:</strong>
+                <p style="margin: 8px 0 0 0;">${selectedSaint.feast_day}</p>
+            </div>
+        ` : ''}
+        ${selectedSaint.patronage ? `
+            <div style="margin: 16px 0;">
+                <strong style="color: var(--tg-theme-text-color, #FFFFFF);">Покровительство:</strong>
+                <p style="margin: 8px 0 0 0;">${selectedSaint.patronage}</p>
+            </div>
+        ` : ''}
+        <div style="margin: 24px 0 0 0; padding-top: 24px; border-top: 1px solid var(--tg-theme-secondary-bg-color, #38383A);">
+            <p style="margin: 0; font-size: 14px; opacity: 0.7;">Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.</p>
+        </div>
+    `;
+    
+    document.getElementById('iconInfoContent').innerHTML = infoContent;
+    
+    // Скроллим в начало
+    document.getElementById('detailScreen').scrollTop = 0;
+    
     // Haptic feedback (если доступно)
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
@@ -351,41 +411,8 @@ document.getElementById('backBtn').addEventListener('click', () => {
     document.getElementById('detailScreen').classList.remove('active');
     document.getElementById('listScreen').classList.add('active');
     
-    // Haptic feedback
-    if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-    }
-});
-
-// Инфо
-document.getElementById('infoBtn').addEventListener('click', () => {
-    if (!selectedSaint) return;
-    
-    document.getElementById('infoTitle').textContent = selectedSaint.title;
-    
-    // Обновить содержимое модального окна
-    const descriptionHTML = `
-        <div style="margin-bottom: 32px;">
-            <h3 style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 18px; font-weight: 600; margin-bottom: 12px;">О святом</h3>
-            <p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">${selectedSaint.description || 'Информация скоро будет добавлена.'}</p>
-            ${selectedSaint.feast_day ? `<p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 14px; margin: 8px 0 0 0;"><strong style="color: var(--tg-theme-text-color, #FFFFFF);">День памяти:</strong> ${selectedSaint.feast_day}</p>` : ''}
-            ${selectedSaint.patronage ? `<p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 14px; margin: 8px 0 0 0;"><strong style="color: var(--tg-theme-text-color, #FFFFFF);">Покровительство:</strong> ${selectedSaint.patronage}</p>` : ''}
-        </div>
-        
-        <div>
-            <h3 style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 18px; font-weight: 600; margin-bottom: 12px;">Авторские права на изображение</h3>
-            <p style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6; margin: 0;">Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.</p>
-        </div>
-    `;
-    
-    // Обновить модальное окно
-    const modalContent = document.querySelector('#infoModal > div');
-    modalContent.innerHTML = `
-        <h2 id="infoTitle" style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;">${selectedSaint.title}</h2>
-        ${descriptionHTML}
-    `;
-    
-    document.getElementById('infoModal').style.display = 'block';
+    // Сбросить состояние свечи
+    candleVisible = false;
     
     // Haptic feedback
     if (tg?.HapticFeedback) {
@@ -393,14 +420,31 @@ document.getElementById('infoBtn').addEventListener('click', () => {
     }
 });
 
-document.getElementById('closeInfo').addEventListener('click', () => {
-    document.getElementById('infoModal').style.display = 'none';
+// Переключение свечи (i) ↔ (x)
+document.getElementById('toggleCandleBtn').addEventListener('click', () => {
+    candleVisible = !candleVisible;
+    
+    if (candleVisible) {
+        // Показать свечу
+        document.getElementById('candleLayer').style.opacity = '1';
+        document.getElementById('glowLayer').style.opacity = '1';
+        document.getElementById('infoIcon').style.display = 'none';
+        document.getElementById('closeIcon').style.display = 'block';
+    } else {
+        // Скрыть свечу
+        document.getElementById('candleLayer').style.opacity = '0';
+        document.getElementById('glowLayer').style.opacity = '0';
+        document.getElementById('infoIcon').style.display = 'block';
+        document.getElementById('closeIcon').style.display = 'none';
+    }
     
     // Haptic feedback
     if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
+        tg.HapticFeedback.impactOccurred('medium');
     }
 });
+
+// Старый обработчик closeInfo (на случай если понадобится)
 
 // ============================================
 // ИНИЦИАЛИЗАЦИЯ
