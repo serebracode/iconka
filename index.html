@@ -410,8 +410,20 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
 document.getElementById('clearSearch').addEventListener('click', () => {
     document.getElementById('searchInput').value = '';
     document.getElementById('clearSearch').style.display = 'none';
+    document.getElementById('searchInput').blur();
     renderIconsList();
 });
+
+// Снятие фокуса с поиска при клике вне
+document.getElementById('iconsList').addEventListener('click', (e) => {
+    const searchInput = document.getElementById('searchInput');
+    if (document.activeElement === searchInput) {
+        e.preventDefault();
+        e.stopPropagation();
+        searchInput.blur();
+        return;
+    }
+}, true);
 
 // Выбор иконы
 function selectIcon(id) {
