@@ -364,7 +364,6 @@ function selectIcon(id) {
     // Скрыть свечу по умолчанию
     candleVisible = false;
     document.getElementById('candleLayer').style.opacity = '0';
-    document.getElementById('glowLayer').style.opacity = '0';
     document.getElementById('infoIcon').style.display = 'block';
     document.getElementById('closeIcon').style.display = 'none';
     
@@ -422,13 +421,11 @@ document.getElementById('toggleCandleBtn').addEventListener('click', () => {
     if (candleVisible) {
         // Показать свечу
         document.getElementById('candleLayer').style.opacity = '1';
-        document.getElementById('glowLayer').style.opacity = '1';
         document.getElementById('infoIcon').style.display = 'none';
         document.getElementById('closeIcon').style.display = 'block';
     } else {
         // Скрыть свечу
         document.getElementById('candleLayer').style.opacity = '0';
-        document.getElementById('glowLayer').style.opacity = '0';
         document.getElementById('infoIcon').style.display = 'block';
         document.getElementById('closeIcon').style.display = 'none';
     }
