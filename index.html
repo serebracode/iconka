@@ -323,14 +323,14 @@ if (tg) {
     tg.ready();
     tg.expand();
     
-    // Полноэкранный режим (раскомментировать для продакшена)
-    // try {
-    //     if (tg.requestFullscreen) {
-    //         tg.requestFullscreen();
-    //     }
-    // } catch (e) {
-    //     console.log('Fullscreen not supported:', e);
-    // }
+    // Полноэкранный режим
+    try {
+        if (tg.requestFullscreen) {
+            tg.requestFullscreen();
+        }
+    } catch (e) {
+        console.log('Fullscreen not supported:', e);
+    }
     
     // Установить цвет хедера
     tg.setHeaderColor(tg.themeParams.bg_color || '#000000');
