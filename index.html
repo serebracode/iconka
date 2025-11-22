@@ -210,13 +210,7 @@
     </div>
 
     <!-- Верхняя панель -->
-    <div style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 56px); left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; z-index: 100;">
-        <button id="backBtn" style="background: transparent; border: none; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <path d="M17 7L10 14L17 21" stroke="var(--tg-theme-text-color, #FFFFFF)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
-
+    <div style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 56px); right: 16px; display: flex; align-items: center; z-index: 100;">
         <!-- Кнопка переключения (i) ↔ (x) -->
         <button id="toggleCandleBtn" style="background: transparent; border: none; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
             <!-- Иконка (i) - показывается по умолчанию -->
@@ -425,6 +419,11 @@ function selectIcon(id) {
     document.getElementById('detailScreen').classList.add('active');
     document.getElementById('iconImage').src = selectedIcon.image;
     
+    // Показать нативную кнопку "Назад" в Telegram
+    if (tg?.BackButton) {
+        tg.BackButton.show();
+    }
+    
     // Скрыть свечу по умолчанию
     candleVisible = false;
     document.getElementById('candleLayer').style.opacity = '0';
@@ -473,9 +472,14 @@ function selectIcon(id) {
 }
 
 // Назад
-document.getElementById('backBtn').addEventListener('click', () => {
+function goBack() {
     document.getElementById('detailScreen').classList.remove('active');
     document.getElementById('listScreen').classList.add('active');
+    
+    // Скрыть нативную кнопку "Назад"
+    if (tg?.BackButton) {
+        tg.BackButton.hide();
+    }
     
     // Сбросить состояние свечи
     candleVisible = false;
@@ -484,7 +488,12 @@ document.getElementById('backBtn').addEventListener('click', () => {
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
     }
-});
+}
+
+// Обработчик нативной кнопки "Назад" Telegram
+if (tg?.BackButton) {
+    tg.BackButton.onClick(goBack);
+}
 
 // Переключение свечи (i) ↔ (x)
 document.getElementById('toggleCandleBtn').addEventListener('click', () => {
