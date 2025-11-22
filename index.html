@@ -89,6 +89,22 @@
         .safe-area-bottom {
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
+
+        /* Telegram-style Spinner */
+        .tg-spinner {
+            display: inline-block;
+            border-radius: 50%;
+            border: 2px solid var(--tg-theme-hint-color, #8E8E93);
+            border-top-color: var(--tg-theme-link-color, #007AFF);
+            animation: tg-spin 0.8s linear infinite;
+        }
+        .tg-spinner.size-s { width: 16px; height: 16px; border-width: 2px; }
+        .tg-spinner.size-m { width: 24px; height: 24px; border-width: 2.5px; }
+        .tg-spinner.size-l { width: 32px; height: 32px; border-width: 3px; }
+
+        @keyframes tg-spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -112,6 +128,11 @@
          style="width: 183px; 
                 height: 27px; 
                 animation: fadeIn 0.8s ease-out 0.2s both;">
+    
+    <!-- Спиннер загрузки данных -->
+    <div id="loadingSpinner" style="margin-top: 24px; display: none;">
+        <div class="tg-spinner size-m"></div>
+    </div>
 </div>
 
 <!-- ЭКРАН СО СПИСКОМ -->
@@ -225,14 +246,54 @@
 
 <script>
 // ============================================
+// ОПРЕДЕЛЕНИЕ ПЛАТФОРМЫ
+// ============================================
+function getPlatform() {
+    // Проверяем URL параметр для тестирования
+    const urlParams = new URLSearchParams(window.location.search);
+    const testPlatform = urlParams.get('platform');
+    if (testPlatform) return testPlatform;
+    
+    // Через Telegram WebApp API
+    const tgPlatform = window.Telegram?.WebApp?.platform;
+    if (tgPlatform) return tgPlatform;
+    
+    // Fallback через User Agent
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+    if (/Android/i.test(ua)) return 'android';
+    if (/Mac/i.test(ua)) return 'macos';
+    if (/Win/i.test(ua)) return 'windows';
+    if (/Linux/i.test(ua)) return 'linux';
+    return 'web';
+}
+
+const PLATFORM = getPlatform();
+document.body.setAttribute('data-platform', PLATFORM);
+console.log('Platform:', PLATFORM);
+
+// ============================================
 // ЗАГРУЗКА ДАННЫХ О СВЯТЫХ
 // ============================================
 let ICONS_DATA = [];
 let selectedIcon = null;
 let candleVisible = false; // Состояние свечи
+let dataLoaded = false;
+
+// Показать/скрыть спиннер
+function showSpinner() {
+    const spinner = document.getElementById('loadingSpinner');
+    if (spinner) spinner.style.display = 'block';
+}
+
+function hideSpinner() {
+    const spinner = document.getElementById('loadingSpinner');
+    if (spinner) spinner.style.display = 'none';
+}
 
 // Загрузить данные из JSON
 async function loadIconsData() {
+    showSpinner();
     try {
         const response = await fetch('./data/icons.json');
         if (!response.ok) {
@@ -240,12 +301,15 @@ async function loadIconsData() {
         }
         const data = await response.json();
         ICONS_DATA = Array.isArray(data.icons) ? data.icons : [];
+        dataLoaded = true;
         console.log('Icons data loaded:', ICONS_DATA.length, 'icons');
     } catch (error) {
         console.error('Error loading icons data:', error);
         ICONS_DATA = [];
         // здесь максимум — показать сообщение в UI,
         // но не подсовывать ручной дубль данных
+    } finally {
+        hideSpinner();
     }
 }
 
