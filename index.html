@@ -174,7 +174,10 @@
                     height: auto; 
                     max-height: 70vh; 
                     object-fit: contain; 
-                    z-index: 1;" 
+                    z-index: 1;
+                    touch-action: none;
+                    transform-origin: center center;
+                    transition: transform 0.3s ease-out;" 
              alt="Икона">
 
         <!-- СЛОЙ 2: GIF СВЕЧА с альфа-каналом (средний слой) - СКРЫТА ПО УМОЛЧАНИЮ -->
@@ -518,6 +521,48 @@ document.getElementById('toggleCandleBtn').addEventListener('click', () => {
 });
 
 // Старый обработчик closeInfo (на случай если понадобится)
+
+// ============================================
+// PINCH-TO-ZOOM ДЛЯ ИКОНЫ
+// ============================================
+(function() {
+    const iconImage = document.getElementById('iconImage');
+    let initialDistance = 0;
+    let currentScale = 1;
+    
+    function getDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    iconImage.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            initialDistance = getDistance(e.touches);
+            // Убираем transition во время жеста
+            iconImage.style.transition = 'none';
+        }
+    }, { passive: false });
+    
+    iconImage.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const currentDistance = getDistance(e.touches);
+            currentScale = Math.min(Math.max(currentDistance / initialDistance, 1), 3);
+            iconImage.style.transform = `scale(${currentScale})`;
+        }
+    }, { passive: false });
+    
+    iconImage.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) {
+            // Возвращаем transition и сбрасываем масштаб
+            iconImage.style.transition = 'transform 0.3s ease-out';
+            iconImage.style.transform = 'scale(1)';
+            currentScale = 1;
+        }
+    });
+})();
 
 // ============================================
 // ИНИЦИАЛИЗАЦИЯ
