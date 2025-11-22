@@ -116,18 +116,20 @@
 
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
-    <div id="listHeader" class="safe-area-top" style="padding-left: 16px; padding-right: 16px; padding-top: 12px; padding-bottom: 12px; position: sticky; top: 0; z-index: 50; background-color: var(--tg-theme-bg-color, #000000);">
-        <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 12px 0; letter-spacing: -0.5px; color: var(--tg-theme-text-color, #FFFFFF);">Иконы</h1>
+    <div id="listHeader" class="safe-area-top" style="padding: 16px 16px 12px 16px; position: sticky; top: 0; z-index: 50; background-color: var(--tg-theme-bg-color, #000000);">
+        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+            <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 135px; height: 20px;">
+        </div>
         
-        <div id="searchContainer" style="background-color: var(--tg-theme-secondary-bg-color, #1C1C1E); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center;">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right: 8px;">
-                <circle cx="8" cy="8" r="6" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5"/>
-                <path d="M12.5 12.5L16 16" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5" stroke-linecap="round"/>
+        <div id="searchContainer" style="background-color: var(--tg-theme-secondary-bg-color, #1C1C1E); border-radius: 10px; padding: 8px 12px; display: flex; align-items: center;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 8px; flex-shrink: 0;">
+                <circle cx="7" cy="7" r="5.5" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5"/>
+                <path d="M11 11L14 14" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <input type="text" id="searchInput" placeholder="Поиск" style="background: transparent; border: none; outline: none; color: var(--tg-theme-text-color, #FFFFFF); font-size: 16px; flex: 1; font-family: inherit;">
-            <button id="clearSearch" style="display: none; background-color: var(--tg-theme-secondary-bg-color, #48484A); border: none; border-radius: 50%; width: 18px; height: 18px; align-items: center; justify-content: center; cursor: pointer; padding: 0;">
+            <input type="text" id="searchInput" placeholder="Поиск" style="background: transparent; border: none; outline: none; color: var(--tg-theme-text-color, #FFFFFF); font-size: 17px; flex: 1; font-family: inherit;">
+            <button id="clearSearch" style="display: none; background-color: var(--tg-theme-hint-color, #48484A); border: none; border-radius: 50%; width: 18px; height: 18px; align-items: center; justify-content: center; cursor: pointer; padding: 0;">
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <path d="M1 1L9 9M9 1L1 9" stroke="var(--tg-theme-text-color, #FFFFFF)" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M1 1L9 9M9 1L1 9" stroke="var(--tg-theme-bg-color, #000000)" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
             </button>
         </div>
