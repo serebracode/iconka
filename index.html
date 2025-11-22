@@ -259,6 +259,11 @@ if (tg) {
     tg.ready();
     tg.expand();
     
+    // Полноэкранный режим
+    if (tg.requestFullscreen) {
+        tg.requestFullscreen();
+    }
+    
     // Установить цвет хедера
     tg.setHeaderColor(tg.themeParams.bg_color || '#000000');
     tg.setBackgroundColor(tg.themeParams.bg_color || '#000000');
