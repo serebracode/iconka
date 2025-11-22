@@ -415,13 +415,15 @@ document.getElementById('clearSearch').addEventListener('click', () => {
 });
 
 // Снятие фокуса с поиска при клике вне
-document.getElementById('iconsList').addEventListener('click', (e) => {
+document.getElementById('listScreen').addEventListener('click', (e) => {
     const searchInput = document.getElementById('searchInput');
-    if (document.activeElement === searchInput) {
+    const searchContainer = document.getElementById('searchContainer');
+    
+    // Если клик не в области поиска и инпут в фокусе
+    if (!searchContainer.contains(e.target) && document.activeElement === searchInput) {
         e.preventDefault();
         e.stopPropagation();
         searchInput.blur();
-        return;
     }
 }, true);
 
