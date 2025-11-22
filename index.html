@@ -339,6 +339,12 @@ if (tg) {
         Object.keys(tg.themeParams).forEach(key => {
             root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, tg.themeParams[key]);
         });
+        
+        // Если secondary_bg_color совпадает с bg_color или отсутствует — ставим контрастный
+        if (!tg.themeParams.secondary_bg_color || 
+            tg.themeParams.secondary_bg_color === tg.themeParams.bg_color) {
+            root.style.setProperty('--tg-theme-secondary-bg-color', '#2C2C2E');
+        }
     }
     
     // Слушать изменения темы
