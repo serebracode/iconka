@@ -19,8 +19,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-            background-color: var(--tg-theme-bg-color, #000000);
-            color: var(--tg-theme-text-color, #FFFFFF);
+            background-color: #000000;
+            color: #FFFFFF;
             position: relative;
         }
 
@@ -137,7 +137,7 @@
 
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
-    <div id="listHeader" style="padding: 16px 16px 12px 16px; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 56px); position: sticky; top: 0; z-index: 50; background-color: var(--tg-theme-bg-color, #000000);">
+    <div id="listHeader" style="padding: 16px 16px 12px 16px; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 56px); position: sticky; top: 0; z-index: 50; background-color: #000000;">
         <div style="display: flex; justify-content: center; margin-bottom: 16px;">
             <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 135px; height: 20px;">
         </div>
@@ -147,10 +147,10 @@
                 <circle cx="7" cy="7" r="5.5" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5"/>
                 <path d="M11 11L14 14" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <input type="text" id="searchInput" placeholder="Поиск" style="background: transparent; border: none; outline: none; color: var(--tg-theme-text-color, #FFFFFF); font-size: 17px; flex: 1; font-family: inherit;">
+            <input type="text" id="searchInput" placeholder="Поиск" style="background: transparent; border: none; outline: none; color: #FFFFFF; font-size: 17px; flex: 1; font-family: inherit;">
             <button id="clearSearch" style="display: none; background-color: var(--tg-theme-hint-color, #48484A); border: none; border-radius: 50%; width: 18px; height: 18px; align-items: center; justify-content: center; cursor: pointer; padding: 0;">
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <path d="M1 1L9 9M9 1L1 9" stroke="var(--tg-theme-bg-color, #000000)" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M1 1L9 9M9 1L1 9" stroke="#000000" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
             </button>
         </div>
@@ -162,7 +162,7 @@
 <!-- ЭКРАН СО СВЕЧОЙ -->
 <div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
     <!-- Черный фон -->
-    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--tg-theme-bg-color, #000000);"></div>
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
 
     <!-- Контейнер для иконы и свечи -->
     <div style="position: relative; height: 100vh; display: flex; align-items: center; justify-content: center;">
@@ -204,7 +204,7 @@
     <!-- Кнопка закрытия свечи/инфо — сверху по центру -->
     <button id="closeOverlayBtn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 16px); left: 50%; transform: translateX(-50%); background: transparent; border: none; cursor: pointer; padding: 0; z-index: 200; width: 32px; height: 32px; align-items: center; justify-content: center;">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M8 8L24 24M24 8L8 24" stroke="var(--tg-theme-text-color, #FFFFFF)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M8 8L24 24M24 8L8 24" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
     </button>
 
@@ -212,19 +212,19 @@
     <button id="candleBtn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 32px); left: 50%; transform: translateX(-50%); background: transparent; border: none; cursor: pointer; padding: 0; z-index: 100; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
             <path d="M24 8C24 8 28 14 28 18C28 20.2 26.2 22 24 22C21.8 22 20 20.2 20 18C20 14 24 8 24 8Z" fill="#FF9500"/>
-            <rect x="22" y="22" width="4" height="18" rx="1" fill="var(--tg-theme-text-color, #FFFFFF)"/>
+            <rect x="22" y="22" width="4" height="18" rx="1" fill="#FFFFFF"/>
         </svg>
     </button>
 
     <!-- Кнопка "Инфо" — внизу справа -->
-    <button id="infoBtn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 40px); right: 20px; background: transparent; border: none; cursor: pointer; padding: 8px 16px; z-index: 100; color: var(--tg-theme-text-color, #FFFFFF); font-size: 16px; font-family: inherit;">
+    <button id="infoBtn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 40px); right: 20px; background: transparent; border: none; cursor: pointer; padding: 8px 16px; z-index: 100; color: #FFFFFF; font-size: 16px; font-family: inherit;">
         Инфо
     </button>
 
     <!-- Панель информации — выезжает снизу -->
-    <div id="infoPanel" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--tg-theme-bg-color, #000000); z-index: 150; transform: translateY(100%); transition: transform 0.3s ease-out; overflow-y: auto; padding: 80px 20px 40px 20px;">
+    <div id="infoPanel" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; z-index: 150; transform: translateY(100%); transition: transform 0.3s ease-out; overflow-y: auto; padding: 80px 20px 40px 20px;">
         <div style="max-width: 600px; margin: 0 auto;">
-            <h2 id="iconInfoTitle" style="color: var(--tg-theme-text-color, #FFFFFF); font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;"></h2>
+            <h2 id="iconInfoTitle" style="color: #FFFFFF; font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;"></h2>
             <div id="iconInfoContent" style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6;">
                 <!-- Контент генерируется динамически -->
             </div>
@@ -319,9 +319,9 @@ if (tg) {
         console.log('Fullscreen not supported:', e);
     }
     
-    // Установить цвет хедера
-    tg.setHeaderColor(tg.themeParams.bg_color || '#000000');
-    tg.setBackgroundColor(tg.themeParams.bg_color || '#000000');
+    // Установить цвет хедера (всегда чёрный)
+    tg.setHeaderColor('#000000');
+    tg.setBackgroundColor('#000000');
     
     // Применить CSS переменные для темы
     if (tg.themeParams) {
@@ -345,9 +345,9 @@ if (tg) {
                 root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, tg.themeParams[key]);
             });
             
-            // Обновить цвет хедера
-            tg.setHeaderColor(tg.themeParams.bg_color || '#000000');
-            tg.setBackgroundColor(tg.themeParams.bg_color || '#000000');
+            // Обновить цвет хедера (всегда чёрный)
+            tg.setHeaderColor('#000000');
+            tg.setBackgroundColor('#000000');
         }
     });
     
@@ -382,12 +382,12 @@ function renderIconsList(searchQuery = '') {
     ).sort((a, b) => a.title.localeCompare(b.title));
 
     list.innerHTML = filtered.map((icon, index) => `
-        <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: var(--tg-theme-bg-color, #000000); position: relative;">
+        <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative;">
             <img src="${icon.image}" 
                  onerror="this.src='./id/iconka_noicon.svg'" 
                  alt="${icon.title}" 
                  style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: var(--tg-theme-secondary-bg-color, #3A3A3C);">
-            <div style="flex: 1; color: var(--tg-theme-text-color, #FFFFFF); font-size: 16px; font-weight: 400;">${icon.title}</div>
+            <div style="flex: 1; color: #FFFFFF; font-size: 16px; font-weight: 400;">${icon.title}</div>
             <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
                 <path d="M1 1L7 7L1 13" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -451,23 +451,23 @@ function selectIcon(id) {
     const infoContent = `
         ${selectedIcon.description_full ? `<p style="margin: 0 0 20px 0;">${selectedIcon.description_full}</p>` : ''}
         <div style="margin: 12px 0;">
-            <strong style="color: var(--tg-theme-text-color, #FFFFFF);">Автор:</strong>
+            <strong style="color: #FFFFFF;">Автор:</strong>
             <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
         </div>
         <div style="margin: 12px 0;">
-            <strong style="color: var(--tg-theme-text-color, #FFFFFF);">Дата:</strong>
+            <strong style="color: #FFFFFF;">Дата:</strong>
             <span style="margin-left: 8px;">${(selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
         </div>
         <div style="margin: 12px 0;">
-            <strong style="color: var(--tg-theme-text-color, #FFFFFF);">Материал:</strong>
+            <strong style="color: #FFFFFF;">Материал:</strong>
             <span style="margin-left: 8px;">${(selectedIcon.material || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
         </div>
         <div style="margin: 12px 0;">
-            <strong style="color: var(--tg-theme-text-color, #FFFFFF);">Размер:</strong>
+            <strong style="color: #FFFFFF;">Размер:</strong>
             <span style="margin-left: 8px;">${(selectedIcon.size || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
         </div>
         <div style="margin: 12px 0;">
-            <strong style="color: var(--tg-theme-text-color, #FFFFFF);">Местонахождение:</strong>
+            <strong style="color: #FFFFFF;">Местонахождение:</strong>
             <span style="margin-left: 8px;">${(selectedIcon.location || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
         </div>
         <div style="margin: 24px 0 0 0; padding-top: 24px; border-top: 1px solid var(--tg-theme-secondary-bg-color, #38383A);">
