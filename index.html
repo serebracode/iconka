@@ -119,6 +119,21 @@
             from { opacity: 1; }
             to { opacity: 0; }
         }
+
+        /* Круглая кнопка нативного стиля ТГ */
+        .tg-round-btn {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .tg-round-btn:active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
     </style>
 </head>
 <body>
@@ -174,15 +189,27 @@
     <div id="iconsList" class="safe-area-bottom" style="padding: 0 0 16px 0; opacity: 0;"></div>
 </div>
 
-<!-- ЭКРАН СО СВЕЧОЙ -->
+<!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
     <!-- Черный фон -->
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
 
+    <!-- Логотип вверху по центру (обычный режим) -->
+    <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60;">
+        <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
+    </div>
+
+    <!-- Кнопка закрытия режима свечи (вместо логотипа) -->
+    <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 9px); left: 50%; transform: translateX(-50%); z-index: 200; width: 30px; height: 30px;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </button>
+
     <!-- Контейнер для иконы и свечи -->
     <div style="position: relative; height: 100vh; display: flex; align-items: center; justify-content: center;">
         
-        <!-- СЛОЙ 1: ИКОНА (нижний слой, без эффектов) -->
+        <!-- СЛОЙ 1: ИКОНА -->
         <img id="iconImage" 
              style="position: relative;
                     width: 80%; 
@@ -192,7 +219,7 @@
                     z-index: 1;
                     touch-action: none;
                     transform-origin: center center;
-                    transition: transform 0.3s ease-out;" 
+                    transition: transform 0.3s ease-out, width 0.3s ease-out;" 
              alt="Икона">
 
         <!-- СЛОЙ 2: СВЕЧА - СКРЫТА ПО УМОЛЧАНИЮ -->
@@ -216,33 +243,27 @@
         </div>
     </div>
 
-    <!-- Кнопка закрытия свечи/инфо — сверху по центру -->
-    <button id="closeOverlayBtn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 16px); left: 50%; transform: translateX(-50%); background: transparent; border: none; cursor: pointer; padding: 0; z-index: 200; width: 32px; height: 32px; align-items: center; justify-content: center;">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M8 8L24 24M24 8L8 24" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Кнопка запуска режима свечи — по центру внизу -->
+    <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 30px); left: 50%; transform: translateX(-50%); z-index: 100; width: 60px; height: 60px;">
+        <img src="./id/iconka_candle.svg" alt="Свеча" style="width: 32px; height: 32px;">
+    </button>
+
+    <!-- Кнопка Инфо — справа внизу, выровнена по центру кнопки свечи -->
+    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 40px); right: 20px; z-index: 100; width: 40px; height: 40px;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="9" stroke="#FFFFFF" stroke-width="1.5"/>
+            <path d="M10 9V14M10 6V7" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
     </button>
 
-    <!-- Таббар внизу -->
-    <div id="tabbar" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #1C1C1E; border-top: 0.5px solid #38383A; display: flex; padding-bottom: var(--tg-safe-area-inset-bottom, 0px); z-index: 100;">
-        <button id="candleTab" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 0 6px 0; background: transparent; border: none; cursor: pointer; color: #8E8E93;" onclick="showCandle()">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <path d="M14 4C14 4 17 8 17 11C17 12.65 15.65 14 14 14C12.35 14 11 12.65 11 11C11 8 14 4 14 4Z" fill="currentColor"/>
-                <rect x="13" y="14" width="2" height="10" rx="0.5" fill="currentColor"/>
-            </svg>
-            <span style="font-size: 10px; margin-top: 2px; font-family: inherit;">Свеча</span>
-        </button>
-        <button id="infoTab" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 0 6px 0; background: transparent; border: none; cursor: pointer; color: #8E8E93;" onclick="showInfo()">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <circle cx="14" cy="14" r="10" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M14 13V19M14 9V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <span style="font-size: 10px; margin-top: 2px; font-family: inherit;">Инфо</span>
-        </button>
-    </div>
-
     <!-- Панель информации — выезжает снизу -->
     <div id="infoPanel" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; z-index: 150; transform: translateY(100%); transition: transform 0.3s ease-out; overflow-y: auto; padding: 80px 20px 40px 20px;">
+        <!-- Кнопка закрытия инфо -->
+        <button id="closeInfoBtn" class="tg-round-btn" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 9px); left: 50%; transform: translateX(-50%); z-index: 200; width: 30px; height: 30px;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
         <div style="max-width: 600px; margin: 0 auto;">
             <h2 id="iconInfoTitle" style="color: #FFFFFF; font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;"></h2>
             <div id="iconInfoContent" style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6;">
@@ -313,8 +334,6 @@ async function loadIconsData() {
     } catch (error) {
         console.error('Error loading icons data:', error);
         ICONS_DATA = [];
-        // здесь максимум — показать сообщение в UI,
-        // но не подсовывать ручной дубль данных
     } finally {
         hideSpinner();
     }
@@ -478,14 +497,10 @@ function selectIcon(id) {
         tg.BackButton.show();
     }
     
-    // Сбросить состояние панелей
+    // Сбросить состояние
     candleVisible = false;
     infoPanelVisible = false;
-    document.getElementById('candleLayer').style.opacity = '0';
-    document.getElementById('infoPanel').style.transform = 'translateY(100%)';
-    document.getElementById('tabbar').style.display = 'flex';
-    document.getElementById('closeOverlayBtn').style.display = 'none';
-    updateTabbar(null);
+    resetDetailScreenUI();
     
     // Заполнить информацию
     document.getElementById('iconInfoTitle').textContent = selectedIcon.title;
@@ -528,6 +543,21 @@ function selectIcon(id) {
     }
 }
 
+// Сброс UI экрана иконы
+function resetDetailScreenUI() {
+    document.getElementById('candleLayer').style.opacity = '0';
+    document.getElementById('infoPanel').style.transform = 'translateY(100%)';
+    document.getElementById('iconImage').style.width = '80%';
+    
+    // Показать обычные элементы
+    document.getElementById('detailLogoHeader').style.display = 'block';
+    document.getElementById('candleBtn').style.display = 'flex';
+    document.getElementById('infoBtn').style.display = 'flex';
+    
+    // Скрыть кнопку закрытия свечи
+    document.getElementById('closeCandleBtn').style.display = 'none';
+}
+
 // Назад
 function goBack() {
     document.getElementById('detailScreen').classList.remove('active');
@@ -540,6 +570,7 @@ function goBack() {
     
     // Сбросить состояние свечи
     candleVisible = false;
+    infoPanelVisible = false;
     
     // Haptic feedback
     if (tg?.HapticFeedback) {
@@ -556,69 +587,80 @@ if (tg?.BackButton) {
 let candleVisible = false;
 let infoPanelVisible = false;
 
-// Обновить состояние таббара
-function updateTabbar(activeTab) {
-    const candleTab = document.getElementById('candleTab');
-    const infoTab = document.getElementById('infoTab');
-    
-    candleTab.style.color = activeTab === 'candle' ? '#FFFFFF' : '#8E8E93';
-    infoTab.style.color = activeTab === 'info' ? '#FFFFFF' : '#8E8E93';
-}
-
 // Показать свечу
 function showCandle() {
     candleVisible = true;
     infoPanelVisible = false;
     
+    // Показать свечу
     document.getElementById('candleLayer').style.opacity = '1';
-    document.getElementById('infoPanel').style.transform = 'translateY(100%)';
-    document.getElementById('tabbar').style.display = 'none';
-    document.getElementById('closeOverlayBtn').style.display = 'flex';
     
-    updateTabbar('candle');
+    // Икона на 100% ширины
+    document.getElementById('iconImage').style.width = '100%';
+    
+    // Скрыть логотип и кнопки
+    document.getElementById('detailLogoHeader').style.display = 'none';
+    document.getElementById('candleBtn').style.display = 'none';
+    document.getElementById('infoBtn').style.display = 'none';
+    
+    // Показать кнопку закрытия
+    document.getElementById('closeCandleBtn').style.display = 'flex';
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('medium');
     }
 }
 
+// Закрыть режим свечи
+function closeCandle() {
+    candleVisible = false;
+    
+    // Скрыть свечу
+    document.getElementById('candleLayer').style.opacity = '0';
+    
+    // Икона обратно на 80%
+    document.getElementById('iconImage').style.width = '80%';
+    
+    // Показать логотип и кнопки
+    document.getElementById('detailLogoHeader').style.display = 'block';
+    document.getElementById('candleBtn').style.display = 'flex';
+    document.getElementById('infoBtn').style.display = 'flex';
+    
+    // Скрыть кнопку закрытия
+    document.getElementById('closeCandleBtn').style.display = 'none';
+    
+    if (tg?.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+    }
+}
+
 // Показать инфо
 function showInfo() {
     infoPanelVisible = true;
-    candleVisible = false;
     
     document.getElementById('infoPanel').style.transform = 'translateY(0)';
-    document.getElementById('candleLayer').style.opacity = '0';
-    document.getElementById('tabbar').style.display = 'none';
-    document.getElementById('closeOverlayBtn').style.display = 'flex';
-    
-    updateTabbar('info');
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
     }
 }
 
-// Закрыть оверлей (свечу или инфо)
-function closeOverlay() {
-    candleVisible = false;
+// Закрыть инфо
+function closeInfo() {
     infoPanelVisible = false;
     
-    document.getElementById('candleLayer').style.opacity = '0';
     document.getElementById('infoPanel').style.transform = 'translateY(100%)';
-    document.getElementById('tabbar').style.display = 'flex';
-    document.getElementById('closeOverlayBtn').style.display = 'none';
-    
-    updateTabbar(null);
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
     }
 }
 
-document.getElementById('closeOverlayBtn').addEventListener('click', closeOverlay);
-
-// Старый обработчик closeInfo (на случай если понадобится)
+// Обработчики кнопок
+document.getElementById('candleBtn').addEventListener('click', showCandle);
+document.getElementById('closeCandleBtn').addEventListener('click', closeCandle);
+document.getElementById('infoBtn').addEventListener('click', showInfo);
+document.getElementById('closeInfoBtn').addEventListener('click', closeInfo);
 
 // ============================================
 // PINCH-TO-ZOOM ДЛЯ ИКОНЫ
@@ -655,7 +697,7 @@ document.getElementById('closeOverlayBtn').addEventListener('click', closeOverla
     iconImage.addEventListener('touchend', (e) => {
         if (e.touches.length < 2) {
             // Возвращаем transition и сбрасываем масштаб
-            iconImage.style.transition = 'transform 0.3s ease-out';
+            iconImage.style.transition = 'transform 0.3s ease-out, width 0.3s ease-out';
             iconImage.style.transform = 'scale(1)';
             currentScale = 1;
         }
