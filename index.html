@@ -212,8 +212,8 @@
     <!-- Контейнер для иконы и свечи -->
     <div id="iconContainer" style="position: relative; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         
-        <!-- Название иконы и датировка — по центру между логотипом и изображением -->
-        <div id="iconTitleBlock" style="position: absolute; top: 50%; left: 16px; right: 16px; text-align: center; z-index: 5; opacity: 1; transition: opacity 1.5s ease-in-out; transform: translateY(-200%);">
+        <!-- Название иконы и датировка — позиционируется динамически -->
+        <div id="iconTitleBlock" style="position: fixed; left: 16px; right: 16px; text-align: center; z-index: 5; opacity: 1; transition: opacity 1.5s ease-in-out;">
             <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
             <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
         </div>
@@ -505,6 +505,9 @@ function selectIcon(id) {
     document.getElementById('detailScreen').classList.add('active');
     document.getElementById('iconImage').src = selectedIcon.image;
     
+    // Позиционировать название после загрузки изображения
+    document.getElementById('iconImage').onload = positionTitleBlock;
+    
     // Заполнить название и датировку
     document.getElementById('iconTitleText').textContent = selectedIcon.title;
     document.getElementById('iconDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
@@ -661,6 +664,33 @@ function closeInfo() {
         tg.HapticFeedback.impactOccurred('light');
     }
 }
+
+// Позиционировать название между логотипом и изображением
+function positionTitleBlock() {
+    const logo = document.getElementById('detailLogoHeader');
+    const image = document.getElementById('iconImage');
+    const titleBlock = document.getElementById('iconTitleBlock');
+    
+    if (!logo || !image || !titleBlock) return;
+    
+    const logoRect = logo.getBoundingClientRect();
+    const imageRect = image.getBoundingClientRect();
+    
+    const logoBottom = logoRect.bottom;
+    const imageTop = imageRect.top;
+    
+    // Центр между логотипом и изображением
+    const centerY = logoBottom + (imageTop - logoBottom) / 2;
+    
+    // Учитываем высоту самого блока
+    const titleRect = titleBlock.getBoundingClientRect();
+    const titleTop = centerY - titleRect.height / 2;
+    
+    titleBlock.style.top = titleTop + 'px';
+}
+
+// Вызывать при загрузке изображения и изменении размера
+window.addEventListener('resize', positionTitleBlock);
 
 document.getElementById('candleBtn').addEventListener('click', showCandle);
 document.getElementById('closeCandleBtn').addEventListener('click', closeCandle);
