@@ -130,6 +130,8 @@
             align-items: center;
             justify-content: center;
             transition: background-color 0.2s;
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
         }
         .tg-round-btn:active {
             background-color: rgba(255, 255, 255, 0.15);
@@ -245,14 +247,14 @@
 
     <!-- Кнопка запуска режима свечи — по центру внизу -->
     <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 30px); left: 50%; transform: translateX(-50%); z-index: 100; width: 60px; height: 60px;">
-        <img src="./id/iconka_candle.svg" alt="Свеча" style="width: 32px; height: 32px;">
+        <img src="./id/iconka_candle.svg" alt="Свеча" style="width: 40px; height: 40px;">
     </button>
 
     <!-- Кнопка Инфо — справа внизу, выровнена по центру кнопки свечи -->
-    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 40px); right: 20px; z-index: 100; width: 40px; height: 40px;">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="9" stroke="#FFFFFF" stroke-width="1.5"/>
-            <path d="M10 9V14M10 6V7" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 30px); right: 20px; z-index: 100; width: 60px; height: 60px;">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="12" stroke="#FFFFFF" stroke-width="1.5"/>
+            <path d="M14 12V20M14 8V9.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
         </svg>
     </button>
 
