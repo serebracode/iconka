@@ -512,7 +512,16 @@ function selectIcon(id) {
     
     // Подготавливаем экран иконы
     document.getElementById('iconImage').src = selectedIcon.image;
-    document.getElementById('iconImage').onload = positionTitleBlock;
+    
+    // Позиционировать название после загрузки изображения (или из кеша)
+    const iconImg = document.getElementById('iconImage');
+    if (iconImg.complete) {
+        // Изображение уже загружено (из кеша)
+        setTimeout(positionTitleBlock, 50);
+    } else {
+        iconImg.onload = positionTitleBlock;
+    }
+    
     document.getElementById('iconTitleText').textContent = selectedIcon.title;
     document.getElementById('iconDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
     
@@ -533,6 +542,9 @@ function selectIcon(id) {
         candleVisible = false;
         infoPanelVisible = false;
         resetDetailScreenUI();
+        
+        // Позиционировать название после показа экрана
+        setTimeout(positionTitleBlock, 50);
         
         // Заполнить информацию
         document.getElementById('iconInfoTitle').textContent = selectedIcon.title;
@@ -603,7 +615,11 @@ function goBack() {
         detailScreen.classList.remove('loading-fadeout');
         
         listScreen.classList.add('active');
-        listScreen.classList.add('list-fadein');
+        
+        // Восстанавливаем opacity элементов списка
+        document.getElementById('listIcon').style.opacity = '1';
+        document.getElementById('listHeader').style.opacity = '1';
+        document.getElementById('iconsList').style.opacity = '1';
         
         // Скрыть нативную кнопку "Назад"
         if (tg?.BackButton) {
@@ -613,11 +629,6 @@ function goBack() {
         // Сбросить состояние свечи
         candleVisible = false;
         infoPanelVisible = false;
-        
-        // Убираем класс анимации после завершения
-        setTimeout(() => {
-            listScreen.classList.remove('list-fadein');
-        }, 400);
         
         if (tg?.HapticFeedback) {
             tg.HapticFeedback.impactOccurred('light');
