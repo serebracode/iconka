@@ -201,15 +201,22 @@
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
     </div>
 
-    <!-- Кнопка закрытия режима свечи (вместо логотипа) -->
-    <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px;">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-    </button>
+    <!-- Кнопка закрытия режима свечи - СКРЫТА, используется тап по экрану -->
+    <button id="closeCandleBtn" style="display: none;"></button>
+    
+    <!-- Подсказка для выхода из режима свечи -->
+    <div id="candleExitHint" style="display: none; position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 40px); left: 0; right: 0; text-align: center; z-index: 200; color: rgba(142, 142, 147, 0.6); font-size: 14px;">
+        Нажмите в любое место для выхода
+    </div>
 
     <!-- Контейнер для иконы и свечи -->
-    <div id="iconContainer" style="position: relative; height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div id="iconContainer" style="position: relative; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        
+        <!-- Название иконы и датировка -->
+        <div id="iconTitleBlock" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 76px); left: 16px; right: 16px; text-align: center; z-index: 5;">
+            <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
+            <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
+        </div>
         
         <!-- СЛОЙ 1: ИКОНА -->
         <img id="iconImage" 
@@ -246,12 +253,12 @@
     </div>
 
     <!-- Кнопка запуска режима свечи — по центру внизу -->
-    <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 30px); left: 50%; transform: translateX(-50%); z-index: 100; width: 60px; height: 60px;">
+    <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 100; width: 70px; height: 70px;">
         <img src="./id/iconka_candle.svg" alt="Свеча" style="height: 36px; width: auto;">
     </button>
 
-    <!-- Кнопка Инфо — справа внизу, выровнена по центру кнопки свечи -->
-    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 30px); right: 20px; z-index: 100; width: 60px; height: 60px;">
+    <!-- Кнопка Инфо — справа внизу -->
+    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); right: 20px; z-index: 100; width: 70px; height: 70px;">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
             <circle cx="14" cy="14" r="12" stroke="#FFFFFF" stroke-width="1.5"/>
             <path d="M14 12V20M14 8V9.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
@@ -490,6 +497,10 @@ function selectIcon(id) {
     document.getElementById('detailScreen').classList.add('active');
     document.getElementById('iconImage').src = selectedIcon.image;
     
+    // Заполнить название и датировку
+    document.getElementById('iconTitleText').textContent = selectedIcon.title;
+    document.getElementById('iconDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
+    
     if (tg?.BackButton) {
         tg.BackButton.show();
     }
@@ -541,9 +552,10 @@ function resetDetailScreenUI() {
     document.getElementById('iconImage').style.width = '80%';
     
     document.getElementById('detailLogoHeader').style.display = 'block';
+    document.getElementById('iconTitleBlock').style.display = 'block';
     document.getElementById('candleBtn').style.display = 'flex';
     document.getElementById('infoBtn').style.display = 'flex';
-    document.getElementById('closeCandleBtn').style.display = 'none';
+    document.getElementById('candleExitHint').style.display = 'none';
 }
 
 function goBack() {
@@ -577,9 +589,10 @@ function showCandle() {
     document.getElementById('iconImage').style.width = '100%';
     
     document.getElementById('detailLogoHeader').style.display = 'none';
+    document.getElementById('iconTitleBlock').style.display = 'none';
     document.getElementById('candleBtn').style.display = 'none';
     document.getElementById('infoBtn').style.display = 'none';
-    document.getElementById('closeCandleBtn').style.display = 'flex';
+    document.getElementById('candleExitHint').style.display = 'block';
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('medium');
@@ -595,9 +608,10 @@ function closeCandle() {
     document.getElementById('iconImage').style.width = '80%';
     
     document.getElementById('detailLogoHeader').style.display = 'block';
+    document.getElementById('iconTitleBlock').style.display = 'block';
     document.getElementById('candleBtn').style.display = 'flex';
     document.getElementById('infoBtn').style.display = 'flex';
-    document.getElementById('closeCandleBtn').style.display = 'none';
+    document.getElementById('candleExitHint').style.display = 'none';
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
