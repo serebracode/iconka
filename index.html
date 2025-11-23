@@ -212,8 +212,8 @@
     <!-- Контейнер для иконы и свечи -->
     <div id="iconContainer" style="position: relative; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         
-        <!-- Название иконы и датировка -->
-        <div id="iconTitleBlock" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 76px); left: 16px; right: 16px; text-align: center; z-index: 5; opacity: 1; transition: opacity 1.5s ease-in-out;">
+        <!-- Название иконы и датировка — по центру между логотипом и изображением -->
+        <div id="iconTitleBlock" style="position: absolute; top: 50%; left: 16px; right: 16px; text-align: center; z-index: 5; opacity: 1; transition: opacity 1.5s ease-in-out; transform: translateY(-200%);">
             <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
             <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
         </div>
@@ -251,6 +251,14 @@
                         display: block;">
         </div>
     </div>
+
+    <!-- Кнопка Поделиться — слева внизу -->
+    <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 70px; height: 70px;">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M14 4V18M14 4L9 9M14 4L19 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 14V22C5 23.1046 5.89543 24 7 24H21C22.1046 24 23 23.1046 23 22V14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </button>
 
     <!-- Кнопка запуска режима свечи — по центру внизу -->
     <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 100; width: 70px; height: 70px;">
@@ -555,6 +563,7 @@ function resetDetailScreenUI() {
     document.getElementById('iconTitleBlock').style.opacity = '1';
     document.getElementById('candleBtn').style.display = 'flex';
     document.getElementById('infoBtn').style.display = 'flex';
+    document.getElementById('shareBtn').style.display = 'flex';
     document.getElementById('candleExitHint').style.display = 'none';
     document.getElementById('candleExitHint').style.opacity = '0';
 }
@@ -594,6 +603,7 @@ function showCandle() {
     document.getElementById('iconTitleBlock').style.opacity = '0';
     document.getElementById('candleBtn').style.display = 'none';
     document.getElementById('infoBtn').style.display = 'none';
+    document.getElementById('shareBtn').style.display = 'none';
     
     // Показать подсказку после завершения анимации (1.5s)
     const hint = document.getElementById('candleExitHint');
@@ -621,6 +631,7 @@ function closeCandle() {
     document.getElementById('iconTitleBlock').style.opacity = '1';
     document.getElementById('candleBtn').style.display = 'flex';
     document.getElementById('infoBtn').style.display = 'flex';
+    document.getElementById('shareBtn').style.display = 'flex';
     
     const hint = document.getElementById('candleExitHint');
     hint.style.opacity = '0';
@@ -655,6 +666,34 @@ document.getElementById('candleBtn').addEventListener('click', showCandle);
 document.getElementById('closeCandleBtn').addEventListener('click', closeCandle);
 document.getElementById('infoBtn').addEventListener('click', showInfo);
 document.getElementById('closeInfoBtn').addEventListener('click', closeInfo);
+document.getElementById('shareBtn').addEventListener('click', shareIcon);
+
+// Поделиться иконой
+async function shareIcon() {
+    if (!selectedIcon) return;
+    
+    const shareData = {
+        title: selectedIcon.title,
+        text: `${selectedIcon.title} — икона в приложении «Иконка»`,
+        url: window.location.href
+    };
+    
+    try {
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else if (tg?.openTelegramLink) {
+            // Fallback для Telegram
+            const text = encodeURIComponent(`${selectedIcon.title} — икона в приложении «Иконка»\n${window.location.href}`);
+            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${text}`);
+        }
+        
+        if (tg?.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    } catch (err) {
+        console.log('Share failed:', err);
+    }
+}
 
 // Тап в любом месте экрана для выхода из режима свечи
 document.getElementById('iconContainer').addEventListener('click', (e) => {
