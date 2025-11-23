@@ -223,18 +223,23 @@
         </svg>
     </button>
 
-    <!-- Кнопка свечи — внизу по центру -->
-    <button id="candleBtn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 32px); left: 50%; transform: translateX(-50%); background: transparent; border: none; cursor: pointer; padding: 0; z-index: 100; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <path d="M24 8C24 8 28 14 28 18C28 20.2 26.2 22 24 22C21.8 22 20 20.2 20 18C20 14 24 8 24 8Z" fill="#FF9500"/>
-            <rect x="22" y="22" width="4" height="18" rx="1" fill="#FFFFFF"/>
-        </svg>
-    </button>
-
-    <!-- Кнопка "Инфо" — внизу справа -->
-    <button id="infoBtn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 40px); right: 20px; background: transparent; border: none; cursor: pointer; padding: 8px 16px; z-index: 100; color: #FFFFFF; font-size: 16px; font-family: inherit;">
-        Инфо
-    </button>
+    <!-- Таббар внизу -->
+    <div id="tabbar" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #1C1C1E; border-top: 0.5px solid #38383A; display: flex; padding-bottom: var(--tg-safe-area-inset-bottom, 0px); z-index: 100;">
+        <button id="candleTab" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 0 6px 0; background: transparent; border: none; cursor: pointer; color: #8E8E93;" onclick="showCandle()">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M14 4C14 4 17 8 17 11C17 12.65 15.65 14 14 14C12.35 14 11 12.65 11 11C11 8 14 4 14 4Z" fill="currentColor"/>
+                <rect x="13" y="14" width="2" height="10" rx="0.5" fill="currentColor"/>
+            </svg>
+            <span style="font-size: 10px; margin-top: 2px; font-family: inherit;">Свеча</span>
+        </button>
+        <button id="infoTab" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 0 6px 0; background: transparent; border: none; cursor: pointer; color: #8E8E93;" onclick="showInfo()">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="14" r="10" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M14 13V19M14 9V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span style="font-size: 10px; margin-top: 2px; font-family: inherit;">Инфо</span>
+        </button>
+    </div>
 
     <!-- Панель информации — выезжает снизу -->
     <div id="infoPanel" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; z-index: 150; transform: translateY(100%); transition: transform 0.3s ease-out; overflow-y: auto; padding: 80px 20px 40px 20px;">
@@ -478,9 +483,9 @@ function selectIcon(id) {
     infoPanelVisible = false;
     document.getElementById('candleLayer').style.opacity = '0';
     document.getElementById('infoPanel').style.transform = 'translateY(100%)';
-    document.getElementById('candleBtn').style.display = 'flex';
-    document.getElementById('infoBtn').style.display = 'block';
+    document.getElementById('tabbar').style.display = 'flex';
     document.getElementById('closeOverlayBtn').style.display = 'none';
+    updateTabbar(null);
     
     // Заполнить информацию
     document.getElementById('iconInfoTitle').textContent = selectedIcon.title;
@@ -551,51 +556,67 @@ if (tg?.BackButton) {
 let candleVisible = false;
 let infoPanelVisible = false;
 
+// Обновить состояние таббара
+function updateTabbar(activeTab) {
+    const candleTab = document.getElementById('candleTab');
+    const infoTab = document.getElementById('infoTab');
+    
+    candleTab.style.color = activeTab === 'candle' ? '#FFFFFF' : '#8E8E93';
+    infoTab.style.color = activeTab === 'info' ? '#FFFFFF' : '#8E8E93';
+}
+
 // Показать свечу
-document.getElementById('candleBtn').addEventListener('click', () => {
+function showCandle() {
     candleVisible = true;
+    infoPanelVisible = false;
+    
     document.getElementById('candleLayer').style.opacity = '1';
-    document.getElementById('candleBtn').style.display = 'none';
-    document.getElementById('infoBtn').style.display = 'none';
+    document.getElementById('infoPanel').style.transform = 'translateY(100%)';
+    document.getElementById('tabbar').style.display = 'none';
     document.getElementById('closeOverlayBtn').style.display = 'flex';
+    
+    updateTabbar('candle');
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('medium');
     }
-});
+}
 
 // Показать инфо
-document.getElementById('infoBtn').addEventListener('click', () => {
+function showInfo() {
     infoPanelVisible = true;
+    candleVisible = false;
+    
     document.getElementById('infoPanel').style.transform = 'translateY(0)';
-    document.getElementById('candleBtn').style.display = 'none';
-    document.getElementById('infoBtn').style.display = 'none';
+    document.getElementById('candleLayer').style.opacity = '0';
+    document.getElementById('tabbar').style.display = 'none';
     document.getElementById('closeOverlayBtn').style.display = 'flex';
     
+    updateTabbar('info');
+    
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
     }
-});
+}
 
 // Закрыть оверлей (свечу или инфо)
-document.getElementById('closeOverlayBtn').addEventListener('click', () => {
-    if (candleVisible) {
-        candleVisible = false;
-        document.getElementById('candleLayer').style.opacity = '0';
-    }
-    if (infoPanelVisible) {
-        infoPanelVisible = false;
-        document.getElementById('infoPanel').style.transform = 'translateY(100%)';
-    }
+function closeOverlay() {
+    candleVisible = false;
+    infoPanelVisible = false;
     
-    document.getElementById('candleBtn').style.display = 'flex';
-    document.getElementById('infoBtn').style.display = 'block';
+    document.getElementById('candleLayer').style.opacity = '0';
+    document.getElementById('infoPanel').style.transform = 'translateY(100%)';
+    document.getElementById('tabbar').style.display = 'flex';
     document.getElementById('closeOverlayBtn').style.display = 'none';
+    
+    updateTabbar(null);
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
     }
-});
+}
+
+document.getElementById('closeOverlayBtn').addEventListener('click', closeOverlay);
 
 // Старый обработчик closeInfo (на случай если понадобится)
 
