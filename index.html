@@ -202,7 +202,7 @@
     </div>
 
     <!-- Кнопка закрытия режима свечи (вместо логотипа) -->
-    <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 9px); left: 50%; transform: translateX(-50%); z-index: 200; width: 30px; height: 30px;">
+    <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 9px); left: 50%; transform: translateX(-50%); z-index: 200; width: 36px; height: 36px;">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
         </svg>
@@ -261,7 +261,7 @@
     <!-- Панель информации — выезжает снизу -->
     <div id="infoPanel" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; z-index: 150; transform: translateY(100%); transition: transform 0.3s ease-out; overflow-y: auto; padding: 80px 20px 40px 20px;">
         <!-- Кнопка закрытия инфо -->
-        <button id="closeInfoBtn" class="tg-round-btn" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 9px); left: 50%; transform: translateX(-50%); z-index: 200; width: 30px; height: 30px;">
+        <button id="closeInfoBtn" class="tg-round-btn" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 9px); left: 50%; transform: translateX(-50%); z-index: 200; width: 36px; height: 36px;">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -597,8 +597,11 @@ function showCandle() {
     // Показать свечу
     document.getElementById('candleLayer').style.opacity = '1';
     
-    // Икона на 100% ширины
-    document.getElementById('iconImage').style.width = '100%';
+    // Икона на 100% высоты
+    const iconImage = document.getElementById('iconImage');
+    iconImage.style.width = 'auto';
+    iconImage.style.height = '100vh';
+    iconImage.style.maxHeight = '100vh';
     
     // Скрыть логотип и кнопки
     document.getElementById('detailLogoHeader').style.display = 'none';
@@ -620,8 +623,11 @@ function closeCandle() {
     // Скрыть свечу
     document.getElementById('candleLayer').style.opacity = '0';
     
-    // Икона обратно на 80%
-    document.getElementById('iconImage').style.width = '80%';
+    // Икона обратно на 80% ширины
+    const iconImage = document.getElementById('iconImage');
+    iconImage.style.width = '80%';
+    iconImage.style.height = 'auto';
+    iconImage.style.maxHeight = '80vh';
     
     // Показать логотип и кнопки
     document.getElementById('detailLogoHeader').style.display = 'block';
