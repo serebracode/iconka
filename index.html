@@ -235,11 +235,12 @@
                     justify-content: center; 
                     pointer-events: none;
                     opacity: 0;
-                    transition: opacity 0.5s ease-in-out;">
+                    transition: opacity 0.5s ease-in-out;
+                    height: 100vh;">
             <img src="./video/3.png" 
                  alt="Свеча" 
-                 style="width: auto; 
-                        height: 100vh; 
+                 style="height: 100%; 
+                        width: auto; 
                         object-fit: contain; 
                         display: block;">
         </div>
@@ -247,7 +248,7 @@
 
     <!-- Кнопка запуска режима свечи — по центру внизу -->
     <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 30px); left: 50%; transform: translateX(-50%); z-index: 100; width: 60px; height: 60px;">
-        <img src="./id/iconka_candle.svg" alt="Свеча" style="width: 40px; height: 40px;">
+        <img src="./id/iconka_candle.svg" alt="Свеча" style="width: 8px; height: 36px;">
     </button>
 
     <!-- Кнопка Инфо — справа внизу, выровнена по центру кнопки свечи -->
@@ -597,11 +598,8 @@ function showCandle() {
     // Показать свечу
     document.getElementById('candleLayer').style.opacity = '1';
     
-    // Икона на 100% высоты
-    const iconImage = document.getElementById('iconImage');
-    iconImage.style.width = 'auto';
-    iconImage.style.height = '100vh';
-    iconImage.style.maxHeight = '100vh';
+    // Икона на 100% ширины
+    document.getElementById('iconImage').style.width = '100%';
     
     // Скрыть логотип и кнопки
     document.getElementById('detailLogoHeader').style.display = 'none';
@@ -623,11 +621,8 @@ function closeCandle() {
     // Скрыть свечу
     document.getElementById('candleLayer').style.opacity = '0';
     
-    // Икона обратно на 80% ширины
-    const iconImage = document.getElementById('iconImage');
-    iconImage.style.width = '80%';
-    iconImage.style.height = 'auto';
-    iconImage.style.maxHeight = '80vh';
+    // Икона обратно на 80%
+    document.getElementById('iconImage').style.width = '80%';
     
     // Показать логотип и кнопки
     document.getElementById('detailLogoHeader').style.display = 'block';
