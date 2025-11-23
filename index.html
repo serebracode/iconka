@@ -537,6 +537,7 @@ function showListScreen() {
     
     setTimeout(() => {
         loadingScreen.classList.remove('active');
+        loadingScreen.classList.remove('loading-fadeout');
         loadingScreen.style.display = 'none';
         
         // Сбрасываем opacity элементов загрузочного экрана для следующего показа
@@ -747,6 +748,9 @@ function goBack() {
         setTimeout(() => {
             listScreen.classList.remove('active');
             listScreen.classList.remove('loading-fadeout');
+            
+            // Убираем класс loading-fadeout с загрузочного экрана если он там остался
+            loadingScreen.classList.remove('loading-fadeout');
             
             loadingScreen.style.display = 'flex';
             loadingScreen.classList.add('active');
