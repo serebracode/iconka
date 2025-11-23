@@ -209,7 +209,7 @@
     </button>
 
     <!-- Контейнер для иконы и свечи -->
-    <div style="position: relative; height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div id="iconContainer" style="position: relative; height: 100vh; display: flex; align-items: center; justify-content: center;">
         
         <!-- СЛОЙ 1: ИКОНА -->
         <img id="iconImage" 
@@ -221,7 +221,7 @@
                     z-index: 1;
                     touch-action: none;
                     transform-origin: center center;
-                    transition: transform 0.3s ease-out, width 0.3s ease-out;" 
+                    transition: transform 0.3s ease-out, width 1.5s ease-in-out;" 
              alt="Икона">
 
         <!-- СЛОЙ 2: СВЕЧА - СКРЫТА ПО УМОЛЧАНИЮ -->
@@ -277,19 +277,31 @@
 
 <script>
 // ============================================
+// БЛОКИРОВКА ОРИЕНТАЦИИ
+// ============================================
+async function lockOrientation() {
+    try {
+        if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock('portrait');
+            console.log('Orientation locked to portrait');
+        }
+    } catch (e) {
+        console.log('Orientation lock not supported:', e);
+    }
+}
+lockOrientation();
+
+// ============================================
 // ОПРЕДЕЛЕНИЕ ПЛАТФОРМЫ
 // ============================================
 function getPlatform() {
-    // Проверяем URL параметр для тестирования
     const urlParams = new URLSearchParams(window.location.search);
     const testPlatform = urlParams.get('platform');
     if (testPlatform) return testPlatform;
     
-    // Через Telegram WebApp API
     const tgPlatform = window.Telegram?.WebApp?.platform;
     if (tgPlatform) return tgPlatform;
     
-    // Fallback через User Agent
     const ua = navigator.userAgent;
     if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
     if (/Android/i.test(ua)) return 'android';
@@ -310,7 +322,6 @@ let ICONS_DATA = [];
 let selectedIcon = null;
 let dataLoaded = false;
 
-// Показать/скрыть спиннер
 function showSpinner() {
     const spinner = document.getElementById('loadingSpinner');
     if (spinner) spinner.style.display = 'block';
@@ -321,7 +332,6 @@ function hideSpinner() {
     if (spinner) spinner.style.display = 'none';
 }
 
-// Загрузить данные из JSON
 async function loadIconsData() {
     showSpinner();
     try {
@@ -347,11 +357,9 @@ async function loadIconsData() {
 const tg = window.Telegram?.WebApp;
 
 if (tg) {
-    // Инициализация
     tg.ready();
     tg.expand();
     
-    // Полноэкранный режим
     try {
         if (tg.requestFullscreen) {
             tg.requestFullscreen();
@@ -360,25 +368,29 @@ if (tg) {
         console.log('Fullscreen not supported:', e);
     }
     
-    // Установить цвет хедера (всегда чёрный)
+    try {
+        if (tg.lockOrientation) {
+            tg.lockOrientation();
+        }
+    } catch (e) {
+        console.log('TG orientation lock not supported:', e);
+    }
+    
     tg.setHeaderColor('#000000');
     tg.setBackgroundColor('#000000');
     
-    // Применить CSS переменные для темы
     if (tg.themeParams) {
         const root = document.documentElement;
         Object.keys(tg.themeParams).forEach(key => {
             root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, tg.themeParams[key]);
         });
         
-        // Если secondary_bg_color совпадает с bg_color или отсутствует — ставим контрастный
         if (!tg.themeParams.secondary_bg_color || 
             tg.themeParams.secondary_bg_color === tg.themeParams.bg_color) {
             root.style.setProperty('--tg-theme-secondary-bg-color', '#2C2C2E');
         }
     }
     
-    // Слушать изменения темы
     tg.onEvent('themeChanged', function() {
         if (tg.themeParams) {
             const root = document.documentElement;
@@ -386,13 +398,11 @@ if (tg) {
                 root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, tg.themeParams[key]);
             });
             
-            // Обновить цвет хедера (всегда чёрный)
             tg.setHeaderColor('#000000');
             tg.setBackgroundColor('#000000');
         }
     });
     
-    // Показать главную кнопку при необходимости
     tg.MainButton.hide();
     
     console.log('Telegram WebApp initialized:', {
@@ -408,7 +418,6 @@ if (tg) {
 // ОСНОВНАЯ ЛОГИКА ПРИЛОЖЕНИЯ
 // ============================================
 
-// Показать список с анимацией
 function showListScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const listScreen = document.getElementById('listScreen');
@@ -416,28 +425,19 @@ function showListScreen() {
     const listHeader = document.getElementById('listHeader');
     const iconsList = document.getElementById('iconsList');
     
-    // Экран загрузки исчезает
     loadingScreen.classList.add('loading-fadeout');
-    
-    // Рендерим список
     renderIconsList();
     
-    // После исчезновения экрана загрузки
     setTimeout(() => {
         loadingScreen.classList.remove('active');
         loadingScreen.style.display = 'none';
-        
-        // Показываем экран списка
         listScreen.classList.add('active');
-        
-        // Всё появляется одинаково
         listIcon.classList.add('list-fadein');
         listHeader.classList.add('list-fadein');
         iconsList.classList.add('list-fadein');
     }, 300);
 }
 
-// Рендер списка икон
 function renderIconsList(searchQuery = '') {
     const list = document.getElementById('iconsList');
     const filtered = ICONS_DATA.filter(icon => 
@@ -459,7 +459,6 @@ function renderIconsList(searchQuery = '') {
     `).join('');
 }
 
-// Поиск
 document.getElementById('searchInput').addEventListener('input', (e) => {
     const query = e.target.value;
     document.getElementById('clearSearch').style.display = query ? 'flex' : 'none';
@@ -473,19 +472,16 @@ document.getElementById('clearSearch').addEventListener('click', () => {
     renderIconsList();
 });
 
-// Снятие фокуса с поиска при клике вне
 document.getElementById('listScreen').addEventListener('touchstart', (e) => {
     const searchInput = document.getElementById('searchInput');
     const searchContainer = document.getElementById('searchContainer');
     
-    // Если клик не в области поиска и инпут в фокусе
     if (!searchContainer.contains(e.target) && document.activeElement === searchInput) {
         e.preventDefault();
         searchInput.blur();
     }
 }, { passive: false, capture: true });
 
-// Выбор иконы
 function selectIcon(id) {
     selectedIcon = ICONS_DATA.find(s => s.id === id);
     if (!selectedIcon) return;
@@ -494,17 +490,14 @@ function selectIcon(id) {
     document.getElementById('detailScreen').classList.add('active');
     document.getElementById('iconImage').src = selectedIcon.image;
     
-    // Показать нативную кнопку "Назад" в Telegram
     if (tg?.BackButton) {
         tg.BackButton.show();
     }
     
-    // Сбросить состояние
     candleVisible = false;
     infoPanelVisible = false;
     resetDetailScreenUI();
     
-    // Заполнить информацию
     document.getElementById('iconInfoTitle').textContent = selectedIcon.title;
     
     const infoContent = `
@@ -535,77 +528,57 @@ function selectIcon(id) {
     `;
     
     document.getElementById('iconInfoContent').innerHTML = infoContent;
-    
-    // Скроллим в начало
     document.getElementById('detailScreen').scrollTop = 0;
     
-    // Haptic feedback (если доступно)
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
     }
 }
 
-// Сброс UI экрана иконы
 function resetDetailScreenUI() {
     document.getElementById('candleLayer').style.opacity = '0';
     document.getElementById('infoPanel').style.transform = 'translateY(100%)';
     document.getElementById('iconImage').style.width = '80%';
     
-    // Показать обычные элементы
     document.getElementById('detailLogoHeader').style.display = 'block';
     document.getElementById('candleBtn').style.display = 'flex';
     document.getElementById('infoBtn').style.display = 'flex';
-    
-    // Скрыть кнопку закрытия свечи
     document.getElementById('closeCandleBtn').style.display = 'none';
 }
 
-// Назад
 function goBack() {
     document.getElementById('detailScreen').classList.remove('active');
     document.getElementById('listScreen').classList.add('active');
     
-    // Скрыть нативную кнопку "Назад"
     if (tg?.BackButton) {
         tg.BackButton.hide();
     }
     
-    // Сбросить состояние свечи
     candleVisible = false;
     infoPanelVisible = false;
     
-    // Haptic feedback
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
     }
 }
 
-// Обработчик нативной кнопки "Назад" Telegram
 if (tg?.BackButton) {
     tg.BackButton.onClick(goBack);
 }
 
-// Состояние панелей
 let candleVisible = false;
 let infoPanelVisible = false;
 
-// Показать свечу
 function showCandle() {
     candleVisible = true;
     infoPanelVisible = false;
     
-    // Показать свечу
     document.getElementById('candleLayer').style.opacity = '1';
-    
-    // Икона на 100% ширины
     document.getElementById('iconImage').style.width = '100%';
     
-    // Скрыть логотип и кнопки
     document.getElementById('detailLogoHeader').style.display = 'none';
     document.getElementById('candleBtn').style.display = 'none';
     document.getElementById('infoBtn').style.display = 'none';
-    
-    // Показать кнопку закрытия
     document.getElementById('closeCandleBtn').style.display = 'flex';
     
     if (tg?.HapticFeedback) {
@@ -613,22 +586,17 @@ function showCandle() {
     }
 }
 
-// Закрыть режим свечи
 function closeCandle() {
+    if (!candleVisible) return;
+    
     candleVisible = false;
     
-    // Скрыть свечу
     document.getElementById('candleLayer').style.opacity = '0';
-    
-    // Икона обратно на 80%
     document.getElementById('iconImage').style.width = '80%';
     
-    // Показать логотип и кнопки
     document.getElementById('detailLogoHeader').style.display = 'block';
     document.getElementById('candleBtn').style.display = 'flex';
     document.getElementById('infoBtn').style.display = 'flex';
-    
-    // Скрыть кнопку закрытия
     document.getElementById('closeCandleBtn').style.display = 'none';
     
     if (tg?.HapticFeedback) {
@@ -636,10 +604,8 @@ function closeCandle() {
     }
 }
 
-// Показать инфо
 function showInfo() {
     infoPanelVisible = true;
-    
     document.getElementById('infoPanel').style.transform = 'translateY(0)';
     
     if (tg?.HapticFeedback) {
@@ -647,10 +613,8 @@ function showInfo() {
     }
 }
 
-// Закрыть инфо
 function closeInfo() {
     infoPanelVisible = false;
-    
     document.getElementById('infoPanel').style.transform = 'translateY(100%)';
     
     if (tg?.HapticFeedback) {
@@ -658,11 +622,17 @@ function closeInfo() {
     }
 }
 
-// Обработчики кнопок
 document.getElementById('candleBtn').addEventListener('click', showCandle);
 document.getElementById('closeCandleBtn').addEventListener('click', closeCandle);
 document.getElementById('infoBtn').addEventListener('click', showInfo);
 document.getElementById('closeInfoBtn').addEventListener('click', closeInfo);
+
+// Тап в любом месте экрана для выхода из режима свечи
+document.getElementById('iconContainer').addEventListener('click', (e) => {
+    if (candleVisible && e.target.id !== 'closeCandleBtn') {
+        closeCandle();
+    }
+});
 
 // ============================================
 // PINCH-TO-ZOOM ДЛЯ ИКОНЫ
@@ -682,7 +652,6 @@ document.getElementById('closeInfoBtn').addEventListener('click', closeInfo);
         if (e.touches.length === 2) {
             e.preventDefault();
             initialDistance = getDistance(e.touches);
-            // Убираем transition во время жеста
             iconImage.style.transition = 'none';
         }
     }, { passive: false });
@@ -698,8 +667,7 @@ document.getElementById('closeInfoBtn').addEventListener('click', closeInfo);
     
     iconImage.addEventListener('touchend', (e) => {
         if (e.touches.length < 2) {
-            // Возвращаем transition и сбрасываем масштаб
-            iconImage.style.transition = 'transform 0.3s ease-out, width 0.3s ease-out';
+            iconImage.style.transition = 'transform 0.3s ease-out, width 1.5s ease-in-out';
             iconImage.style.transform = 'scale(1)';
             currentScale = 1;
         }
@@ -712,7 +680,6 @@ document.getElementById('closeInfoBtn').addEventListener('click', closeInfo);
 (async function init() {
     await loadIconsData();
     
-    // Debug info (можно удалить в продакшене)
     console.log('Iconka Mini App loaded', {
         icons: ICONS_DATA.length,
         telegram: !!tg,
