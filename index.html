@@ -606,8 +606,10 @@ function showCandle() {
     document.getElementById('infoBtn').style.display = 'none';
     document.getElementById('shareBtn').style.display = 'none';
     
-    // Показать кнопку закрытия
-    document.getElementById('closeCandleBtn').style.display = 'flex';
+    // Показать кнопку закрытия после завершения анимации (1.5s)
+    setTimeout(() => {
+        document.getElementById('closeCandleBtn').style.display = 'flex';
+    }, 1500);
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('medium');
