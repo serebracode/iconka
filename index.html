@@ -105,6 +105,38 @@
         @keyframes tg-spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Анимация перехода загрузка → список */
+        .loading-icon-animate {
+            animation: moveIconUp 0.6s ease-out forwards;
+        }
+        
+        .loading-logotype-animate {
+            animation: fadeOutLogotype 0.3s ease-out forwards;
+        }
+        
+        .list-content-animate {
+            animation: fadeInList 0.4s ease-out 0.3s both;
+        }
+        
+        @keyframes moveIconUp {
+            from {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to {
+                transform: translate(-50%, 0) scale(0.35);
+            }
+        }
+        
+        @keyframes fadeOutLogotype {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @keyframes fadeInList {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -112,7 +144,7 @@
 <!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loadingScreen" class="screen active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="showListScreen()">
     <!-- Иконка SVG -->
-    <img src="./id/iconka_icon.svg" 
+    <img id="loadingIcon" src="./id/iconka_icon.svg" 
          alt="Iconka" 
          class="animated"
          style="width: 107px; 
@@ -122,7 +154,7 @@
                 animation: fadeInScale 0.6s ease-out;">
     
     <!-- Логотип SVG -->
-    <img src="./id/iconka_logotype.svg" 
+    <img id="loadingLogotype" src="./id/iconka_logotype.svg" 
          alt="Iconka" 
          class="animated"
          style="width: 183px; 
@@ -137,11 +169,12 @@
 
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
+    <!-- Иконка вверху по центру (на уровне нативных кнопок ТГ) -->
+    <div id="listIconHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 10px); left: 50%; transform: translateX(-50%); z-index: 60;">
+        <img id="listIcon" src="./id/iconka_icon.svg" alt="Iconka" style="width: 36px; height: 36px; border-radius: 8px;">
+    </div>
+    
     <div id="listHeader" style="padding: 16px 16px 12px 16px; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 56px); position: sticky; top: 0; z-index: 50; background-color: #000000;">
-        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
-            <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 135px; height: 20px;">
-        </div>
-        
         <div id="searchContainer" style="background-color: #1C1C1E; border-radius: 10px; padding: 8px 12px; display: flex; align-items: center;">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 8px; flex-shrink: 0;">
                 <circle cx="7" cy="7" r="5.5" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5"/>
@@ -156,7 +189,7 @@
         </div>
     </div>
 
-    <div id="iconsList" class="safe-area-bottom" style="padding: 0 0 16px 0;"></div>
+    <div id="iconsList" class="safe-area-bottom" style="padding: 0 0 16px 0; opacity: 0;"></div>
 </div>
 
 <!-- ЭКРАН СО СВЕЧОЙ -->
@@ -367,11 +400,46 @@ if (tg) {
 // ОСНОВНАЯ ЛОГИКА ПРИЛОЖЕНИЯ
 // ============================================
 
-// Показать список
+// Показать список с анимацией
 function showListScreen() {
-    document.getElementById('loadingScreen').classList.remove('active');
-    document.getElementById('listScreen').classList.add('active');
+    const loadingIcon = document.getElementById('loadingIcon');
+    const loadingLogotype = document.getElementById('loadingLogotype');
+    const loadingScreen = document.getElementById('loadingScreen');
+    const listScreen = document.getElementById('listScreen');
+    const listHeader = document.getElementById('listHeader');
+    const iconsList = document.getElementById('iconsList');
+    
+    // Запускаем анимацию иконки и логотипа
+    loadingIcon.style.position = 'fixed';
+    loadingIcon.style.top = '50%';
+    loadingIcon.style.left = '50%';
+    loadingIcon.style.transform = 'translate(-50%, -50%)';
+    loadingIcon.style.margin = '0';
+    loadingIcon.classList.add('loading-icon-animate');
+    
+    loadingLogotype.classList.add('loading-logotype-animate');
+    
+    // Показываем экран списка
+    listScreen.classList.add('active');
+    listScreen.style.opacity = '1';
+    
+    // Скрываем иконку в хедере списка (она будет заменена анимированной)
+    document.getElementById('listIcon').style.opacity = '0';
+    
+    // Анимация появления контента
+    listHeader.classList.add('list-content-animate');
+    iconsList.classList.add('list-content-animate');
+    
+    // Рендерим список
     renderIconsList();
+    
+    // После завершения анимации
+    setTimeout(() => {
+        loadingScreen.classList.remove('active');
+        loadingScreen.style.display = 'none';
+        document.getElementById('listIcon').style.opacity = '1';
+        iconsList.style.opacity = '1';
+    }, 600);
 }
 
 // Рендер списка икон
