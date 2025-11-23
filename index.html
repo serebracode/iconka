@@ -733,17 +733,12 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
 });
 
 // ============================================
-// PINCH-TO-ZOOM + PAN ДЛЯ ИКОНЫ
+// PINCH-TO-ZOOM ДЛЯ ИКОНЫ
 // ============================================
 (function() {
     const iconImage = document.getElementById('iconImage');
     let initialDistance = 0;
     let currentScale = 1;
-    let posX = 0, posY = 0;
-    let startX = 0, startY = 0;
-    let lastTouchX = 0, lastTouchY = 0;
-    let isPinching = false;
-    let isPanning = false;
     
     function getDistance(touches) {
         const dx = touches[0].clientX - touches[1].clientX;
@@ -751,108 +746,37 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
         return Math.sqrt(dx * dx + dy * dy);
     }
     
-    function getCenter(touches) {
-        return {
-            x: (touches[0].clientX + touches[1].clientX) / 2,
-            y: (touches[0].clientY + touches[1].clientY) / 2
-        };
-    }
-    
-    function updateTransform() {
-        iconImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
-    }
-    
     iconImage.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
             e.preventDefault();
-            isPinching = true;
             initialDistance = getDistance(e.touches);
             iconImage.style.transition = 'none';
             // Поднимаем над всеми элементами
             iconImage.style.zIndex = '1000';
-        } else if (e.touches.length === 1 && currentScale > 1) {
-            // Начало pan при увеличении
-            isPanning = true;
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
-            iconImage.style.transition = 'none';
         }
     }, { passive: false });
     
     iconImage.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2 && isPinching) {
+        if (e.touches.length === 2) {
             e.preventDefault();
             const currentDistance = getDistance(e.touches);
-            const newScale = Math.min(Math.max((currentDistance / initialDistance) * currentScale, 1), 4);
-            
-            // Временно применяем новый масштаб
-            const tempScale = newScale / currentScale * currentScale;
-            currentScale = Math.min(Math.max(currentDistance / initialDistance, 1), 4);
-            
-            // Поднимаем над всеми элементами
-            iconImage.style.zIndex = '1000';
-            
-            updateTransform();
-        } else if (e.touches.length === 1 && isPanning && currentScale > 1) {
-            e.preventDefault();
-            const deltaX = e.touches[0].clientX - lastTouchX;
-            const deltaY = e.touches[0].clientY - lastTouchY;
-            
-            posX += deltaX;
-            posY += deltaY;
-            
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
-            
-            updateTransform();
+            currentScale = Math.min(Math.max(currentDistance / initialDistance, 1), 3);
+            iconImage.style.transform = `scale(${currentScale})`;
         }
     }, { passive: false });
     
     iconImage.addEventListener('touchend', (e) => {
         if (e.touches.length < 2) {
-            isPinching = false;
-            
-            if (e.touches.length === 0) {
-                isPanning = false;
-                
-                // Если масштаб близок к 1, сбрасываем всё
-                if (currentScale <= 1.1) {
-                    iconImage.style.transition = 'transform 0.3s ease-out';
-                    currentScale = 1;
-                    posX = 0;
-                    posY = 0;
-                    updateTransform();
-                    
-                    // Возвращаем z-index
-                    setTimeout(() => {
-                        iconImage.style.zIndex = '1';
-                    }, 300);
-                }
-            } else if (e.touches.length === 1 && currentScale > 1) {
-                // Продолжаем pan одним пальцем
-                isPanning = true;
-                lastTouchX = e.touches[0].clientX;
-                lastTouchY = e.touches[0].clientY;
-            }
-        }
-    });
-    
-    // Двойной тап для сброса
-    let lastTap = 0;
-    iconImage.addEventListener('touchend', (e) => {
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTap;
-        
-        if (tapLength < 300 && tapLength > 0 && e.touches.length === 0) {
-            // Двойной тап — сброс
+            // Возвращаем к исходному размеру
             iconImage.style.transition = 'transform 0.3s ease-out';
+            iconImage.style.transform = 'scale(1)';
             currentScale = 1;
-            posX = 0;
-            posY = 0;
-            updateTransform();
-            iconImage.style.zIndex = '1';
+            
+            // Возвращаем z-index после анимации
+            setTimeout(() => {
+                iconImage.style.zIndex = '1';
+            }, 300);
         }
-        lastTap = currentTime;
     });
 })();
 
