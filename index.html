@@ -197,7 +197,7 @@
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
 
     <!-- Логотип вверху по центру (обычный режим) -->
-    <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60;">
+    <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; opacity: 1; transition: opacity 1.5s ease-in-out;">
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
     </div>
 
@@ -205,7 +205,7 @@
     <button id="closeCandleBtn" style="display: none;"></button>
     
     <!-- Подсказка для выхода из режима свечи -->
-    <div id="candleExitHint" style="display: none; position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 40px); left: 0; right: 0; text-align: center; z-index: 200; color: rgba(142, 142, 147, 0.6); font-size: 14px;">
+    <div id="candleExitHint" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 96px); left: 0; right: 0; text-align: center; z-index: 200; color: rgba(142, 142, 147, 0.4); font-size: 14px; opacity: 0; transition: opacity 0.5s ease-in-out;">
         Нажмите в любое место для выхода
     </div>
 
@@ -213,7 +213,7 @@
     <div id="iconContainer" style="position: relative; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         
         <!-- Название иконы и датировка -->
-        <div id="iconTitleBlock" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 76px); left: 16px; right: 16px; text-align: center; z-index: 5;">
+        <div id="iconTitleBlock" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 76px); left: 16px; right: 16px; text-align: center; z-index: 5; opacity: 1; transition: opacity 1.5s ease-in-out;">
             <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
             <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
         </div>
@@ -551,11 +551,12 @@ function resetDetailScreenUI() {
     document.getElementById('infoPanel').style.transform = 'translateY(100%)';
     document.getElementById('iconImage').style.width = '80%';
     
-    document.getElementById('detailLogoHeader').style.display = 'block';
-    document.getElementById('iconTitleBlock').style.display = 'block';
+    document.getElementById('detailLogoHeader').style.opacity = '1';
+    document.getElementById('iconTitleBlock').style.opacity = '1';
     document.getElementById('candleBtn').style.display = 'flex';
     document.getElementById('infoBtn').style.display = 'flex';
     document.getElementById('candleExitHint').style.display = 'none';
+    document.getElementById('candleExitHint').style.opacity = '0';
 }
 
 function goBack() {
@@ -588,11 +589,19 @@ function showCandle() {
     document.getElementById('candleLayer').style.opacity = '1';
     document.getElementById('iconImage').style.width = '100%';
     
-    document.getElementById('detailLogoHeader').style.display = 'none';
-    document.getElementById('iconTitleBlock').style.display = 'none';
+    // Плавно скрываем логотип и название
+    document.getElementById('detailLogoHeader').style.opacity = '0';
+    document.getElementById('iconTitleBlock').style.opacity = '0';
     document.getElementById('candleBtn').style.display = 'none';
     document.getElementById('infoBtn').style.display = 'none';
-    document.getElementById('candleExitHint').style.display = 'block';
+    
+    // Показать подсказку после завершения анимации (1.5s)
+    const hint = document.getElementById('candleExitHint');
+    hint.style.display = 'block';
+    hint.style.opacity = '0';
+    setTimeout(() => {
+        hint.style.opacity = '1';
+    }, 1500);
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('medium');
@@ -607,11 +616,17 @@ function closeCandle() {
     document.getElementById('candleLayer').style.opacity = '0';
     document.getElementById('iconImage').style.width = '80%';
     
-    document.getElementById('detailLogoHeader').style.display = 'block';
-    document.getElementById('iconTitleBlock').style.display = 'block';
+    // Плавно показываем логотип и название
+    document.getElementById('detailLogoHeader').style.opacity = '1';
+    document.getElementById('iconTitleBlock').style.opacity = '1';
     document.getElementById('candleBtn').style.display = 'flex';
     document.getElementById('infoBtn').style.display = 'flex';
-    document.getElementById('candleExitHint').style.display = 'none';
+    
+    const hint = document.getElementById('candleExitHint');
+    hint.style.opacity = '0';
+    setTimeout(() => {
+        hint.style.display = 'none';
+    }, 500);
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
