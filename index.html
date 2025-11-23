@@ -256,7 +256,7 @@
     </div>
 
     <!-- Кнопка Поделиться — слева внизу -->
-    <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 70px; height: 70px;">
+    <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 70px; height: 70px; opacity: 1; transition: opacity 1.5s ease-in-out;">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
             <path d="M14 4V18M14 4L9 9M14 4L19 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M5 14V22C5 23.1046 5.89543 24 7 24H21C22.1046 24 23 23.1046 23 22V14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
@@ -264,12 +264,12 @@
     </button>
 
     <!-- Кнопка запуска режима свечи — по центру внизу -->
-    <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 100; width: 70px; height: 70px;">
+    <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 100; width: 70px; height: 70px; opacity: 1; transition: opacity 1.5s ease-in-out;">
         <img src="./id/iconka_candle.svg" alt="Свеча" style="height: 36px; width: auto;">
     </button>
 
     <!-- Кнопка Инфо — справа внизу -->
-    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); right: 20px; z-index: 100; width: 70px; height: 70px;">
+    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); right: 20px; z-index: 100; width: 70px; height: 70px; opacity: 1; transition: opacity 1.5s ease-in-out;">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
             <circle cx="14" cy="14" r="12" stroke="#FFFFFF" stroke-width="1.5"/>
             <path d="M14 12V20M14 8V9.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
@@ -597,9 +597,12 @@ function resetDetailScreenUI() {
     
     document.getElementById('detailLogoHeader').style.opacity = '1';
     document.getElementById('iconTitleBlock').style.opacity = '1';
-    document.getElementById('candleBtn').style.display = 'flex';
-    document.getElementById('infoBtn').style.display = 'flex';
-    document.getElementById('shareBtn').style.display = 'flex';
+    document.getElementById('candleBtn').style.opacity = '1';
+    document.getElementById('infoBtn').style.opacity = '1';
+    document.getElementById('shareBtn').style.opacity = '1';
+    document.getElementById('candleBtn').style.pointerEvents = 'auto';
+    document.getElementById('infoBtn').style.pointerEvents = 'auto';
+    document.getElementById('shareBtn').style.pointerEvents = 'auto';
     document.getElementById('closeCandleBtn').style.display = 'none';
 }
 
@@ -650,12 +653,17 @@ function showCandle() {
     document.getElementById('candleLayer').style.opacity = '1';
     document.getElementById('iconImage').style.width = '100%';
     
-    // Плавно скрываем логотип и название
+    // Плавно скрываем логотип, название и кнопки
     document.getElementById('detailLogoHeader').style.opacity = '0';
     document.getElementById('iconTitleBlock').style.opacity = '0';
-    document.getElementById('candleBtn').style.display = 'none';
-    document.getElementById('infoBtn').style.display = 'none';
-    document.getElementById('shareBtn').style.display = 'none';
+    document.getElementById('candleBtn').style.opacity = '0';
+    document.getElementById('infoBtn').style.opacity = '0';
+    document.getElementById('shareBtn').style.opacity = '0';
+    
+    // Отключаем pointer-events для скрытых кнопок
+    document.getElementById('candleBtn').style.pointerEvents = 'none';
+    document.getElementById('infoBtn').style.pointerEvents = 'none';
+    document.getElementById('shareBtn').style.pointerEvents = 'none';
     
     // Показать кнопку закрытия после завершения анимации (1.5s)
     setTimeout(() => {
@@ -678,14 +686,17 @@ function closeCandle() {
     // Скрываем кнопку закрытия сразу
     document.getElementById('closeCandleBtn').style.display = 'none';
     
-    // Показываем UI после завершения анимации (1.5s)
-    setTimeout(() => {
-        document.getElementById('detailLogoHeader').style.opacity = '1';
-        document.getElementById('iconTitleBlock').style.opacity = '1';
-        document.getElementById('candleBtn').style.display = 'flex';
-        document.getElementById('infoBtn').style.display = 'flex';
-        document.getElementById('shareBtn').style.display = 'flex';
-    }, 1500);
+    // Плавно показываем логотип, название и кнопки (анимация 1.5s через CSS transition)
+    document.getElementById('detailLogoHeader').style.opacity = '1';
+    document.getElementById('iconTitleBlock').style.opacity = '1';
+    document.getElementById('candleBtn').style.opacity = '1';
+    document.getElementById('infoBtn').style.opacity = '1';
+    document.getElementById('shareBtn').style.opacity = '1';
+    
+    // Включаем pointer-events для кнопок
+    document.getElementById('candleBtn').style.pointerEvents = 'auto';
+    document.getElementById('infoBtn').style.pointerEvents = 'auto';
+    document.getElementById('shareBtn').style.pointerEvents = 'auto';
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
