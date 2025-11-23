@@ -675,15 +675,17 @@ function closeCandle() {
     document.getElementById('candleLayer').style.opacity = '0';
     document.getElementById('iconImage').style.width = '80%';
     
-    // Плавно показываем логотип и название
-    document.getElementById('detailLogoHeader').style.opacity = '1';
-    document.getElementById('iconTitleBlock').style.opacity = '1';
-    document.getElementById('candleBtn').style.display = 'flex';
-    document.getElementById('infoBtn').style.display = 'flex';
-    document.getElementById('shareBtn').style.display = 'flex';
-    
-    // Скрываем кнопку закрытия
+    // Скрываем кнопку закрытия сразу
     document.getElementById('closeCandleBtn').style.display = 'none';
+    
+    // Показываем UI после завершения анимации (1.5s)
+    setTimeout(() => {
+        document.getElementById('detailLogoHeader').style.opacity = '1';
+        document.getElementById('iconTitleBlock').style.opacity = '1';
+        document.getElementById('candleBtn').style.display = 'flex';
+        document.getElementById('infoBtn').style.display = 'flex';
+        document.getElementById('shareBtn').style.display = 'flex';
+    }, 1500);
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
