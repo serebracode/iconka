@@ -454,7 +454,7 @@ function renderIconsList(searchQuery = '') {
     list.innerHTML = filtered.map((icon, index) => `
         <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative;">
             <img src="${icon.image}" 
-                 onerror="this.src='./id/iconka_noicon.svg'" 
+                 onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22><rect width=%2248%22 height=%2248%22 rx=%2212%22 fill=%22%233A3A3C%22/></svg>'" 
                  alt="${icon.title}" 
                  style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: var(--tg-theme-secondary-bg-color, #3A3A3C);">
             <div style="flex: 1; color: #FFFFFF; font-size: 16px; font-weight: 400;">${icon.title}</div>
