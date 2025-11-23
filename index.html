@@ -202,7 +202,7 @@
     </div>
 
     <!-- Кнопка закрытия режима свечи (вместо логотипа) -->
-    <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 9px); left: 50%; transform: translateX(-50%); z-index: 200; width: 36px; height: 36px;">
+    <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px;">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
         </svg>
@@ -227,20 +227,19 @@
         <!-- СЛОЙ 2: СВЕЧА - СКРЫТА ПО УМОЛЧАНИЮ -->
         <div id="candleLayer" style="position: absolute; 
                     bottom: 0; 
-                    left: 50%; 
-                    transform: translateX(-50%); 
+                    left: 0;
+                    right: 0;
                     z-index: 10; 
                     display: flex; 
                     align-items: flex-end; 
                     justify-content: center; 
                     pointer-events: none;
                     opacity: 0;
-                    transition: opacity 0.5s ease-in-out;
-                    height: 100vh;">
+                    transition: opacity 0.5s ease-in-out;">
             <img src="./video/3.png" 
                  alt="Свеча" 
-                 style="height: 100%; 
-                        width: auto; 
+                 style="width: 100%; 
+                        height: auto; 
                         object-fit: contain; 
                         display: block;">
         </div>
@@ -248,7 +247,7 @@
 
     <!-- Кнопка запуска режима свечи — по центру внизу -->
     <button id="candleBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 30px); left: 50%; transform: translateX(-50%); z-index: 100; width: 60px; height: 60px;">
-        <img src="./id/iconka_candle.svg" alt="Свеча" style="width: 8px; height: 36px;">
+        <img src="./id/iconka_candle.svg" alt="Свеча" style="height: 36px; width: auto;">
     </button>
 
     <!-- Кнопка Инфо — справа внизу, выровнена по центру кнопки свечи -->
@@ -262,7 +261,7 @@
     <!-- Панель информации — выезжает снизу -->
     <div id="infoPanel" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; z-index: 150; transform: translateY(100%); transition: transform 0.3s ease-out; overflow-y: auto; padding: 80px 20px 40px 20px;">
         <!-- Кнопка закрытия инфо -->
-        <button id="closeInfoBtn" class="tg-round-btn" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 9px); left: 50%; transform: translateX(-50%); z-index: 200; width: 36px; height: 36px;">
+        <button id="closeInfoBtn" class="tg-round-btn" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px;">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
             </svg>
