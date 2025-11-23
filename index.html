@@ -155,6 +155,7 @@
                 border-radius: 24px;
                 margin-bottom: 27px; 
                 opacity: 1;
+                transition: opacity 0.3s ease-out;
                 animation: fadeInScale 0.6s ease-out;">
     
     <!-- Логотип SVG -->
@@ -163,7 +164,8 @@
          class="animated"
          style="width: 183px; 
                 height: 27px;
-                opacity: 1; 
+                opacity: 1;
+                transition: opacity 0.3s ease-out; 
                 animation: fadeIn 0.8s ease-out 0.2s both;">
     
     <!-- Спиннер загрузки данных -->
@@ -172,7 +174,7 @@
     </div>
     
     <!-- Кнопка О проекте -->
-    <button id="aboutBtn" onclick="event.stopPropagation(); showAboutScreen();" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 24px); left: 50%; transform: translateX(-50%); background: transparent; border: none; color: #8E8E93; font-size: 14px; font-family: inherit; cursor: pointer; padding: 12px 24px; opacity: 1;">
+    <button id="aboutBtn" onclick="event.stopPropagation(); showAboutScreen();" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 24px); left: 50%; transform: translateX(-50%); background: transparent; border: none; color: #8E8E93; font-size: 14px; font-family: inherit; cursor: pointer; padding: 12px 24px; opacity: 1; transition: opacity 0.3s ease-out;">
         О проекте
     </button>
 </div>
@@ -540,6 +542,11 @@ function showListScreen() {
         listIcon.classList.add('list-fadein');
         listHeader.classList.add('list-fadein');
         iconsList.classList.add('list-fadein');
+        
+        // Показать нативную кнопку "Назад" для возврата на экран загрузки
+        if (tg?.BackButton) {
+            tg.BackButton.show();
+        }
     }, 300);
 }
 
@@ -696,34 +703,58 @@ function resetDetailScreenUI() {
 function goBack() {
     const listScreen = document.getElementById('listScreen');
     const detailScreen = document.getElementById('detailScreen');
+    const loadingScreen = document.getElementById('loadingScreen');
     
-    // Анимация исчезновения экрана иконы
-    detailScreen.classList.add('loading-fadeout');
-    
-    setTimeout(() => {
-        detailScreen.classList.remove('active');
-        detailScreen.classList.remove('loading-fadeout');
+    // Если открыт экран иконы — возвращаемся на список
+    if (detailScreen.classList.contains('active')) {
+        detailScreen.classList.add('loading-fadeout');
         
-        listScreen.classList.add('active');
+        setTimeout(() => {
+            detailScreen.classList.remove('active');
+            detailScreen.classList.remove('loading-fadeout');
+            
+            listScreen.classList.add('active');
+            
+            // Восстанавливаем opacity элементов списка
+            document.getElementById('listIcon').style.opacity = '1';
+            document.getElementById('listHeader').style.opacity = '1';
+            document.getElementById('iconsList').style.opacity = '1';
+            
+            // Сбросить состояние свечи
+            candleVisible = false;
+            infoPanelVisible = false;
+            
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }, 300);
+    }
+    // Если открыт экран списка — возвращаемся на загрузочный экран
+    else if (listScreen.classList.contains('active')) {
+        listScreen.classList.add('loading-fadeout');
         
-        // Восстанавливаем opacity элементов списка
-        document.getElementById('listIcon').style.opacity = '1';
-        document.getElementById('listHeader').style.opacity = '1';
-        document.getElementById('iconsList').style.opacity = '1';
-        
-        // Скрыть нативную кнопку "Назад"
-        if (tg?.BackButton) {
-            tg.BackButton.hide();
-        }
-        
-        // Сбросить состояние свечи
-        candleVisible = false;
-        infoPanelVisible = false;
-        
-        if (tg?.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('light');
-        }
-    }, 300);
+        setTimeout(() => {
+            listScreen.classList.remove('active');
+            listScreen.classList.remove('loading-fadeout');
+            
+            // Восстанавливаем opacity элементов загрузочного экрана
+            document.getElementById('loadingIcon').style.opacity = '1';
+            document.getElementById('loadingLogotype').style.opacity = '1';
+            document.getElementById('aboutBtn').style.opacity = '1';
+            
+            loadingScreen.style.display = 'flex';
+            loadingScreen.classList.add('active');
+            
+            // Скрыть нативную кнопку "Назад"
+            if (tg?.BackButton) {
+                tg.BackButton.hide();
+            }
+            
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }, 300);
+    }
 }
 
 if (tg?.BackButton) {
@@ -875,17 +906,15 @@ function showAboutScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
     
-    loadingScreen.classList.add('loading-fadeout');
+    // Скрываем элементы загрузочного экрана
+    document.getElementById('loadingIcon').style.opacity = '0';
+    document.getElementById('loadingLogotype').style.opacity = '0';
+    document.getElementById('aboutBtn').style.opacity = '0';
     
     setTimeout(() => {
         loadingScreen.classList.remove('active');
         loadingScreen.style.display = 'none';
         aboutScreen.classList.add('active');
-        aboutScreen.classList.add('list-fadein');
-        
-        setTimeout(() => {
-            aboutScreen.classList.remove('list-fadein');
-        }, 400);
     }, 300);
     
     if (tg?.HapticFeedback) {
