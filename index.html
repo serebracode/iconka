@@ -376,18 +376,24 @@
         </svg>
     </button>
 
-    <!-- Панель информации — выезжает снизу -->
-    <div id="infoPanel" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; z-index: 150; transform: translateY(100%); transition: transform 0.3s ease-out; overflow-y: auto; padding: 80px 20px 40px 20px;">
-        <!-- Кнопка закрытия инфо -->
-        <button id="closeInfoBtn" class="tg-round-btn" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px;">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </button>
-        <div style="max-width: 600px; margin: 0 auto;">
-            <h2 id="iconInfoTitle" style="color: #FFFFFF; font-size: 28px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.2;"></h2>
-            <div id="iconInfoContent" style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6;">
-                <!-- Контент генерируется динамически -->
+    <!-- Модальное окно информации -->
+    <div id="infoModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; background-color: rgba(0, 0, 0, 0.4); opacity: 0; transition: opacity 0.3s ease-out;">
+        <div id="infoModalContent" style="position: absolute; bottom: 0; left: 0; right: 0; background-color: var(--tg-theme-bg-color, #000000); border-radius: 20px 20px 0 0; max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s ease-out;">
+            <!-- Хедер модального окна -->
+            <div style="position: sticky; top: 0; background-color: var(--tg-theme-bg-color, #000000); z-index: 10; padding: 16px 20px; border-bottom: 0.5px solid var(--tg-theme-secondary-bg-color, #38383A);">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 id="modalIconTitle" style="color: #FFFFFF; font-size: 20px; font-weight: 600; margin: 0; flex: 1;">Информация</h2>
+                    <button id="closeModalBtn" onclick="closeInfo()" style="background: none; border: none; color: var(--tg-theme-link-color, #007AFF); font-size: 17px; font-family: inherit; cursor: pointer; padding: 0;">
+                        Готово
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Контент модального окна -->
+            <div style="padding: 20px;">
+                <div id="iconInfoContent" style="color: var(--tg-theme-hint-color, #A0A0A0); font-size: 16px; line-height: 1.6;">
+                    <!-- Контент генерируется динамически -->
+                </div>
             </div>
         </div>
     </div>
@@ -659,7 +665,7 @@ function selectIcon(id) {
         setTimeout(positionTitleBlock, 50);
         
         // Заполнить информацию
-        document.getElementById('iconInfoTitle').textContent = selectedIcon.title;
+        document.getElementById('modalIconTitle').textContent = selectedIcon.title;
         
         const infoContent = `
             ${selectedIcon.description_full ? `<p style="margin: 0 0 20px 0;">${selectedIcon.description_full}</p>` : ''}
@@ -704,8 +710,14 @@ function selectIcon(id) {
 
 function resetDetailScreenUI() {
     document.getElementById('candleLayer').style.opacity = '0';
-    document.getElementById('infoPanel').style.transform = 'translateY(100%)';
     document.getElementById('iconImage').style.width = '80%';
+    
+    // Закрываем модальное окно
+    const modal = document.getElementById('infoModal');
+    const modalContent = document.getElementById('infoModalContent');
+    modal.style.display = 'none';
+    modal.style.opacity = '0';
+    modalContent.style.transform = 'translateY(100%)';
     
     document.getElementById('detailLogoHeader').style.opacity = '1';
     document.getElementById('iconTitleBlock').style.opacity = '1';
@@ -862,8 +874,10 @@ function showCandle() {
     const closeBtn = document.getElementById('closeCandleBtn');
     closeBtn.style.display = 'flex';
     closeBtn.style.opacity = '0';
+    closeBtn.style.pointerEvents = 'none';
     setTimeout(() => {
         closeBtn.style.opacity = '1';
+        closeBtn.style.pointerEvents = 'auto';
     }, 1500);
     
     if (tg?.HapticFeedback) {
@@ -880,7 +894,9 @@ function closeCandle() {
     document.getElementById('iconImage').style.width = '80%';
     
     // Плавно скрываем кнопку закрытия одновременно с появлением других элементов
-    document.getElementById('closeCandleBtn').style.opacity = '0';
+    const closeBtn = document.getElementById('closeCandleBtn');
+    closeBtn.style.opacity = '0';
+    closeBtn.style.pointerEvents = 'none';
     
     // Плавно показываем логотип, название и кнопки (анимация 1.5s через CSS transition)
     document.getElementById('detailLogoHeader').style.opacity = '1';
@@ -896,7 +912,7 @@ function closeCandle() {
     
     // Скрываем кнопку закрытия после завершения анимации
     setTimeout(() => {
-        document.getElementById('closeCandleBtn').style.display = 'none';
+        closeBtn.style.display = 'none';
     }, 1500);
     
     if (tg?.HapticFeedback) {
@@ -906,7 +922,17 @@ function closeCandle() {
 
 function showInfo() {
     infoPanelVisible = true;
-    document.getElementById('infoPanel').style.transform = 'translateY(0)';
+    
+    const modal = document.getElementById('infoModal');
+    const modalContent = document.getElementById('infoModalContent');
+    
+    modal.style.display = 'block';
+    
+    // Запускаем анимацию
+    requestAnimationFrame(() => {
+        modal.style.opacity = '1';
+        modalContent.style.transform = 'translateY(0)';
+    });
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
@@ -915,7 +941,16 @@ function showInfo() {
 
 function closeInfo() {
     infoPanelVisible = false;
-    document.getElementById('infoPanel').style.transform = 'translateY(100%)';
+    
+    const modal = document.getElementById('infoModal');
+    const modalContent = document.getElementById('infoModalContent');
+    
+    modal.style.opacity = '0';
+    modalContent.style.transform = 'translateY(100%)';
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
@@ -952,8 +987,14 @@ window.addEventListener('resize', positionTitleBlock);
 document.getElementById('candleBtn').addEventListener('click', showCandle);
 document.getElementById('closeCandleBtn').addEventListener('click', closeCandle);
 document.getElementById('infoBtn').addEventListener('click', showInfo);
-document.getElementById('closeInfoBtn').addEventListener('click', closeInfo);
 document.getElementById('shareBtn').addEventListener('click', shareIcon);
+
+// Закрытие модального окна по клику на фон
+document.getElementById('infoModal').addEventListener('click', (e) => {
+    if (e.target.id === 'infoModal') {
+        closeInfo();
+    }
+});
 
 // Поделиться иконой
 async function shareIcon() {
