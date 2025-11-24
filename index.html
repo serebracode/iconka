@@ -295,7 +295,7 @@
     </div>
 
     <!-- Кнопка закрытия режима свечи — вверху по центру, выравнивание по оси нативных контроллов -->
-    <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 3px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px;">
+    <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 3px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px; opacity: 0; transition: opacity 1.5s ease-in-out;">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
         </svg>
@@ -711,6 +711,7 @@ function resetDetailScreenUI() {
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     document.getElementById('shareBtn').style.pointerEvents = 'auto';
     document.getElementById('closeCandleBtn').style.display = 'none';
+    document.getElementById('closeCandleBtn').style.opacity = '0';
 }
 
 function goBack() {
@@ -799,9 +800,12 @@ function showCandle() {
     document.getElementById('infoBtn').style.pointerEvents = 'none';
     document.getElementById('shareBtn').style.pointerEvents = 'none';
     
-    // Показать кнопку закрытия после завершения анимации (1.5s)
+    // Показать кнопку закрытия после завершения анимации (1.5s) с плавным появлением
+    const closeBtn = document.getElementById('closeCandleBtn');
+    closeBtn.style.display = 'flex';
+    closeBtn.style.opacity = '0';
     setTimeout(() => {
-        document.getElementById('closeCandleBtn').style.display = 'flex';
+        closeBtn.style.opacity = '1';
     }, 1500);
     
     if (tg?.HapticFeedback) {
@@ -817,8 +821,12 @@ function closeCandle() {
     document.getElementById('candleLayer').style.opacity = '0';
     document.getElementById('iconImage').style.width = '80%';
     
-    // Скрываем кнопку закрытия сразу
-    document.getElementById('closeCandleBtn').style.display = 'none';
+    // Плавно скрываем кнопку закрытия
+    const closeBtn = document.getElementById('closeCandleBtn');
+    closeBtn.style.opacity = '0';
+    setTimeout(() => {
+        closeBtn.style.display = 'none';
+    }, 1500);
     
     // Плавно показываем логотип, название и кнопки (анимация 1.5s через CSS transition)
     document.getElementById('detailLogoHeader').style.opacity = '1';
@@ -1029,6 +1037,9 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
     }
     
     iconImage.addEventListener('touchstart', (e) => {
+        // Отключаем zoom в режиме свечи
+        if (candleVisible) return;
+        
         if (e.touches.length === 2) {
             e.preventDefault();
             initialDistance = getDistance(e.touches);
@@ -1043,6 +1054,9 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
     }, { passive: false });
     
     iconImage.addEventListener('touchmove', (e) => {
+        // Отключаем zoom в режиме свечи
+        if (candleVisible) return;
+        
         if (e.touches.length === 2) {
             e.preventDefault();
             
@@ -1062,6 +1076,9 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
     }, { passive: false });
     
     iconImage.addEventListener('touchend', (e) => {
+        // Отключаем zoom в режиме свечи
+        if (candleVisible) return;
+        
         if (e.touches.length < 2) {
             // Возвращаем к исходному размеру с анимацией
             iconImage.style.transition = 'transform 0.3s ease-out';
