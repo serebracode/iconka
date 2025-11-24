@@ -182,7 +182,7 @@
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
     <!-- Логотип вверху по центру (на уровне нативных кнопок ТГ) -->
-    <div id="listIconHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60;">
+    <div id="listIconHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; cursor: pointer;" onclick="goBackToLoading()">
         <img id="listIcon" src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px; opacity: 0;">
     </div>
     
@@ -220,6 +220,11 @@
         
         <!-- 2. Версия -->
         <div style="color: #8E8E93; font-size: 14px; margin-top: 8px;">Версия 1.0</div>
+        
+        <!-- Описательный блок -->
+        <div style="margin-top: 30px; max-width: 400px; text-align: center;">
+            <p style="color: #FFFFFF; font-size: 16px; line-height: 1.5; margin: 0;">Проект «Иконка» это не история про фанатизм или крайности — это спокойный просветительский проект, созданный с уважением к культурному наследию христиан. Его цель — вернуть слову «иконка» исходный смысл, вместо того чтобы называть им всё подряд. Здесь собраны подлинные образцы иконописи, к которым можно обратиться без суеты и лишних интерпретаций.</p>
+        </div>
         
         <!-- 3. Таймлайн -->
         <div style="width: 100%; max-width: 400px; margin-top: 60px; padding-left: 20px;">
@@ -290,7 +295,7 @@
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
 
     <!-- Логотип вверху по центру (обычный режим) -->
-    <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; opacity: 1; transition: opacity 1.5s ease-in-out;">
+    <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; opacity: 1; transition: opacity 1.5s ease-in-out; cursor: pointer;" onclick="goBackToLoading()">
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
     </div>
 
@@ -774,6 +779,52 @@ function goBack() {
     }
 }
 
+// Функция для возврата на экран загрузки из любого места
+function goBackToLoading() {
+    const listScreen = document.getElementById('listScreen');
+    const detailScreen = document.getElementById('detailScreen');
+    const loadingScreen = document.getElementById('loadingScreen');
+    const aboutScreen = document.getElementById('aboutScreen');
+    
+    // Определяем текущий активный экран
+    let currentScreen = null;
+    if (detailScreen.classList.contains('active')) {
+        currentScreen = detailScreen;
+    } else if (listScreen.classList.contains('active')) {
+        currentScreen = listScreen;
+    } else if (aboutScreen.classList.contains('active')) {
+        currentScreen = aboutScreen;
+    }
+    
+    if (!currentScreen) return;
+    
+    currentScreen.classList.add('loading-fadeout');
+    
+    setTimeout(() => {
+        currentScreen.classList.remove('active');
+        currentScreen.classList.remove('loading-fadeout');
+        
+        // Убираем класс loading-fadeout с загрузочного экрана если он там остался
+        loadingScreen.classList.remove('loading-fadeout');
+        
+        loadingScreen.style.display = 'flex';
+        loadingScreen.classList.add('active');
+        
+        // Скрыть нативную кнопку "Назад"
+        if (tg?.BackButton) {
+            tg.BackButton.hide();
+        }
+        
+        // Сбросить состояние
+        candleVisible = false;
+        infoPanelVisible = false;
+        
+        if (tg?.HapticFeedback) {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    }, 300);
+}
+
 if (tg?.BackButton) {
     tg.BackButton.onClick(goBack);
 }
@@ -821,12 +872,8 @@ function closeCandle() {
     document.getElementById('candleLayer').style.opacity = '0';
     document.getElementById('iconImage').style.width = '80%';
     
-    // Плавно скрываем кнопку закрытия
-    const closeBtn = document.getElementById('closeCandleBtn');
-    closeBtn.style.opacity = '0';
-    setTimeout(() => {
-        closeBtn.style.display = 'none';
-    }, 1500);
+    // Плавно скрываем кнопку закрытия одновременно с появлением других элементов
+    document.getElementById('closeCandleBtn').style.opacity = '0';
     
     // Плавно показываем логотип, название и кнопки (анимация 1.5s через CSS transition)
     document.getElementById('detailLogoHeader').style.opacity = '1';
@@ -839,6 +886,11 @@ function closeCandle() {
     document.getElementById('candleBtn').style.pointerEvents = 'auto';
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     document.getElementById('shareBtn').style.pointerEvents = 'auto';
+    
+    // Скрываем кнопку закрытия после завершения анимации
+    setTimeout(() => {
+        document.getElementById('closeCandleBtn').style.display = 'none';
+    }, 1500);
     
     if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
