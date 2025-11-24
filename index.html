@@ -804,6 +804,13 @@ function goBackToLoading() {
         currentScreen.classList.remove('active');
         currentScreen.classList.remove('loading-fadeout');
         
+        // Восстанавливаем opacity элементов списка для будущего показа
+        if (currentScreen === listScreen) {
+            document.getElementById('listIcon').style.opacity = '1';
+            document.getElementById('listHeader').style.opacity = '1';
+            document.getElementById('iconsList').style.opacity = '1';
+        }
+        
         // Убираем класс loading-fadeout с загрузочного экрана если он там остался
         loadingScreen.classList.remove('loading-fadeout');
         
