@@ -377,8 +377,8 @@
     </button>
 
     <!-- Модальное окно информации -->
-    <div id="infoModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; background-color: rgba(0, 0, 0, 0.4); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); opacity: 0; transition: opacity 0.3s ease-out, backdrop-filter 0.3s ease-out;">
-        <div id="infoModalContent" style="position: absolute; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.7); border-radius: 20px 20px 0 0; max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s ease-out;">
+    <div id="infoModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; background-color: rgba(0, 0, 0, 0.4); opacity: 0; transition: opacity 0.3s ease-out;">
+        <div id="infoModalContent" style="position: absolute; bottom: 0; left: 0; right: 0; background-color: rgba(255, 255, 255, 0.08); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-radius: 20px 20px 0 0; max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s ease-out;">
             <!-- Индикатор для свайпа (iOS-стиль) -->
             <div id="modalSwipeIndicator" style="width: 36px; height: 5px; background-color: rgba(255, 255, 255, 0.3); border-radius: 2.5px; margin: 8px auto 0; cursor: grab;"></div>
             
@@ -932,11 +932,17 @@ function showInfo() {
     }
     
     modal.style.display = 'block';
+    modalContent.style.transform = 'translateY(100%)';
+    
+    // Принудительный reflow для применения blur до анимации
+    modalContent.offsetHeight;
     
     // Запускаем анимацию
     requestAnimationFrame(() => {
-        modal.style.opacity = '1';
-        modalContent.style.transform = 'translateY(0)';
+        requestAnimationFrame(() => {
+            modal.style.opacity = '1';
+            modalContent.style.transform = 'translateY(0)';
+        });
     });
     
     if (tg?.HapticFeedback) {
