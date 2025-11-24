@@ -929,6 +929,11 @@ function showInfo() {
     const modal = document.getElementById('infoModal');
     const modalContent = document.getElementById('infoModalContent');
     
+    // Отключаем вертикальные свайпы Telegram
+    if (tg?.disableVerticalSwipes) {
+        tg.disableVerticalSwipes();
+    }
+    
     modal.style.display = 'block';
     
     // Запускаем анимацию
@@ -953,6 +958,11 @@ function closeInfo() {
     
     setTimeout(() => {
         modal.style.display = 'none';
+        
+        // Включаем обратно вертикальные свайпы Telegram
+        if (tg?.enableVerticalSwipes) {
+            tg.enableVerticalSwipes();
+        }
     }, 300);
     
     if (tg?.HapticFeedback) {
