@@ -583,11 +583,6 @@ function showListScreen() {
         if (tg?.BackButton) {
             tg.BackButton.show();
         }
-        
-        // Отключаем вертикальные свайпы для предотвращения случайного закрытия
-        if (tg?.disableVerticalSwipes) {
-            tg.disableVerticalSwipes();
-        }
     }, 300);
 }
 
@@ -671,11 +666,6 @@ function selectIcon(id) {
         // Показать нативную кнопку "Назад" в Telegram
         if (tg?.BackButton) {
             tg.BackButton.show();
-        }
-        
-        // Отключаем вертикальные свайпы
-        if (tg?.disableVerticalSwipes) {
-            tg.disableVerticalSwipes();
         }
         
         // Сбросить состояние
@@ -808,11 +798,6 @@ function goBack() {
                 tg.BackButton.hide();
             }
             
-            // Включаем вертикальные свайпы обратно
-            if (tg?.enableVerticalSwipes) {
-                tg.enableVerticalSwipes();
-            }
-            
             if (tg?.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
@@ -861,11 +846,6 @@ function goBackToLoading() {
         // Скрыть нативную кнопку "Назад"
         if (tg?.BackButton) {
             tg.BackButton.hide();
-        }
-        
-        // Включаем вертикальные свайпы обратно
-        if (tg?.enableVerticalSwipes) {
-            tg.enableVerticalSwipes();
         }
         
         // Сбросить состояние
@@ -960,11 +940,6 @@ function showInfo() {
     const modal = document.getElementById('infoModal');
     const modalContent = document.getElementById('infoModalContent');
     
-    // Отключаем вертикальные свайпы Telegram
-    if (tg?.disableVerticalSwipes) {
-        tg.disableVerticalSwipes();
-    }
-    
     modal.style.display = 'block';
     
     // Запускаем анимацию
@@ -989,11 +964,6 @@ function closeInfo() {
     
     setTimeout(() => {
         modal.style.display = 'none';
-        
-        // Включаем обратно вертикальные свайпы Telegram
-        if (tg?.enableVerticalSwipes) {
-            tg.enableVerticalSwipes();
-        }
     }, 300);
     
     if (tg?.HapticFeedback) {
@@ -1086,6 +1056,35 @@ document.getElementById('infoModal').addEventListener('click', (e) => {
     });
 })();
 
+// Блокировка вертикальных свайпов везде кроме модального окна
+(function() {
+    let startY = 0;
+    
+    document.body.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+    }, { passive: false });
+    
+    document.body.addEventListener('touchmove', (e) => {
+        const modal = document.getElementById('infoModal');
+        const modalContent = document.getElementById('infoModalContent');
+        
+        // Если модальное окно открыто и касание внутри него - разрешаем
+        if (modal.style.display === 'block' && modalContent.contains(e.target)) {
+            return;
+        }
+        
+        // Проверяем, является ли это вертикальным свайпом
+        const currentY = e.touches[0].clientY;
+        const deltaY = Math.abs(currentY - startY);
+        const deltaX = Math.abs(e.touches[0].clientX - (e.touches[0].clientX || 0));
+        
+        // Если это преимущественно вертикальное движение - блокируем
+        if (deltaY > deltaX && deltaY > 10) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+})();
+
 // Поделиться иконой
 async function shareIcon() {
     if (!selectedIcon) return;
@@ -1140,11 +1139,6 @@ function showAboutScreen() {
         if (tg?.BackButton) {
             tg.BackButton.show();
         }
-        
-        // Отключаем вертикальные свайпы
-        if (tg?.disableVerticalSwipes) {
-            tg.disableVerticalSwipes();
-        }
     }, 300);
     
     if (tg?.HapticFeedback) {
@@ -1168,11 +1162,6 @@ function closeAboutScreen() {
         // Скрыть нативную кнопку "Назад"
         if (tg?.BackButton) {
             tg.BackButton.hide();
-        }
-        
-        // Включаем вертикальные свайпы обратно
-        if (tg?.enableVerticalSwipes) {
-            tg.enableVerticalSwipes();
         }
     }, 300);
     
