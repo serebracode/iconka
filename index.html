@@ -146,6 +146,9 @@
 
 <!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loadingScreen" class="screen active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="showListScreen()">
+    <!-- Индикатор для свайпа вниз (iOS-стиль) -->
+    <div style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 8px); left: 50%; transform: translateX(-50%); width: 36px; height: 5px; background-color: rgba(255, 255, 255, 0.3); border-radius: 2.5px; z-index: 100;"></div>
+    
     <!-- Иконка SVG -->
     <img id="loadingIcon" src="./id/iconka_icon.svg" 
          alt="Iconka" 
@@ -181,6 +184,9 @@
 
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
+    <!-- Индикатор для свайпа вниз (iOS-стиль) -->
+    <div style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 8px); left: 50%; transform: translateX(-50%); width: 36px; height: 5px; background-color: rgba(255, 255, 255, 0.3); border-radius: 2.5px; z-index: 100;"></div>
+    
     <!-- Логотип вверху по центру (на уровне нативных кнопок ТГ) -->
     <div id="listIconHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; cursor: pointer;" onclick="goBackToLoading()">
         <img id="listIcon" src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px; opacity: 0;">
@@ -206,6 +212,9 @@
 
 <!-- ЭКРАН О ПРОЕКТЕ -->
 <div id="aboutScreen" class="screen" style="overflow-y: auto;">
+    <!-- Индикатор для свайпа вниз (iOS-стиль) -->
+    <div style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 8px); left: 50%; transform: translateX(-50%); width: 36px; height: 5px; background-color: rgba(255, 255, 255, 0.3); border-radius: 2.5px; z-index: 100;"></div>
+    
     <!-- Кнопка закрытия -->
     <button id="closeAboutBtn" class="tg-round-btn" onclick="closeAboutScreen()" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 3px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px;">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -291,6 +300,9 @@
 
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
+    <!-- Индикатор для свайпа вниз (iOS-стиль) -->
+    <div style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 8px); left: 50%; transform: translateX(-50%); width: 36px; height: 5px; background-color: rgba(255, 255, 255, 0.3); border-radius: 2.5px; z-index: 100;"></div>
+    
     <!-- Черный фон -->
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
 
@@ -571,6 +583,11 @@ function showListScreen() {
         if (tg?.BackButton) {
             tg.BackButton.show();
         }
+        
+        // Отключаем вертикальные свайпы для предотвращения случайного закрытия
+        if (tg?.disableVerticalSwipes) {
+            tg.disableVerticalSwipes();
+        }
     }, 300);
 }
 
@@ -654,6 +671,11 @@ function selectIcon(id) {
         // Показать нативную кнопку "Назад" в Telegram
         if (tg?.BackButton) {
             tg.BackButton.show();
+        }
+        
+        // Отключаем вертикальные свайпы
+        if (tg?.disableVerticalSwipes) {
+            tg.disableVerticalSwipes();
         }
         
         // Сбросить состояние
@@ -756,6 +778,8 @@ function goBack() {
             candleVisible = false;
             infoPanelVisible = false;
             
+            // Свайпы остаются отключенными, т.к. список тоже блокирует
+            
             if (tg?.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
@@ -782,6 +806,11 @@ function goBack() {
             // Скрыть нативную кнопку "Назад"
             if (tg?.BackButton) {
                 tg.BackButton.hide();
+            }
+            
+            // Включаем вертикальные свайпы обратно
+            if (tg?.enableVerticalSwipes) {
+                tg.enableVerticalSwipes();
             }
             
             if (tg?.HapticFeedback) {
@@ -832,6 +861,11 @@ function goBackToLoading() {
         // Скрыть нативную кнопку "Назад"
         if (tg?.BackButton) {
             tg.BackButton.hide();
+        }
+        
+        // Включаем вертикальные свайпы обратно
+        if (tg?.enableVerticalSwipes) {
+            tg.enableVerticalSwipes();
         }
         
         // Сбросить состояние
@@ -1106,6 +1140,11 @@ function showAboutScreen() {
         if (tg?.BackButton) {
             tg.BackButton.show();
         }
+        
+        // Отключаем вертикальные свайпы
+        if (tg?.disableVerticalSwipes) {
+            tg.disableVerticalSwipes();
+        }
     }, 300);
     
     if (tg?.HapticFeedback) {
@@ -1129,6 +1168,11 @@ function closeAboutScreen() {
         // Скрыть нативную кнопку "Назад"
         if (tg?.BackButton) {
             tg.BackButton.hide();
+        }
+        
+        // Включаем вертикальные свайпы обратно
+        if (tg?.enableVerticalSwipes) {
+            tg.enableVerticalSwipes();
         }
     }, 300);
     
