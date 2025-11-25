@@ -1175,10 +1175,17 @@ let doubleTapZoomActive = false;
     let lastTap = 0;
     let isZoomed = false;
     let tapTimeout = null;
+    let isProcessing = false; // Флаг обработки
     
     function handleDoubleTap(e) {
         // Отключаем в режиме свечи
         if (candleVisible) return;
+        
+        // Игнорируем если уже обрабатываем
+        if (isProcessing) {
+            console.log('Already processing, ignoring tap');
+            return;
+        }
         
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
@@ -1189,6 +1196,9 @@ let doubleTapZoomActive = false;
         if (tapLength > 50 && tapLength < 500) {
             e.preventDefault();
             e.stopPropagation();
+            
+            // Устанавливаем флаг обработки
+            isProcessing = true;
             
             // Отменяем таймаут одиночного тапа
             if (tapTimeout) {
@@ -1224,8 +1234,12 @@ let doubleTapZoomActive = false;
                 tg.HapticFeedback.impactOccurred('light');
             }
             
-            // Сбрасываем lastTap чтобы следующий тап не считался двойным
+            // Сбрасываем lastTap и флаг обработки через задержку
             lastTap = 0;
+            setTimeout(() => {
+                isProcessing = false;
+                console.log('Processing unlocked');
+            }, 600); // Задержка больше максимального интервала
         } else {
             // Одиночный тап - запускаем таймаут
             lastTap = currentTime;
@@ -1244,6 +1258,7 @@ let doubleTapZoomActive = false;
             console.log('Icon changed, resetting zoom');
             isZoomed = false;
             doubleTapZoomActive = false;
+            isProcessing = false;
             iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
             iconImage.style.zIndex = '1';
         }
