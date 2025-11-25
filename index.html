@@ -591,11 +591,8 @@ function renderIconsList(searchQuery = '') {
             <img src="${icon.image.replace('icons/', 'icons/preview/').replace('.jpg', '_preview.jpg')}" 
                  onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDMyIiBoZWlnaHQ9IjQzMiIgdmlld0JveD0iMCAwIDQzMiA0MzIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8yMzI2XzIyNikiPgo8cmVjdCB3aWR0aD0iNDMxLjM0IiBoZWlnaHQ9IjQzMS4zNCIgZmlsbD0iYmxhY2siLz4KPHJlY3Qgd2lkdGg9IjQzMSIgaGVpZ2h0PSI0MzEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8cGF0aCBkPSJNMjE2LjE2IDI4OC41NUMyODUuNjcxIDI4OC41NSAzNDIuMDIgMjMyLjIwMSAzNDIuMDIgMTYyLjY5QzM0Mi4wMiA5My4xNzk1IDI4NS42NzEgMzYuODMgMjE2LjE2IDM2LjgzQzE0Ni42NDkgMzYuODMgOTAuMyA5My4xNzk1IDkwLjMgMTYyLjY5QzkwLjMgMjMyLjIwMSAxNDYuNjQ5IDI4OC41NSAyMTYuMTYgMjg4LjU1WiIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPgo8cGF0aCBkPSJNMjE2LjI1IDk4LjIxQzI1NS40NjIgOTguMjEgMjg3LjI1IDEzMC4wNzUgMjg3LjI1IDE2OS4zODNWMjY1LjkyNkMzNTEuMTQ3IDI5Mi42ODkgMzk2IDM1NS4xNCAzOTYgNDI3Ljg0MVY0NzFIMzdWNDI3Ljg0MUMzNyAzNTUuMzMxIDgxLjYyMDEgMjkzLjAxOCAxNDUuMjUgMjY2LjEzOVYxNjkuMzgzQzE0NS4yNSAxMzAuMDc1IDE3Ny4wMzggOTguMjEgMjE2LjI1IDk4LjIxWiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTI2OS4yNSAyMDMuMkMyNjkuMjUgMjU1LjQ5IDI0NS41MTggMjk0LjIxIDIxNi4yNSAyOTQuMjFDMTg2Ljk4MiAyOTQuMjEgMTYzLjI1IDI1OC4yMzEgMTYzLjI1IDIwMy4yQzE2My4yNSAxNzMuODggMjY5LjIzOSAxNzMuODggMjY5LjIzOSAyMDMuMkgyNjkuMjVaIiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjEiLz4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF8yMzI2XzIyNiI+CjxyZWN0IHdpZHRoPSI0MzEuMzQiIGhlaWdodD0iNDMxLjM0IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPg=='" 
                  alt="${icon.title}" 
-                 style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: var(--tg-theme-secondary-bg-color, #3A3A3C);">
-            <div style="flex: 1; color: #FFFFFF; font-size: 16px; font-weight: 400;">${icon.title}</div>
-            <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
-                <path d="M1 1L7 7L1 13" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+                 style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: var(--tg-theme-secondary-bg-color, #3A3A3C); flex-shrink: 0;">
+            <div style="flex: 1; color: #FFFFFF; font-size: 16px; font-weight: 400; line-height: 1.4;">${icon.title}</div>
             ${index < filtered.length - 1 ? '<div style="position: absolute; bottom: 0; left: 72px; right: 0; height: 0.5px; background-color: var(--tg-theme-secondary-bg-color, #38383A);"></div>' : ''}
         </div>
     `).join('');
