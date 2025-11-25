@@ -500,6 +500,12 @@ if (tg) {
         console.log('TG orientation lock not supported:', e);
     }
     
+    // Отключаем вертикальные свайпы для сворачивания приложения
+    if (tg.disableVerticalSwipes) {
+        tg.disableVerticalSwipes();
+        console.log('Vertical swipes disabled');
+    }
+    
     tg.setHeaderColor('#000000');
     tg.setBackgroundColor('#000000');
     
@@ -1011,14 +1017,11 @@ document.getElementById('infoModal').addEventListener('click', (e) => {
             startY = e.touches[0].clientY;
             isDragging = true;
             modalContent.style.transition = 'none';
-            e.stopPropagation(); // Останавливаем всплытие
         }
     }, { passive: false });
     
     modalContent.addEventListener('touchmove', (e) => {
         if (!isDragging) return;
-        
-        e.stopPropagation(); // Останавливаем всплытие
         
         currentY = e.touches[0].clientY;
         const deltaY = currentY - startY;
@@ -1033,8 +1036,6 @@ document.getElementById('infoModal').addEventListener('click', (e) => {
     modalContent.addEventListener('touchend', (e) => {
         if (!isDragging) return;
         
-        e.stopPropagation(); // Останавливаем всплытие
-        
         isDragging = false;
         const deltaY = currentY - startY;
         
@@ -1046,50 +1047,6 @@ document.getElementById('infoModal').addEventListener('click', (e) => {
         } else {
             // Иначе возвращаем на место
             modalContent.style.transform = 'translateY(0)';
-        }
-    }, { passive: false });
-})();
-
-// Блокировка вертикальных свайпов везде кроме модального окна
-(function() {
-    let startY = 0;
-    let startX = 0;
-    
-    document.body.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        startX = e.touches[0].clientX;
-    }, { passive: false });
-    
-    document.body.addEventListener('touchmove', (e) => {
-        const modal = document.getElementById('infoModal');
-        const modalContent = document.getElementById('infoModalContent');
-        const iconsList = document.getElementById('iconsList');
-        const aboutScreen = document.getElementById('aboutScreen');
-        
-        // Если модальное окно открыто и касание внутри него - разрешаем
-        if (modal.style.display === 'block' && modalContent.contains(e.target)) {
-            return;
-        }
-        
-        // Если касание внутри списка иконок - разрешаем прокрутку
-        if (iconsList.contains(e.target)) {
-            return;
-        }
-        
-        // Если касание внутри экрана О проекте - разрешаем прокрутку
-        if (aboutScreen.classList.contains('active') && aboutScreen.contains(e.target)) {
-            return;
-        }
-        
-        // Проверяем, является ли это вертикальным свайпом
-        const currentY = e.touches[0].clientY;
-        const currentX = e.touches[0].clientX;
-        const deltaY = Math.abs(currentY - startY);
-        const deltaX = Math.abs(currentX - startX);
-        
-        // Если это преимущественно вертикальное движение - блокируем
-        if (deltaY > deltaX && deltaY > 10) {
-            e.preventDefault();
         }
     }, { passive: false });
 })();
