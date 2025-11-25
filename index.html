@@ -706,6 +706,9 @@ function selectIcon(id) {
         // Убираем класс анимации после завершения
         setTimeout(() => {
             detailScreen.classList.remove('detail-fadein');
+            
+            // Диспатчим событие для сброса zoom
+            window.dispatchEvent(new Event('iconChanged'));
         }, 400);
         
         if (tg?.HapticFeedback) {
@@ -1161,6 +1164,55 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
         closeCandle();
     }
 });
+
+// ============================================
+// DOUBLE TAP ДЛЯ УВЕЛИЧЕНИЯ ИКОНЫ
+// ============================================
+(function() {
+    const iconImage = document.getElementById('iconImage');
+    let lastTap = 0;
+    let isZoomed = false;
+    
+    iconImage.addEventListener('touchend', (e) => {
+        // Отключаем в режиме свечи
+        if (candleVisible) return;
+        
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        
+        // Двойной тап (интервал меньше 300ms)
+        if (tapLength < 300 && tapLength > 0) {
+            e.preventDefault();
+            
+            if (isZoomed) {
+                // Возвращаем к исходному размеру
+                iconImage.style.transition = 'transform 0.3s ease-out';
+                iconImage.style.transform = 'scale(1)';
+                iconImage.style.zIndex = '1';
+                isZoomed = false;
+            } else {
+                // Увеличиваем в 3 раза
+                iconImage.style.transition = 'transform 0.3s ease-out';
+                iconImage.style.transform = 'scale(3)';
+                iconImage.style.zIndex = '50';
+                isZoomed = true;
+            }
+            
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+        
+        lastTap = currentTime;
+    });
+    
+    // Сбрасываем zoom при смене иконы
+    window.addEventListener('iconChanged', () => {
+        isZoomed = false;
+        iconImage.style.transform = 'scale(1)';
+        iconImage.style.zIndex = '1';
+    });
+})();
 
 // ============================================
 // PINCH-TO-ZOOM + PAN ДЛЯ ИКОНЫ
