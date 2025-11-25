@@ -1325,6 +1325,9 @@ let doubleTapZoomActive = false;
         // Отключаем zoom в режиме свечи
         if (candleVisible) return;
         
+        // Не сбрасываем если активен double-tap zoom
+        if (doubleTapZoomActive) return;
+        
         if (e.touches.length < 2) {
             // Возвращаем к исходному размеру с анимацией
             iconImage.style.transition = 'transform 0.3s ease-out';
