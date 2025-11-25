@@ -1186,8 +1186,8 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
             
             if (isZoomed) {
                 // Возвращаем к исходному размеру
-                iconImage.style.transition = 'transform 0.3s ease-out';
-                iconImage.style.transform = 'scale(1)';
+                iconImage.style.transition = 'transform 0.3s ease-out, width 1.5s ease-in-out';
+                iconImage.style.transform = '';
                 iconImage.style.zIndex = '1';
                 isZoomed = false;
             } else {
@@ -1208,9 +1208,12 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
     
     // Сбрасываем zoom при смене иконы
     window.addEventListener('iconChanged', () => {
-        isZoomed = false;
-        iconImage.style.transform = 'scale(1)';
-        iconImage.style.zIndex = '1';
+        if (isZoomed) {
+            isZoomed = false;
+            iconImage.style.transition = 'transform 0.3s ease-out, width 1.5s ease-in-out';
+            iconImage.style.transform = '';
+            iconImage.style.zIndex = '1';
+        }
     });
 })();
 
