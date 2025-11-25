@@ -1180,18 +1180,26 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
         
+        console.log('Tap detected, interval:', tapLength);
+        
         // Двойной тап (интервал меньше 300ms)
         if (tapLength < 300 && tapLength > 0) {
             e.preventDefault();
             
+            console.log('Double tap! isZoomed:', isZoomed);
+            
+            iconImage.style.transformOrigin = 'center center';
+            
             if (isZoomed) {
                 // Возвращаем к исходному размеру
-                iconImage.style.transition = 'transform 0.3s ease-out, width 1.5s ease-in-out';
-                iconImage.style.transform = '';
+                console.log('Zooming out');
+                iconImage.style.transition = 'transform 0.3s ease-out';
+                iconImage.style.transform = 'scale(1)';
                 iconImage.style.zIndex = '1';
                 isZoomed = false;
             } else {
                 // Увеличиваем в 3 раза
+                console.log('Zooming in');
                 iconImage.style.transition = 'transform 0.3s ease-out';
                 iconImage.style.transform = 'scale(3)';
                 iconImage.style.zIndex = '50';
@@ -1209,9 +1217,9 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
     // Сбрасываем zoom при смене иконы
     window.addEventListener('iconChanged', () => {
         if (isZoomed) {
+            console.log('Icon changed, resetting zoom');
             isZoomed = false;
-            iconImage.style.transition = 'transform 0.3s ease-out, width 1.5s ease-in-out';
-            iconImage.style.transform = '';
+            iconImage.style.transform = 'scale(1)';
             iconImage.style.zIndex = '1';
         }
     });
