@@ -1011,23 +1011,29 @@ document.getElementById('infoModal').addEventListener('click', (e) => {
             startY = e.touches[0].clientY;
             isDragging = true;
             modalContent.style.transition = 'none';
+            e.stopPropagation(); // Останавливаем всплытие
         }
-    });
+    }, { passive: false });
     
     modalContent.addEventListener('touchmove', (e) => {
         if (!isDragging) return;
+        
+        e.stopPropagation(); // Останавливаем всплытие
         
         currentY = e.touches[0].clientY;
         const deltaY = currentY - startY;
         
         // Тянем вниз только если deltaY > 0
         if (deltaY > 0) {
+            e.preventDefault(); // Предотвращаем стандартное поведение
             modalContent.style.transform = `translateY(${deltaY}px)`;
         }
-    });
+    }, { passive: false });
     
-    modalContent.addEventListener('touchend', () => {
+    modalContent.addEventListener('touchend', (e) => {
         if (!isDragging) return;
+        
+        e.stopPropagation(); // Останавливаем всплытие
         
         isDragging = false;
         const deltaY = currentY - startY;
@@ -1041,7 +1047,7 @@ document.getElementById('infoModal').addEventListener('click', (e) => {
             // Иначе возвращаем на место
             modalContent.style.transform = 'translateY(0)';
         }
-    });
+    }, { passive: false });
 })();
 
 // Блокировка вертикальных свайпов везде кроме модального окна
