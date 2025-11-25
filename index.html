@@ -1274,28 +1274,47 @@ let doubleTapTranslateY = 0;
             const deltaX = e.touches[0].clientX - dragStartX;
             const deltaY = e.touches[0].clientY - dragStartY;
             
-            doubleTapTranslateX += deltaX;
-            doubleTapTranslateY += deltaY;
+            const newTranslateX = doubleTapTranslateX + deltaX;
+            const newTranslateY = doubleTapTranslateY + deltaY;
             
             dragStartX = e.touches[0].clientX;
             dragStartY = e.touches[0].clientY;
             
-            // Получаем размеры изображения и экрана
+            // Получаем размеры изображения (до увеличения)
             const imgRect = iconImage.getBoundingClientRect();
+            const originalWidth = imgRect.width;
+            const originalHeight = imgRect.height;
+            
+            // Размеры экрана
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
             
-            // Вычисляем размеры увеличенного изображения
-            const scaledWidth = imgRect.width * 3;
-            const scaledHeight = imgRect.height * 3;
+            // При scale(3) изображение увеличивается в 3 раза
+            const scaledWidth = originalWidth * 3;
+            const scaledHeight = originalHeight * 3;
             
-            // Вычисляем максимальные смещения
-            const maxTranslateX = (scaledWidth - screenWidth) / 2 / 3;
-            const maxTranslateY = (scaledHeight - screenHeight) / 2 / 3;
+            // Вычисляем насколько изображение больше экрана
+            const overflowX = (scaledWidth - screenWidth) / 2;
+            const overflowY = (scaledHeight - screenHeight) / 2;
             
-            // Ограничиваем перемещение
-            doubleTapTranslateX = Math.max(-maxTranslateX, Math.min(maxTranslateX, doubleTapTranslateX));
-            doubleTapTranslateY = Math.max(-maxTranslateY, Math.min(maxTranslateY, doubleTapTranslateY));
+            // Ограничиваем перемещение (делим на 3 т.к. translate применяется до scale)
+            const maxX = overflowX / 3;
+            const maxY = overflowY / 3;
+            
+            // Применяем ограничения только если изображение больше экрана
+            if (overflowX > 0) {
+                doubleTapTranslateX = Math.max(-maxX, Math.min(maxX, newTranslateX));
+            } else {
+                doubleTapTranslateX = 0;
+            }
+            
+            if (overflowY > 0) {
+                doubleTapTranslateY = Math.max(-maxY, Math.min(maxY, newTranslateY));
+            } else {
+                doubleTapTranslateY = 0;
+            }
+            
+            console.log('Translate:', doubleTapTranslateX, doubleTapTranslateY, 'Max:', maxX, maxY);
             
             iconImage.style.setProperty('transform', `scale(3) translate(${doubleTapTranslateX}px, ${doubleTapTranslateY}px)`, 'important');
         }
