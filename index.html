@@ -1174,6 +1174,7 @@ let doubleTapZoomActive = false;
     const iconImage = document.getElementById('iconImage');
     let lastTap = 0;
     let isZoomed = false;
+    let tapTimeout = null;
     
     function handleDoubleTap(e) {
         // Отключаем в режиме свечи
@@ -1182,13 +1183,19 @@ let doubleTapZoomActive = false;
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
         
-        console.log('Tap/click detected, interval:', tapLength);
+        console.log('Tap/click detected, interval:', tapLength, 'isZoomed:', isZoomed);
         
-        // Двойной тап/клик (интервал меньше 300ms)
-        if (tapLength < 300 && tapLength > 0) {
+        // Двойной тап/клик (интервал от 50ms до 500ms)
+        if (tapLength > 50 && tapLength < 500) {
             e.preventDefault();
             
-            console.log('Double tap/click! isZoomed:', isZoomed);
+            // Отменяем таймаут одиночного тапа
+            if (tapTimeout) {
+                clearTimeout(tapTimeout);
+                tapTimeout = null;
+            }
+            
+            console.log('Double tap/click confirmed!');
             
             iconImage.style.transformOrigin = 'center center';
             
@@ -1213,9 +1220,13 @@ let doubleTapZoomActive = false;
             if (tg?.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
+            
+            // Сбрасываем lastTap чтобы следующий тап не считался двойным
+            lastTap = 0;
+        } else {
+            // Одиночный тап - запускаем таймаут
+            lastTap = currentTime;
         }
-        
-        lastTap = currentTime;
     }
     
     // Для мобильных устройств
