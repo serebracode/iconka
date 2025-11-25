@@ -1188,6 +1188,7 @@ let doubleTapZoomActive = false;
         // Двойной тап/клик (интервал от 50ms до 500ms)
         if (tapLength > 50 && tapLength < 500) {
             e.preventDefault();
+            e.stopPropagation();
             
             // Отменяем таймаут одиночного тапа
             if (tapTimeout) {
@@ -1197,25 +1198,27 @@ let doubleTapZoomActive = false;
             
             console.log('Double tap/click confirmed!');
             
-            iconImage.style.transformOrigin = 'center center';
-            
             if (isZoomed) {
                 // Возвращаем к исходному размеру
                 console.log('Zooming out');
-                iconImage.style.transition = 'transform 0.3s ease-out';
-                iconImage.style.transform = 'scale(1) translate(0, 0)';
+                iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
+                iconImage.style.setProperty('transform-origin', 'center center', 'important');
+                iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
                 iconImage.style.zIndex = '1';
                 isZoomed = false;
                 doubleTapZoomActive = false;
             } else {
                 // Увеличиваем в 3 раза
                 console.log('Zooming in');
-                iconImage.style.transition = 'transform 0.3s ease-out';
-                iconImage.style.transform = 'scale(3) translate(0, 0)';
+                iconImage.style.setProperty('transform', 'scale(3) translate(0, 0)', 'important');
+                iconImage.style.setProperty('transform-origin', 'center center', 'important');
+                iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
                 iconImage.style.zIndex = '50';
                 isZoomed = true;
                 doubleTapZoomActive = true;
             }
+            
+            console.log('Applied transform:', iconImage.style.transform);
             
             if (tg?.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
@@ -1230,7 +1233,7 @@ let doubleTapZoomActive = false;
     }
     
     // Для мобильных устройств
-    iconImage.addEventListener('touchend', handleDoubleTap);
+    iconImage.addEventListener('touchend', handleDoubleTap, { passive: false });
     
     // Для десктопа
     iconImage.addEventListener('click', handleDoubleTap);
@@ -1241,7 +1244,7 @@ let doubleTapZoomActive = false;
             console.log('Icon changed, resetting zoom');
             isZoomed = false;
             doubleTapZoomActive = false;
-            iconImage.style.transform = 'scale(1) translate(0, 0)';
+            iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
             iconImage.style.zIndex = '1';
         }
     });
