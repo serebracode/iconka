@@ -1168,6 +1168,8 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
 // ============================================
 // DOUBLE TAP/CLICK ДЛЯ УВЕЛИЧЕНИЯ ИКОНЫ
 // ============================================
+let doubleTapZoomActive = false;
+
 (function() {
     const iconImage = document.getElementById('iconImage');
     let lastTap = 0;
@@ -1194,16 +1196,18 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
                 // Возвращаем к исходному размеру
                 console.log('Zooming out');
                 iconImage.style.transition = 'transform 0.3s ease-out';
-                iconImage.style.transform = 'scale(1)';
+                iconImage.style.transform = 'scale(1) translate(0, 0)';
                 iconImage.style.zIndex = '1';
                 isZoomed = false;
+                doubleTapZoomActive = false;
             } else {
                 // Увеличиваем в 3 раза
                 console.log('Zooming in');
                 iconImage.style.transition = 'transform 0.3s ease-out';
-                iconImage.style.transform = 'scale(3)';
+                iconImage.style.transform = 'scale(3) translate(0, 0)';
                 iconImage.style.zIndex = '50';
                 isZoomed = true;
+                doubleTapZoomActive = true;
             }
             
             if (tg?.HapticFeedback) {
@@ -1225,7 +1229,8 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
         if (isZoomed) {
             console.log('Icon changed, resetting zoom');
             isZoomed = false;
-            iconImage.style.transform = 'scale(1)';
+            doubleTapZoomActive = false;
+            iconImage.style.transform = 'scale(1) translate(0, 0)';
             iconImage.style.zIndex = '1';
         }
     });
@@ -1280,6 +1285,9 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
     iconImage.addEventListener('touchmove', (e) => {
         // Отключаем zoom в режиме свечи
         if (candleVisible) return;
+        
+        // Отключаем pinch-zoom если активен double-tap zoom
+        if (doubleTapZoomActive) return;
         
         if (e.touches.length === 2) {
             e.preventDefault();
