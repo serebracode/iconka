@@ -1177,6 +1177,13 @@ let doubleTapZoomActive = false;
     let tapTimeout = null;
     let isProcessing = false; // Флаг обработки
     
+    // Для перемещения одним пальцем
+    let isDragging = false;
+    let startDragX = 0;
+    let startDragY = 0;
+    let currentTranslateX = 0;
+    let currentTranslateY = 0;
+    
     function handleDoubleTap(e) {
         // Отключаем в режиме свечи
         if (candleVisible) return;
@@ -1192,8 +1199,8 @@ let doubleTapZoomActive = false;
         
         console.log('Tap/click detected, interval:', tapLength, 'isZoomed:', isZoomed);
         
-        // Двойной тап/клик (интервал от 50ms до 500ms)
-        if (tapLength > 50 && tapLength < 500) {
+        // Двойной тап/клик (интервал от 50ms до 350ms)
+        if (tapLength > 50 && tapLength < 350) {
             e.preventDefault();
             e.stopPropagation();
             
@@ -1211,6 +1218,8 @@ let doubleTapZoomActive = false;
             if (isZoomed) {
                 // Возвращаем к исходному размеру
                 console.log('Zooming out');
+                currentTranslateX = 0;
+                currentTranslateY = 0;
                 iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
                 iconImage.style.setProperty('transform-origin', 'center center', 'important');
                 iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
@@ -1220,6 +1229,8 @@ let doubleTapZoomActive = false;
             } else {
                 // Увеличиваем в 3 раза
                 console.log('Zooming in');
+                currentTranslateX = 0;
+                currentTranslateY = 0;
                 iconImage.style.setProperty('transform', 'scale(3) translate(0, 0)', 'important');
                 iconImage.style.setProperty('transform-origin', 'center center', 'important');
                 iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
@@ -1239,14 +1250,48 @@ let doubleTapZoomActive = false;
             setTimeout(() => {
                 isProcessing = false;
                 console.log('Processing unlocked');
-            }, 600); // Задержка больше максимального интервала
+            }, 450); // Задержка больше максимального интервала
         } else {
             // Одиночный тап - запускаем таймаут
             lastTap = currentTime;
         }
     }
     
-    // Для мобильных устройств
+    // Обработка перемещения одним пальцем при увеличении
+    iconImage.addEventListener('touchstart', (e) => {
+        if (doubleTapZoomActive && e.touches.length === 1) {
+            isDragging = true;
+            startDragX = e.touches[0].clientX;
+            startDragY = e.touches[0].clientY;
+            iconImage.style.setProperty('transition', 'none', 'important');
+        }
+    }, { passive: false });
+    
+    iconImage.addEventListener('touchmove', (e) => {
+        if (isDragging && doubleTapZoomActive && e.touches.length === 1) {
+            e.preventDefault();
+            
+            const deltaX = e.touches[0].clientX - startDragX;
+            const deltaY = e.touches[0].clientY - startDragY;
+            
+            currentTranslateX += deltaX;
+            currentTranslateY += deltaY;
+            
+            startDragX = e.touches[0].clientX;
+            startDragY = e.touches[0].clientY;
+            
+            iconImage.style.setProperty('transform', `scale(3) translate(${currentTranslateX}px, ${currentTranslateY}px)`, 'important');
+        }
+    }, { passive: false });
+    
+    iconImage.addEventListener('touchend', (e) => {
+        if (isDragging) {
+            isDragging = false;
+            iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+        }
+    }, { passive: false });
+    
+    // Для мобильных устройств - двойной тап
     iconImage.addEventListener('touchend', handleDoubleTap, { passive: false });
     
     // Для десктопа
@@ -1259,6 +1304,8 @@ let doubleTapZoomActive = false;
             isZoomed = false;
             doubleTapZoomActive = false;
             isProcessing = false;
+            currentTranslateX = 0;
+            currentTranslateY = 0;
             iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
             iconImage.style.zIndex = '1';
         }
