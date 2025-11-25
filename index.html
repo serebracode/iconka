@@ -1274,8 +1274,9 @@ let doubleTapTranslateY = 0;
             const deltaX = e.touches[0].clientX - dragStartX;
             const deltaY = e.touches[0].clientY - dragStartY;
             
-            const newTranslateX = doubleTapTranslateX + deltaX;
-            const newTranslateY = doubleTapTranslateY + deltaY;
+            // Делим на 3 т.к. translate применяется до scale(3)
+            const newTranslateX = doubleTapTranslateX + (deltaX / 3);
+            const newTranslateY = doubleTapTranslateY + (deltaY / 3);
             
             dragStartX = e.touches[0].clientX;
             dragStartY = e.touches[0].clientY;
@@ -1309,13 +1310,6 @@ let doubleTapTranslateY = 0;
             // Применяем ограничения
             doubleTapTranslateX = Math.max(-maxX, Math.min(maxX, newTranslateX));
             doubleTapTranslateY = Math.max(-maxY, Math.min(maxY, newTranslateY));
-            
-            console.log('Display size:', displayWidth, displayHeight);
-            console.log('Scaled size:', scaledWidth, scaledHeight);
-            console.log('Screen size:', screenWidth, screenHeight);
-            console.log('Overflow:', overflowX, overflowY);
-            console.log('Max translate:', maxX, maxY);
-            console.log('Current translate:', doubleTapTranslateX, doubleTapTranslateY);
             
             iconImage.style.setProperty('transform', `scale(3) translate(${doubleTapTranslateX}px, ${doubleTapTranslateY}px)`, 'important');
         }
