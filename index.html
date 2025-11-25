@@ -1169,6 +1169,8 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
 // DOUBLE TAP/CLICK ДЛЯ УВЕЛИЧЕНИЯ ИКОНЫ
 // ============================================
 let doubleTapZoomActive = false;
+let doubleTapTranslateX = 0;
+let doubleTapTranslateY = 0;
 
 (function() {
     const iconImage = document.getElementById('iconImage');
@@ -1176,6 +1178,11 @@ let doubleTapZoomActive = false;
     let isZoomed = false;
     let tapTimeout = null;
     let isProcessing = false; // Флаг обработки
+    
+    // Для перемещения одним пальцем
+    let isDraggingDoubleTap = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
     
     function handleDoubleTap(e) {
         // Отключаем в режиме свечи
@@ -1211,6 +1218,8 @@ let doubleTapZoomActive = false;
             if (isZoomed) {
                 // Возвращаем к исходному размеру
                 console.log('Zooming out');
+                doubleTapTranslateX = 0;
+                doubleTapTranslateY = 0;
                 iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
                 iconImage.style.setProperty('transform-origin', 'center center', 'important');
                 iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
@@ -1220,6 +1229,8 @@ let doubleTapZoomActive = false;
             } else {
                 // Увеличиваем в 3 раза
                 console.log('Zooming in');
+                doubleTapTranslateX = 0;
+                doubleTapTranslateY = 0;
                 iconImage.style.setProperty('transform', 'scale(3) translate(0, 0)', 'important');
                 iconImage.style.setProperty('transform-origin', 'center center', 'important');
                 iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
@@ -1246,8 +1257,45 @@ let doubleTapZoomActive = false;
         }
     }
     
-    // Для мобильных устройств
-    iconImage.addEventListener('touchend', handleDoubleTap, { passive: false });
+    // Перемещение одним пальцем при double-tap zoom
+    iconImage.addEventListener('touchstart', (e) => {
+        if (doubleTapZoomActive && e.touches.length === 1 && !isProcessing) {
+            isDraggingDoubleTap = true;
+            dragStartX = e.touches[0].clientX;
+            dragStartY = e.touches[0].clientY;
+            iconImage.style.setProperty('transition', 'none', 'important');
+        }
+    }, { passive: false });
+    
+    iconImage.addEventListener('touchmove', (e) => {
+        if (isDraggingDoubleTap && doubleTapZoomActive && e.touches.length === 1) {
+            e.preventDefault();
+            
+            const deltaX = e.touches[0].clientX - dragStartX;
+            const deltaY = e.touches[0].clientY - dragStartY;
+            
+            doubleTapTranslateX += deltaX;
+            doubleTapTranslateY += deltaY;
+            
+            dragStartX = e.touches[0].clientX;
+            dragStartY = e.touches[0].clientY;
+            
+            iconImage.style.setProperty('transform', `scale(3) translate(${doubleTapTranslateX}px, ${doubleTapTranslateY}px)`, 'important');
+        }
+    }, { passive: false });
+    
+    // Объединенный обработчик touchend
+    iconImage.addEventListener('touchend', (e) => {
+        // Сначала проверяем завершение drag
+        if (isDraggingDoubleTap && e.touches.length === 0) {
+            isDraggingDoubleTap = false;
+            iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
+            return; // Не обрабатываем как double tap
+        }
+        
+        // Теперь обрабатываем double tap
+        handleDoubleTap(e);
+    }, { passive: false });
     
     // Для десктопа
     iconImage.addEventListener('click', handleDoubleTap);
@@ -1259,6 +1307,8 @@ let doubleTapZoomActive = false;
             isZoomed = false;
             doubleTapZoomActive = false;
             isProcessing = false;
+            doubleTapTranslateX = 0;
+            doubleTapTranslateY = 0;
             iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
             iconImage.style.zIndex = '1';
         }
