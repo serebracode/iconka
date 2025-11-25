@@ -1166,27 +1166,27 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
 });
 
 // ============================================
-// DOUBLE TAP ДЛЯ УВЕЛИЧЕНИЯ ИКОНЫ
+// DOUBLE TAP/CLICK ДЛЯ УВЕЛИЧЕНИЯ ИКОНЫ
 // ============================================
 (function() {
     const iconImage = document.getElementById('iconImage');
     let lastTap = 0;
     let isZoomed = false;
     
-    iconImage.addEventListener('touchend', (e) => {
+    function handleDoubleTap(e) {
         // Отключаем в режиме свечи
         if (candleVisible) return;
         
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
         
-        console.log('Tap detected, interval:', tapLength);
+        console.log('Tap/click detected, interval:', tapLength);
         
-        // Двойной тап (интервал меньше 300ms)
+        // Двойной тап/клик (интервал меньше 300ms)
         if (tapLength < 300 && tapLength > 0) {
             e.preventDefault();
             
-            console.log('Double tap! isZoomed:', isZoomed);
+            console.log('Double tap/click! isZoomed:', isZoomed);
             
             iconImage.style.transformOrigin = 'center center';
             
@@ -1212,7 +1212,13 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
         }
         
         lastTap = currentTime;
-    });
+    }
+    
+    // Для мобильных устройств
+    iconImage.addEventListener('touchend', handleDoubleTap);
+    
+    // Для десктопа
+    iconImage.addEventListener('click', handleDoubleTap);
     
     // Сбрасываем zoom при смене иконы
     window.addEventListener('iconChanged', () => {
