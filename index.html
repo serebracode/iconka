@@ -1280,6 +1280,23 @@ let doubleTapTranslateY = 0;
             dragStartX = e.touches[0].clientX;
             dragStartY = e.touches[0].clientY;
             
+            // Получаем размеры изображения и экрана
+            const imgRect = iconImage.getBoundingClientRect();
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            
+            // Вычисляем размеры увеличенного изображения
+            const scaledWidth = imgRect.width * 3;
+            const scaledHeight = imgRect.height * 3;
+            
+            // Вычисляем максимальные смещения
+            const maxTranslateX = (scaledWidth - screenWidth) / 2 / 3;
+            const maxTranslateY = (scaledHeight - screenHeight) / 2 / 3;
+            
+            // Ограничиваем перемещение
+            doubleTapTranslateX = Math.max(-maxTranslateX, Math.min(maxTranslateX, doubleTapTranslateX));
+            doubleTapTranslateY = Math.max(-maxTranslateY, Math.min(maxTranslateY, doubleTapTranslateY));
+            
             iconImage.style.setProperty('transform', `scale(3) translate(${doubleTapTranslateX}px, ${doubleTapTranslateY}px)`, 'important');
         }
     }, { passive: false });
