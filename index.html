@@ -1114,198 +1114,34 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
 });
 
 // ============================================
-// DOUBLE TAP/CLICK ДЛЯ УВЕЛИЧЕНИЯ ИКОНЫ
-// ============================================
-let doubleTapZoomActive = false;
-let doubleTapTranslateX = 0;
-let doubleTapTranslateY = 0;
-
-(function() {
-    const iconImage = document.getElementById('iconImage');
-    let lastTap = 0;
-    let isZoomed = false;
-    let tapTimeout = null;
-    let isProcessing = false; // Флаг обработки
-    
-    // Для перемещения одним пальцем
-    let isDraggingDoubleTap = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    
-    function handleDoubleTap(e) {
-        // Отключаем в режиме свечи
-        if (candleVisible) return;
-        
-        // Игнорируем если уже обрабатываем
-        if (isProcessing) {
-            console.log('Already processing, ignoring tap');
-            return;
-        }
-        
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTap;
-        
-        console.log('Tap/click detected, interval:', tapLength, 'isZoomed:', isZoomed);
-        
-        // Двойной тап/клик (интервал от 50ms до 500ms)
-        if (tapLength > 50 && tapLength < 500) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Устанавливаем флаг обработки
-            isProcessing = true;
-            
-            // Отменяем таймаут одиночного тапа
-            if (tapTimeout) {
-                clearTimeout(tapTimeout);
-                tapTimeout = null;
-            }
-            
-            console.log('Double tap/click confirmed!');
-            
-            if (isZoomed) {
-                // Возвращаем к исходному размеру
-                console.log('Zooming out');
-                doubleTapTranslateX = 0;
-                doubleTapTranslateY = 0;
-                iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
-                iconImage.style.setProperty('transform-origin', 'center center', 'important');
-                iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-                iconImage.style.zIndex = '1';
-                isZoomed = false;
-                doubleTapZoomActive = false;
-            } else {
-                // Увеличиваем в 3 раза
-                console.log('Zooming in');
-                doubleTapTranslateX = 0;
-                doubleTapTranslateY = 0;
-                iconImage.style.setProperty('transform', 'scale(3) translate(0, 0)', 'important');
-                iconImage.style.setProperty('transform-origin', 'center center', 'important');
-                iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-                iconImage.style.zIndex = '50';
-                isZoomed = true;
-                doubleTapZoomActive = true;
-            }
-            
-            console.log('Applied transform:', iconImage.style.transform);
-            
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-            
-            // Сбрасываем lastTap и флаг обработки через задержку
-            lastTap = 0;
-            setTimeout(() => {
-                isProcessing = false;
-                console.log('Processing unlocked');
-            }, 600); // Задержка больше максимального интервала
-        } else {
-            // Одиночный тап - запускаем таймаут
-            lastTap = currentTime;
-        }
-    }
-    
-    // Перемещение одним пальцем при double-tap zoom
-    iconImage.addEventListener('touchstart', (e) => {
-        if (doubleTapZoomActive && e.touches.length === 1 && !isProcessing) {
-            isDraggingDoubleTap = true;
-            dragStartX = e.touches[0].clientX;
-            dragStartY = e.touches[0].clientY;
-            iconImage.style.setProperty('transition', 'none', 'important');
-        }
-    }, { passive: false });
-    
-    iconImage.addEventListener('touchmove', (e) => {
-        if (isDraggingDoubleTap && doubleTapZoomActive && e.touches.length === 1) {
-            e.preventDefault();
-            
-            const deltaX = e.touches[0].clientX - dragStartX;
-            const deltaY = e.touches[0].clientY - dragStartY;
-            
-            // Делим на 3 т.к. translate применяется до scale(3)
-            const newTranslateX = doubleTapTranslateX + (deltaX / 3);
-            const newTranslateY = doubleTapTranslateY + (deltaY / 3);
-            
-            dragStartX = e.touches[0].clientX;
-            dragStartY = e.touches[0].clientY;
-            
-            // Получаем текущие отображаемые размеры изображения (без transform)
-            // Сохраняем текущий transform
-            const currentTransform = iconImage.style.transform;
-            iconImage.style.transform = 'none';
-            const imgRect = iconImage.getBoundingClientRect();
-            iconImage.style.transform = currentTransform;
-            
-            const displayWidth = imgRect.width;
-            const displayHeight = imgRect.height;
-            
-            // Размеры экрана
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            
-            // При scale(3) изображение увеличивается в 3 раза
-            const scaledWidth = displayWidth * 3;
-            const scaledHeight = displayHeight * 3;
-            
-            // Вычисляем насколько изображение больше экрана
-            const overflowX = Math.max(0, (scaledWidth - screenWidth) / 2);
-            const overflowY = Math.max(0, (scaledHeight - screenHeight) / 2);
-            
-            // Максимальное смещение (делим на 3 т.к. translate применяется до scale)
-            const maxX = overflowX / 3;
-            const maxY = overflowY / 3;
-            
-            // Применяем ограничения
-            doubleTapTranslateX = Math.max(-maxX, Math.min(maxX, newTranslateX));
-            doubleTapTranslateY = Math.max(-maxY, Math.min(maxY, newTranslateY));
-            
-            iconImage.style.setProperty('transform', `scale(3) translate(${doubleTapTranslateX}px, ${doubleTapTranslateY}px)`, 'important');
-        }
-    }, { passive: false });
-    
-    // Объединенный обработчик touchend
-    iconImage.addEventListener('touchend', (e) => {
-        // Сначала проверяем завершение drag
-        if (isDraggingDoubleTap && e.touches.length === 0) {
-            isDraggingDoubleTap = false;
-            iconImage.style.setProperty('transition', 'transform 0.3s ease-out', 'important');
-            return; // Не обрабатываем как double tap
-        }
-        
-        // Теперь обрабатываем double tap
-        handleDoubleTap(e);
-    }, { passive: false });
-    
-    // Для десктопа
-    iconImage.addEventListener('click', handleDoubleTap);
-    
-    // Сбрасываем zoom при смене иконы
-    window.addEventListener('iconChanged', () => {
-        if (isZoomed) {
-            console.log('Icon changed, resetting zoom');
-            isZoomed = false;
-            doubleTapZoomActive = false;
-            isProcessing = false;
-            doubleTapTranslateX = 0;
-            doubleTapTranslateY = 0;
-            iconImage.style.setProperty('transform', 'scale(1) translate(0, 0)', 'important');
-            iconImage.style.zIndex = '1';
-        }
-    });
-})();
-
-// ============================================
-// PINCH-TO-ZOOM + PAN ДЛЯ ИКОНЫ
+// ВЗАИМОДЕЙСТВИЕ С ИЗОБРАЖЕНИЕМ ИКОНЫ
 // ============================================
 (function() {
     const iconImage = document.getElementById('iconImage');
-    const originalTransition = 'transform 0.3s ease-out, width 1.5s ease-in-out';
+    
+    // Состояние
+    let currentScale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isDoubleTapZoomed = false;
+    
+    // Для pinch
+    let isPinching = false;
     let initialDistance = 0;
     let initialScale = 1;
-    let currentScale = 1;
-    let posX = 0, posY = 0;
-    let lastCenterX = 0, lastCenterY = 0;
+    let pinchStartX = 0;
+    let pinchStartY = 0;
     
+    // Для pan (перемещения одним пальцем)
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    
+    // Для double tap
+    let lastTapTime = 0;
+    let isProcessingDoubleTap = false;
+    
+    // Вспомогательные функции
     function getDistance(touches) {
         const dx = touches[0].clientX - touches[1].clientX;
         const dy = touches[0].clientY - touches[1].clientY;
@@ -1319,74 +1155,203 @@ let doubleTapTranslateY = 0;
         };
     }
     
-    function updateTransform() {
-        iconImage.style.transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+    function applyTransform(animated = true) {
+        if (animated) {
+            iconImage.style.transition = 'transform 0.3s ease-out';
+        } else {
+            iconImage.style.transition = 'none';
+        }
+        iconImage.style.transform = `scale(${currentScale}) translate(${translateX}px, ${translateY}px)`;
+        iconImage.style.transformOrigin = 'center center';
     }
     
+    function getLimits(scale) {
+        // Получаем оригинальные размеры
+        const tempTransform = iconImage.style.transform;
+        iconImage.style.transform = 'none';
+        const rect = iconImage.getBoundingClientRect();
+        iconImage.style.transform = tempTransform;
+        
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        
+        const scaledWidth = rect.width * scale;
+        const scaledHeight = rect.height * scale;
+        
+        const overflowX = Math.max(0, (scaledWidth - screenWidth) / 2);
+        const overflowY = Math.max(0, (scaledHeight - screenHeight) / 2);
+        
+        return {
+            maxX: overflowX / scale,
+            maxY: overflowY / scale
+        };
+    }
+    
+    function constrainTranslate(scale, x, y) {
+        const limits = getLimits(scale);
+        return {
+            x: Math.max(-limits.maxX, Math.min(limits.maxX, x)),
+            y: Math.max(-limits.maxY, Math.min(limits.maxY, y))
+        };
+    }
+    
+    // TOUCHSTART
     iconImage.addEventListener('touchstart', (e) => {
-        // Отключаем zoom в режиме свечи
         if (candleVisible) return;
         
         if (e.touches.length === 2) {
-            e.preventDefault();
+            // Начало pinch
+            isPinching = true;
+            isPanning = false;
             initialDistance = getDistance(e.touches);
             initialScale = currentScale;
             const center = getCenter(e.touches);
-            lastCenterX = center.x;
-            lastCenterY = center.y;
+            pinchStartX = translateX;
+            pinchStartY = translateY;
             iconImage.style.transition = 'none';
-            // Поднимаем над текстом, но ниже кнопок (z-index кнопок 100)
             iconImage.style.zIndex = '50';
+        } else if (e.touches.length === 1 && isDoubleTapZoomed) {
+            // Начало pan (только если уже увеличено через double tap)
+            isPanning = true;
+            panStartX = e.touches[0].clientX;
+            panStartY = e.touches[0].clientY;
+            iconImage.style.transition = 'none';
         }
     }, { passive: false });
     
+    // TOUCHMOVE
     iconImage.addEventListener('touchmove', (e) => {
-        // Отключаем zoom в режиме свечи
         if (candleVisible) return;
         
-        // Отключаем pinch-zoom если активен double-tap zoom
-        if (doubleTapZoomActive) return;
-        
-        if (e.touches.length === 2) {
+        if (isPinching && e.touches.length === 2) {
             e.preventDefault();
             
-            // Масштаб
             const currentDistance = getDistance(e.touches);
-            currentScale = Math.min(Math.max(initialScale * (currentDistance / initialDistance), 1), 3);
+            let newScale = initialScale * (currentDistance / initialDistance);
             
-            // Перемещение (pan)
-            const center = getCenter(e.touches);
-            posX += center.x - lastCenterX;
-            posY += center.y - lastCenterY;
-            lastCenterX = center.x;
-            lastCenterY = center.y;
+            // Ограничения scale
+            if (isDoubleTapZoomed) {
+                // Если double tap активен: от 1.25x до 3x
+                newScale = Math.max(1.25, Math.min(3, newScale));
+            } else {
+                // Если double tap НЕ активен: от 1x до 3x
+                newScale = Math.max(1, Math.min(3, newScale));
+            }
             
-            updateTransform();
+            currentScale = newScale;
+            
+            // Применяем ограничения к translate
+            const constrained = constrainTranslate(currentScale, translateX, translateY);
+            translateX = constrained.x;
+            translateY = constrained.y;
+            
+            applyTransform(false);
+            
+        } else if (isPanning && e.touches.length === 1 && isDoubleTapZoomed) {
+            e.preventDefault();
+            
+            const deltaX = e.touches[0].clientX - panStartX;
+            const deltaY = e.touches[0].clientY - panStartY;
+            
+            panStartX = e.touches[0].clientX;
+            panStartY = e.touches[0].clientY;
+            
+            // Делим на currentScale для компенсации
+            const newX = translateX + (deltaX / currentScale);
+            const newY = translateY + (deltaY / currentScale);
+            
+            const constrained = constrainTranslate(currentScale, newX, newY);
+            translateX = constrained.x;
+            translateY = constrained.y;
+            
+            applyTransform(false);
         }
     }, { passive: false });
     
+    // TOUCHEND
     iconImage.addEventListener('touchend', (e) => {
-        // Отключаем zoom в режиме свечи
         if (candleVisible) return;
         
-        // Не сбрасываем если активен double-tap zoom
-        if (doubleTapZoomActive) return;
-        
-        if (e.touches.length < 2) {
-            // Возвращаем к исходному размеру с анимацией
-            iconImage.style.transition = 'transform 0.3s ease-out';
-            currentScale = 1;
-            posX = 0;
-            posY = 0;
-            updateTransform();
+        // Завершение pinch
+        if (isPinching && e.touches.length < 2) {
+            isPinching = false;
             
-            // Возвращаем оригинальный transition и z-index после анимации
-            setTimeout(() => {
-                iconImage.style.zIndex = '1';
-                iconImage.style.transition = originalTransition;
-                iconImage.style.transform = '';
-            }, 300);
+            if (!isDoubleTapZoomed) {
+                // Если НЕ в режиме double tap - возвращаем к 1x
+                currentScale = 1;
+                translateX = 0;
+                translateY = 0;
+                applyTransform(true);
+                setTimeout(() => {
+                    iconImage.style.zIndex = '1';
+                }, 300);
+            } else {
+                // Если в режиме double tap - оставляем как есть
+                applyTransform(true);
+            }
         }
+        
+        // Завершение pan
+        if (isPanning && e.touches.length === 0) {
+            isPanning = false;
+            applyTransform(true);
+        }
+        
+        // Обработка double tap (только если не было pinch/pan)
+        if (!isPinching && !isPanning && e.touches.length === 0 && !isProcessingDoubleTap) {
+            const currentTime = Date.now();
+            const timeSinceLastTap = currentTime - lastTapTime;
+            
+            if (timeSinceLastTap > 50 && timeSinceLastTap < 300) {
+                // Double tap!
+                e.preventDefault();
+                isProcessingDoubleTap = true;
+                
+                if (isDoubleTapZoomed) {
+                    // Возврат к 1x
+                    currentScale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    isDoubleTapZoomed = false;
+                    applyTransform(true);
+                    iconImage.style.zIndex = '1';
+                } else {
+                    // Увеличение до 2x
+                    currentScale = 2;
+                    translateX = 0;
+                    translateY = 0;
+                    isDoubleTapZoomed = true;
+                    applyTransform(true);
+                    iconImage.style.zIndex = '50';
+                }
+                
+                if (tg?.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+                
+                lastTapTime = 0;
+                setTimeout(() => {
+                    isProcessingDoubleTap = false;
+                }, 400);
+            } else {
+                lastTapTime = currentTime;
+            }
+        }
+    }, { passive: false });
+    
+    // Сброс при смене иконы
+    window.addEventListener('iconChanged', () => {
+        currentScale = 1;
+        translateX = 0;
+        translateY = 0;
+        isDoubleTapZoomed = false;
+        isPinching = false;
+        isPanning = false;
+        isProcessingDoubleTap = false;
+        lastTapTime = 0;
+        iconImage.style.transform = '';
+        iconImage.style.zIndex = '1';
+        iconImage.style.transition = 'transform 0.3s ease-out, width 1.5s ease-in-out';
     });
 })();
 
