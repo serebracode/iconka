@@ -908,90 +908,113 @@ function showInfo() {
     infoBtnIcon.style.display = 'none';
     infoBtnClose.style.display = 'block';
     
-    // Скрываем основной контейнер с анимацией
     const iconContainer = document.getElementById('iconContainer');
-    iconContainer.style.opacity = '0';
+    const iconImage = document.getElementById('iconImage');
+    const iconTitleBlock = document.getElementById('iconTitleBlock');
+    const scrollContainer = document.getElementById('infoScrollContainer');
     
-    setTimeout(() => {
-        iconContainer.style.display = 'none';
-        
-        // Показываем прокручиваемый контейнер
-        const scrollContainer = document.getElementById('infoScrollContainer');
-        scrollContainer.style.display = 'block';
-        
-        // Заполняем данными
-        document.getElementById('infoIconImage').src = selectedIcon.image;
-        document.getElementById('infoTitleText').textContent = selectedIcon.title;
-        document.getElementById('infoDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
-        
-        // Формируем контент инфо с правами
-        const infoContent = `
-            ${selectedIcon.description_full ? `<p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">${selectedIcon.description_full}</p>` : ''}
-            <div style="margin: 12px 0;">
-                <strong style="color: #FFFFFF;">Автор:</strong>
-                <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
-            </div>
-            <div style="margin: 12px 0;">
-                <strong style="color: #FFFFFF;">Датировка:</strong>
-                <span style="margin-left: 8px;">${(selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
-            </div>
-            <div style="margin: 12px 0;">
-                <strong style="color: #FFFFFF;">Размер:</strong>
-                <span style="margin-left: 8px;">${selectedIcon.size || 'Неизвестно'}</span>
-            </div>
-            <div style="margin: 12px 0;">
-                <strong style="color: #FFFFFF;">Техника:</strong>
-                <span style="margin-left: 8px;">${selectedIcon.technique || 'Неизвестно'}</span>
-            </div>
-            <div style="margin: 12px 0;">
-                <strong style="color: #FFFFFF;">Местонахождение:</strong>
-                <span style="margin-left: 8px;">${selectedIcon.location || 'Неизвестно'}</span>
-            </div>
-            <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                <p style="margin: 0; font-size: 14px; color: #8E8E93; line-height: 1.5; padding-bottom: 20px;">
-                    ${selectedIcon.rights || 'Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.'}
-                </p>
-            </div>
-        `;
-        document.getElementById('infoContentText').innerHTML = infoContent;
-        
-        // Запускаем fade-in
-        requestAnimationFrame(() => {
-            scrollContainer.style.opacity = '1';
-        });
-    }, 300); // Ждём окончания fade-out основного контейнера
+    // Вычисляем позицию для иконы (48pt под логотипом)
+    const logoBottom = document.getElementById('detailLogoHeader').getBoundingClientRect().bottom;
+    const targetTop = logoBottom + 48;
+    
+    // Устанавливаем transition для иконы
+    iconImage.style.transition = 'transform 0.3s ease-out';
+    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
+    
+    // Скрываем название
+    iconTitleBlock.style.opacity = '0';
+    
+    // Уменьшаем и поднимаем икону
+    const currentRect = iconImage.getBoundingClientRect();
+    const scaledHeight = currentRect.height * 0.5;
+    const moveY = targetTop - (currentRect.top + (currentRect.height - scaledHeight) / 2);
+    
+    iconImage.style.transform = `scale(0.5) translateY(${moveY / 0.5}px)`;
+    
+    // Готовим инфо-панель (за экраном снизу)
+    scrollContainer.style.display = 'block';
+    scrollContainer.style.opacity = '1';
+    scrollContainer.style.transition = 'transform 0.3s ease-out';
+    scrollContainer.style.transform = 'translateY(100%)';
+    
+    // Заполняем данными
+    document.getElementById('infoIconImage').src = selectedIcon.image;
+    document.getElementById('infoTitleText').textContent = selectedIcon.title;
+    document.getElementById('infoDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
+    
+    // Формируем контент инфо с правами
+    const infoContent = `
+        ${selectedIcon.description_full ? `<p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">${selectedIcon.description_full}</p>` : ''}
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Автор:</strong>
+            <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
+        </div>
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Датировка:</strong>
+            <span style="margin-left: 8px;">${(selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
+        </div>
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Размер:</strong>
+            <span style="margin-left: 8px;">${selectedIcon.size || 'Неизвестно'}</span>
+        </div>
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Техника:</strong>
+            <span style="margin-left: 8px;">${selectedIcon.technique || 'Неизвестно'}</span>
+        </div>
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Местонахождение:</strong>
+            <span style="margin-left: 8px;">${selectedIcon.location || 'Неизвестно'}</span>
+        </div>
+        <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <p style="margin: 0; font-size: 14px; color: #8E8E93; line-height: 1.5; padding-bottom: 20px;">
+                ${selectedIcon.rights || 'Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.'}
+            </p>
+        </div>
+    `;
+    document.getElementById('infoContentText').innerHTML = infoContent;
+    
+    // Запускаем slide-in инфо-панели
+    requestAnimationFrame(() => {
+        scrollContainer.style.transform = 'translateY(0)';
+    });
 }
 
 function closeInfo() {
     infoPanelVisible = false;
     
-    // Скрываем прокручиваемый контейнер с анимацией
+    const iconImage = document.getElementById('iconImage');
+    const iconTitleBlock = document.getElementById('iconTitleBlock');
     const scrollContainer = document.getElementById('infoScrollContainer');
-    scrollContainer.style.opacity = '0';
     
+    // Slide-out инфо-панели вниз
+    scrollContainer.style.transition = 'transform 0.3s ease-out';
+    scrollContainer.style.transform = 'translateY(100%)';
+    
+    // Возвращаем икону в исходное положение
+    iconImage.style.transition = 'transform 0.3s ease-out';
+    iconImage.style.transform = '';
+    
+    // Показываем название
+    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
+    iconTitleBlock.style.opacity = '1';
+    
+    // Показываем кнопку "Режим свечи"
+    document.getElementById('candleBtn').style.opacity = '1';
+    document.getElementById('candleBtn').style.pointerEvents = 'auto';
+    
+    // Возвращаем кнопку инфо к исходному виду
+    const infoBtn = document.getElementById('infoBtn');
+    const infoBtnIcon = document.getElementById('infoBtnIcon');
+    const infoBtnClose = document.getElementById('infoBtnClose');
+    infoBtn.style.backgroundColor = '';
+    infoBtnIcon.style.display = 'block';
+    infoBtnClose.style.display = 'none';
+    
+    // Скрываем инфо-контейнер после анимации
     setTimeout(() => {
         scrollContainer.style.display = 'none';
-        
-        // Показываем основной контейнер
-        const iconContainer = document.getElementById('iconContainer');
-        iconContainer.style.display = 'flex';
-        
-        requestAnimationFrame(() => {
-            iconContainer.style.opacity = '1';
-        });
-        
-        // Показываем кнопку "Режим свечи"
-        document.getElementById('candleBtn').style.opacity = '1';
-        document.getElementById('candleBtn').style.pointerEvents = 'auto';
-        
-        // Возвращаем кнопку инфо к исходному виду
-        const infoBtn = document.getElementById('infoBtn');
-        const infoBtnIcon = document.getElementById('infoBtnIcon');
-        const infoBtnClose = document.getElementById('infoBtnClose');
-        infoBtn.style.backgroundColor = '';
-        infoBtnIcon.style.display = 'block';
-        infoBtnClose.style.display = 'none';
-    }, 300); // Ждём окончания fade-out прокручиваемого контейнера
+        scrollContainer.style.transform = '';
+    }, 300);
 }
 
 // Позиционировать название между логотипом и изображением
