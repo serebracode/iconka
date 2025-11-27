@@ -825,19 +825,19 @@ let candleVisible = false;
 let infoPanelVisible = false;
 
 function showCandle() {
-    // Сначала сбрасываем zoom/pan если активен
-    if (typeof window.resetImageZoom === 'function') {
-        window.resetImageZoom();
-    }
-    
     candleVisible = true;
     infoPanelVisible = false;
     
-    // Запускаем анимацию свечи и width синхронно (после небольшой задержки для завершения resetImageZoom)
-    setTimeout(() => {
-        document.getElementById('candleLayer').style.opacity = '1';
-        document.getElementById('iconImage').style.width = '100%';
-    }, 50);
+    const iconImage = document.getElementById('iconImage');
+    
+    // Убираем transform, чтобы не конфликтовало с width
+    iconImage.style.transform = '';
+    iconImage.style.transition = 'width 1.5s ease-in-out';
+    iconImage.style.zIndex = '1';
+    
+    // Запускаем анимацию
+    document.getElementById('candleLayer').style.opacity = '1';
+    iconImage.style.width = '100%';
     
     // Плавно скрываем логотип, название и кнопки
     document.getElementById('detailLogoHeader').style.opacity = '0';
@@ -861,6 +861,10 @@ function showCandle() {
         closeBtn.style.pointerEvents = 'auto';
     }, 1500);
     
+    // Сбрасываем состояние zoom
+    if (typeof window.resetImageZoom === 'function') {
+        window.resetImageZoom();
+    }
 }
 
 function closeCandle() {
