@@ -913,19 +913,23 @@ function showInfo() {
     const scrollContainer = document.getElementById('infoScrollContainer');
     const placeholder = document.getElementById('infoIconPlaceholder');
     
-    // Скрываем название на экране иконы
+    // Вычисляем позицию для иконы (48pt под логотипом)
+    const logoBottom = document.getElementById('detailLogoHeader').getBoundingClientRect().bottom;
+    const targetTop = logoBottom + 48;
+    
+    // Устанавливаем transition для иконы
+    iconImage.style.transition = 'transform 0.3s ease-out';
+    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
+    
+    // Скрываем название
     iconTitleBlock.style.opacity = '0';
     
-    // Скрываем iconContainer
-    iconContainer.style.opacity = '0';
+    // Уменьшаем и поднимаем икону
+    const currentRect = iconImage.getBoundingClientRect();
+    const scaledHeight = currentRect.height * 0.5;
+    const moveY = targetTop - (currentRect.top + (currentRect.height - scaledHeight) / 2);
     
-    // Сразу перемещаем икону в scroll-контейнер
-    iconImage.style.transition = 'none';
-    iconImage.style.transform = '';
-    iconImage.style.width = '50%';
-    iconImage.style.position = 'relative';
-    iconImage.style.zIndex = '1';
-    placeholder.appendChild(iconImage);
+    iconImage.style.transform = `scale(0.5) translateY(${moveY / 0.5}px)`;
     
     // Заполняем данными
     document.getElementById('infoTitleText').textContent = selectedIcon.title;
@@ -967,11 +971,27 @@ function showInfo() {
     scrollContainer.style.transform = 'translateY(100%)';
     scrollContainer.scrollTop = 0;
     
-    // Запускаем slide-in
-    requestAnimationFrame(() => {
-        scrollContainer.style.transition = 'transform 0.3s ease-out';
-        scrollContainer.style.transform = 'translateY(0)';
-    });
+    // После анимации иконы — перемещаем её в scroll-контейнер
+    setTimeout(() => {
+        // Сохраняем текущие размеры иконы
+        const iconWidth = iconImage.getBoundingClientRect().width;
+        
+        // Сбрасываем transform и задаём фиксированную ширину
+        iconImage.style.transition = 'none';
+        iconImage.style.transform = '';
+        iconImage.style.width = iconWidth + 'px';
+        iconImage.style.position = 'relative';
+        iconImage.style.zIndex = '1';
+        
+        // Перемещаем икону в placeholder
+        placeholder.appendChild(iconImage);
+        
+        // Показываем инфо-панель (slide-in)
+        requestAnimationFrame(() => {
+            scrollContainer.style.transition = 'transform 0.3s ease-out';
+            scrollContainer.style.transform = 'translateY(0)';
+        });
+    }, 300);
 }
 
 function closeInfo() {
@@ -997,8 +1017,8 @@ function closeInfo() {
         iconImage.style.position = 'relative';
         iconContainer.insertBefore(iconImage, iconTitleBlock);
         
-        // Показываем iconContainer и название
-        iconContainer.style.opacity = '1';
+        // Показываем название
+        iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
         iconTitleBlock.style.opacity = '1';
         
     }, 300);
