@@ -152,7 +152,6 @@
          class="animated"
          style="width: 107px; 
                 height: 107px; 
-                border-radius: 24px;
                 margin-bottom: 27px; 
                 opacity: 1;
                 transition: opacity 0.3s ease-out;
@@ -166,7 +165,7 @@
                 height: 27px;
                 opacity: 1;
                 transition: opacity 0.3s ease-out; 
-                animation: fadeIn 0.8s ease-out 0.2s both;">
+                animation: fadeInScale 0.6s ease-out 0.2s both;">
     
     <!-- Спиннер загрузки данных -->
     <div id="loadingSpinner" style="margin-top: 24px; display: none;">
@@ -830,14 +829,17 @@ function showCandle() {
     
     const iconImage = document.getElementById('iconImage');
     
-    // Убираем transform, чтобы не конфликтовало с width
+    // Шаг 1: Плавно сбрасываем transform (если есть) - 300ms
+    iconImage.style.transition = 'transform 0.3s ease-out';
     iconImage.style.transform = '';
-    iconImage.style.transition = 'width 1.5s ease-in-out';
     iconImage.style.zIndex = '1';
     
-    // Запускаем анимацию
-    document.getElementById('candleLayer').style.opacity = '1';
-    iconImage.style.width = '100%';
+    // Шаг 2: После сброса transform переключаемся на width - через 350ms
+    setTimeout(() => {
+        iconImage.style.transition = 'width 1.5s ease-in-out';
+        iconImage.style.width = '100%';
+        document.getElementById('candleLayer').style.opacity = '1';
+    }, 350);
     
     // Плавно скрываем логотип, название и кнопки
     document.getElementById('detailLogoHeader').style.opacity = '0';
@@ -851,7 +853,7 @@ function showCandle() {
     document.getElementById('infoBtn').style.pointerEvents = 'none';
     document.getElementById('shareBtn').style.pointerEvents = 'none';
     
-    // Показать кнопку закрытия после завершения анимации (1.5s) с плавным появлением
+    // Показать кнопку закрытия после завершения анимации (1.5s + 350ms) с плавным появлением
     const closeBtn = document.getElementById('closeCandleBtn');
     closeBtn.style.display = 'flex';
     closeBtn.style.opacity = '0';
@@ -859,7 +861,7 @@ function showCandle() {
     setTimeout(() => {
         closeBtn.style.opacity = '1';
         closeBtn.style.pointerEvents = 'auto';
-    }, 1500);
+    }, 1850);
     
     // Сбрасываем состояние zoom
     if (typeof window.resetImageZoom === 'function') {
