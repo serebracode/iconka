@@ -294,63 +294,66 @@
         </svg>
     </button>
 
-    <!-- Контейнер для иконы и свечи -->
-    <div id="iconContainer" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px); bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px + 40px); left: 0; right: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1.5s ease-in-out;">
+    <!-- Единый scroll-контейнер -->
+    <div id="detailScrollContainer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;">
         
-        <!-- СЛОЙ 1: ИКОНА -->
-        <img id="iconImage" 
-             style="position: relative;
-                    width: 80%; 
-                    height: auto; 
-                    max-height: 80vh; 
-                    object-fit: contain; 
-                    z-index: 1;
-                    touch-action: none;
-                    transform-origin: center center;
-                    transition: transform 0.3s ease-out, width 1.5s ease-in-out;" 
-             alt="Икона">
+        <!-- Верхний отступ (safe area + логотип + gap) -->
+        <div id="scrollSpacer" style="height: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 48px);"></div>
         
-        <!-- Название иконы и датировка — под иконой с отступом 48px -->
-        <div id="iconTitleBlock" style="margin-top: 48px; text-align: center; z-index: 5; opacity: 1; transition: opacity 1.5s ease-in-out, font-size 1.5s ease-in-out; padding: 0 16px;">
-            <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400; transition: font-size 1.5s ease-in-out;"></div>
-            <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px; transition: font-size 1.5s ease-in-out;"></div>
-        </div>
-
-        <!-- СЛОЙ 2: СВЕЧА - СКРЫТА ПО УМОЛЧАНИЮ -->
-        <div id="candleLayer" style="position: absolute; 
-                    bottom: 0; 
-                    left: 0;
-                    right: 0;
-                    z-index: 10; 
-                    display: flex; 
-                    align-items: flex-end; 
-                    justify-content: center; 
-                    pointer-events: none;
-                    opacity: 0;
-                    transition: opacity 1.5s ease-in-out;">
-            <img src="./video/3.png" 
-                 alt="Свеча" 
-                 style="width: 100%; 
+        <!-- Контейнер для иконы -->
+        <div id="iconContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - var(--tg-safe-area-inset-top, 0px) - 14px - 18px - 48px - var(--tg-safe-area-inset-bottom, 0px) - 46px); padding: 0 16px;">
+            
+            <!-- ИКОНА -->
+            <img id="iconImage" 
+                 style="width: 80%; 
                         height: auto; 
+                        max-height: 70vh; 
                         object-fit: contain; 
-                        display: block;">
+                        z-index: 1;
+                        touch-action: pan-y;
+                        transform-origin: center top;
+                        transition: transform 0.05s linear, width 1.5s ease-in-out;" 
+                 alt="Икона">
+            
+            <!-- Название иконы и датировка -->
+            <div id="iconTitleBlock" style="margin-top: 48px; text-align: center; z-index: 5; padding: 0 16px; transition: opacity 0.15s linear;">
+                <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
+                <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
+            </div>
+        </div>
+        
+        <!-- Инфо-контент (изначально ниже viewport) -->
+        <div id="infoContent" style="padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px);">
+            
+            <!-- Название и датировка (в режиме инфо) -->
+            <div id="infoTitleBlock" style="text-align: center; margin-bottom: 36px; opacity: 0; transition: opacity 0.15s linear;">
+                <div id="infoTitleText" style="color: #FFFFFF; font-size: 20px; font-weight: 400;"></div>
+                <div id="infoDateText" style="color: #8E8E93; font-size: 16px; margin-top: 4px;"></div>
+            </div>
+            
+            <!-- Контент инфо -->
+            <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6;"></div>
         </div>
     </div>
     
-    <!-- Прокручиваемый контейнер для режима инфо -->
-    <div id="infoScrollContainer" style="display: none; position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 48px); left: 0; right: 0; bottom: 0; overflow-y: auto; z-index: 50; padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 60px); opacity: 1;">
-        <!-- Placeholder для иконы (сюда переместится оригинал) -->
-        <div id="infoIconPlaceholder" style="display: flex; justify-content: center; margin-bottom: 36px;">
-        </div>
-        
-        <!-- Название и датировка -->
-        <div style="text-align: center; margin-bottom: 36px;">
-            <div id="infoTitleText" style="color: #FFFFFF; font-size: 20px; font-weight: 400;"></div>
-            <div id="infoDateText" style="color: #8E8E93; font-size: 16px; margin-top: 4px;"></div>
-        </div>
-        
-        <!-- Контент инфо -->
-        <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6;"></div>
+    <!-- СЛОЙ СВЕЧИ - поверх scroll-контейнера -->
+    <div id="candleLayer" style="position: absolute; 
+                bottom: 0; 
+                left: 0;
+                right: 0;
+                z-index: 20; 
+                display: flex; 
+                align-items: flex-end; 
+                justify-content: center; 
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 1.5s ease-in-out;">
+        <img src="./video/3.png" 
+             alt="Свеча" 
+             style="width: 100%; 
+                    height: auto; 
+                    object-fit: contain; 
+                    display: block;">
     </div>
 
     <!-- Кнопка Поделиться — слева внизу -->
@@ -362,7 +365,7 @@
     </button>
 
     <!-- Кнопка запуска режима свечи — по центру внизу -->
-    <button id="candleBtn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 100; height: 40px; padding: 0 20px; background-color: rgba(255, 255, 255, 0.08); border: none; border-radius: 20px; color: #FFFFFF; font-size: 14px; font-family: inherit; cursor: pointer; opacity: 1; transition: opacity 1.5s ease-in-out, background-color 0.2s; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; font-weight: 400;">
+    <button id="candleBtn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 100; height: 40px; padding: 0 20px; background-color: rgba(255, 255, 255, 0.08); border: none; border-radius: 20px; color: #FFFFFF; font-size: 14px; font-family: inherit; cursor: pointer; opacity: 1; transition: opacity 0.3s ease-out, background-color 0.2s; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; font-weight: 400;">
         Режим свечи
     </button>
     
@@ -373,7 +376,7 @@
     </style>
 
     <!-- Кнопка Инфо — справа внизу -->
-    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); right: 20px; z-index: 150; width: 40px; height: 40px; opacity: 1; transition: opacity 1.5s ease-in-out, background-color 0.3s ease-out;">
+    <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); right: 20px; z-index: 150; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out, background-color 0.3s ease-out;">
         <svg id="infoBtnIcon" width="20" height="20" viewBox="0 0 28 28" fill="none">
             <circle cx="14" cy="14" r="12" stroke="#FFFFFF" stroke-width="1.5"/>
             <path d="M14 12V20M14 8V9.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
@@ -623,6 +626,40 @@ function selectIcon(id) {
     document.getElementById('iconTitleText').textContent = selectedIcon.title;
     document.getElementById('iconDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
     
+    // Заполняем инфо-контент
+    document.getElementById('infoTitleText').textContent = selectedIcon.title;
+    document.getElementById('infoDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
+    
+    const infoContent = `
+        ${selectedIcon.description_full ? `<p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">${selectedIcon.description_full}</p>` : ''}
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Автор:</strong>
+            <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
+        </div>
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Датировка:</strong>
+            <span style="margin-left: 8px;">${(selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
+        </div>
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Размер:</strong>
+            <span style="margin-left: 8px;">${selectedIcon.size || 'Неизвестно'}</span>
+        </div>
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Техника:</strong>
+            <span style="margin-left: 8px;">${selectedIcon.technique || 'Неизвестно'}</span>
+        </div>
+        <div style="margin: 12px 0;">
+            <strong style="color: #FFFFFF;">Местонахождение:</strong>
+            <span style="margin-left: 8px;">${selectedIcon.location || 'Неизвестно'}</span>
+        </div>
+        <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <p style="margin: 0; font-size: 14px; color: #8E8E93; line-height: 1.5; padding-bottom: 20px;">
+                ${selectedIcon.rights || 'Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.'}
+            </p>
+        </div>
+    `;
+    document.getElementById('infoContentText').innerHTML = infoContent;
+    
     // После анимации показываем экран иконы
     setTimeout(() => {
         listScreen.classList.remove('active');
@@ -630,6 +667,9 @@ function selectIcon(id) {
         
         detailScreen.classList.add('active');
         detailScreen.classList.add('detail-fadein');
+        
+        // Сбрасываем скролл
+        document.getElementById('detailScrollContainer').scrollTop = 0;
         
         // Показать нативную кнопку "Назад" в Telegram
         if (tg?.BackButton) {
@@ -654,15 +694,15 @@ function selectIcon(id) {
 
 function resetDetailScreenUI() {
     document.getElementById('candleLayer').style.opacity = '0';
-    document.getElementById('iconImage').style.width = '80%';
     
-    // Закрываем режим инфо если открыт
-    if (infoPanelVisible) {
-        closeInfo();
-    }
+    const iconImage = document.getElementById('iconImage');
+    iconImage.style.transform = 'scale(1)';
+    iconImage.style.width = '80%';
+    
+    document.getElementById('iconTitleBlock').style.opacity = '1';
+    document.getElementById('infoTitleBlock').style.opacity = '0';
     
     document.getElementById('detailLogoHeader').style.opacity = '1';
-    document.getElementById('iconTitleBlock').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('infoBtn').style.opacity = '1';
     document.getElementById('shareBtn').style.opacity = '1';
@@ -671,6 +711,20 @@ function resetDetailScreenUI() {
     document.getElementById('shareBtn').style.pointerEvents = 'auto';
     document.getElementById('closeCandleBtn').style.display = 'none';
     document.getElementById('closeCandleBtn').style.opacity = '0';
+    
+    // Возвращаем кнопку инфо к исходному виду
+    const infoBtn = document.getElementById('infoBtn');
+    const infoBtnIcon = document.getElementById('infoBtnIcon');
+    const infoBtnClose = document.getElementById('infoBtnClose');
+    infoBtn.style.backgroundColor = '';
+    infoBtnIcon.style.display = 'block';
+    infoBtnClose.style.display = 'none';
+    
+    // Сбрасываем скролл
+    const scrollContainer = document.getElementById('detailScrollContainer');
+    if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+    }
 }
 
 function goBack() {
@@ -790,49 +844,25 @@ function showCandle() {
     candleVisible = true;
     infoPanelVisible = false;
     
+    // Сбрасываем скролл наверх
+    const scrollContainer = document.getElementById('detailScrollContainer');
+    scrollContainer.scrollTop = 0;
+    
+    // Блокируем скролл
+    scrollContainer.style.overflow = 'hidden';
+    
     const iconImage = document.getElementById('iconImage');
     
-    // Проверяем есть ли активный transform
-    const currentTransform = iconImage.style.transform;
-    const hasZoom = currentTransform && currentTransform !== '';
-    
-    if (hasZoom) {
-        // Если есть zoom - плавно убираем transform и увеличиваем width одновременно
-        iconImage.style.transition = 'transform 1.5s ease-in-out, width 1.5s ease-in-out';
-        iconImage.style.transform = 'scale(1) translate(0, 0)';
-        iconImage.style.width = '100%';
-        
-        // Сбрасываем внутренние переменные zoom ПОСЛЕ анимации
-        setTimeout(() => {
-            if (typeof window.resetImageZoomState === 'function') {
-                window.resetImageZoomState();
-            }
-        }, 1500);
-    } else {
-        // Если нет zoom - просто анимируем width
-        iconImage.style.transition = 'width 1.5s ease-in-out';
-        iconImage.style.width = '100%';
-    }
-    
-    iconImage.style.zIndex = '1';
+    // Сбрасываем transform от скролла и увеличиваем до 100%
+    iconImage.style.transition = 'transform 1.5s ease-in-out, width 1.5s ease-in-out';
+    iconImage.style.transform = 'scale(1)';
+    iconImage.style.width = '100%';
     
     // Свеча появляется одновременно
     document.getElementById('candleLayer').style.opacity = '1';
     
-    // Название и датировка - мгновенно скрываем только если есть zoom
-    const titleBlock = document.getElementById('iconTitleBlock');
-    if (hasZoom) {
-        // При zoom - мгновенно скрываем
-        titleBlock.style.transition = 'none';
-        titleBlock.style.opacity = '0';
-        // Возвращаем transition обратно
-        setTimeout(() => {
-            titleBlock.style.transition = 'opacity 1.5s ease-in-out';
-        }, 50);
-    } else {
-        // Без zoom - плавно скрываем
-        titleBlock.style.opacity = '0';
-    }
+    // Скрываем название
+    document.getElementById('iconTitleBlock').style.opacity = '0';
     
     // Плавно скрываем логотип и кнопки
     document.getElementById('detailLogoHeader').style.opacity = '0';
@@ -862,9 +892,10 @@ function closeCandle() {
     candleVisible = false;
     
     const iconImage = document.getElementById('iconImage');
+    const scrollContainer = document.getElementById('detailScrollContainer');
     
     // Плавно возвращаем width к 80%
-    iconImage.style.transition = 'width 1.5s ease-in-out';
+    iconImage.style.transition = 'transform 1.5s ease-in-out, width 1.5s ease-in-out';
     iconImage.style.width = '80%';
     
     document.getElementById('candleLayer').style.opacity = '0';
@@ -886,6 +917,9 @@ function closeCandle() {
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     document.getElementById('shareBtn').style.pointerEvents = 'auto';
     
+    // Возвращаем скролл
+    scrollContainer.style.overflow = 'auto';
+    
     // Скрываем кнопку закрытия после завершения анимации
     setTimeout(() => {
         closeBtn.style.display = 'none';
@@ -893,148 +927,92 @@ function closeCandle() {
 }
 
 function showInfo() {
-    infoPanelVisible = true;
-    
-    // Скрываем кнопку "Режим свечи"
-    document.getElementById('candleBtn').style.opacity = '0';
-    document.getElementById('candleBtn').style.pointerEvents = 'none';
-    
-    // Трансформируем кнопку инфо в крестик
-    const infoBtn = document.getElementById('infoBtn');
-    const infoBtnIcon = document.getElementById('infoBtnIcon');
-    const infoBtnClose = document.getElementById('infoBtnClose');
-    infoBtn.style.backgroundColor = '#FFFFFF';
-    infoBtnIcon.style.display = 'none';
-    infoBtnClose.style.display = 'block';
-    
+    // Теперь просто скроллим к инфо-контенту
+    const scrollContainer = document.getElementById('detailScrollContainer');
     const iconContainer = document.getElementById('iconContainer');
-    const iconImage = document.getElementById('iconImage');
-    const iconTitleBlock = document.getElementById('iconTitleBlock');
-    const scrollContainer = document.getElementById('infoScrollContainer');
-    const placeholder = document.getElementById('infoIconPlaceholder');
+    const scrollTarget = iconContainer.offsetHeight + 100; // Скроллим до инфо
     
-    // Вычисляем позицию для иконы (48pt под логотипом)
-    const logoBottom = document.getElementById('detailLogoHeader').getBoundingClientRect().bottom;
-    const targetTop = logoBottom + 48;
-    
-    // Устанавливаем transition для иконы
-    iconImage.style.transition = 'transform 0.3s ease-out';
-    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
-    
-    // Скрываем название
-    iconTitleBlock.style.opacity = '0';
-    
-    // Уменьшаем и поднимаем икону
-    const currentRect = iconImage.getBoundingClientRect();
-    const scaledHeight = currentRect.height * 0.5;
-    const moveY = targetTop - (currentRect.top + (currentRect.height - scaledHeight) / 2);
-    
-    iconImage.style.transform = `scale(0.5) translateY(${moveY / 0.5}px)`;
-    
-    // Заполняем данными
-    document.getElementById('infoTitleText').textContent = selectedIcon.title;
-    document.getElementById('infoDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
-    
-    // Формируем контент инфо с правами
-    const infoContent = `
-        ${selectedIcon.description_full ? `<p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">${selectedIcon.description_full}</p>` : ''}
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Автор:</strong>
-            <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
-        </div>
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Датировка:</strong>
-            <span style="margin-left: 8px;">${(selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
-        </div>
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Размер:</strong>
-            <span style="margin-left: 8px;">${selectedIcon.size || 'Неизвестно'}</span>
-        </div>
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Техника:</strong>
-            <span style="margin-left: 8px;">${selectedIcon.technique || 'Неизвестно'}</span>
-        </div>
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Местонахождение:</strong>
-            <span style="margin-left: 8px;">${selectedIcon.location || 'Неизвестно'}</span>
-        </div>
-        <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-            <p style="margin: 0; font-size: 14px; color: #8E8E93; line-height: 1.5; padding-bottom: 20px;">
-                ${selectedIcon.rights || 'Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.'}
-            </p>
-        </div>
-    `;
-    document.getElementById('infoContentText').innerHTML = infoContent;
-    
-    // Готовим инфо-панель (за экраном снизу)
-    scrollContainer.style.display = 'block';
-    scrollContainer.style.transform = 'translateY(100%)';
-    scrollContainer.scrollTop = 0;
-    
-    // После анимации иконы — перемещаем её в scroll-контейнер
-    setTimeout(() => {
-        // Сохраняем текущие размеры иконы
-        const iconWidth = iconImage.getBoundingClientRect().width;
-        
-        // Сбрасываем transform и задаём фиксированную ширину
-        iconImage.style.transition = 'none';
-        iconImage.style.transform = '';
-        iconImage.style.width = iconWidth + 'px';
-        iconImage.style.position = 'relative';
-        iconImage.style.zIndex = '1';
-        
-        // Перемещаем икону в placeholder
-        placeholder.appendChild(iconImage);
-        
-        // Показываем инфо-панель (slide-in)
-        requestAnimationFrame(() => {
-            scrollContainer.style.transition = 'transform 0.3s ease-out';
-            scrollContainer.style.transform = 'translateY(0)';
-        });
-    }, 300);
+    scrollContainer.scrollTo({
+        top: scrollTarget,
+        behavior: 'smooth'
+    });
 }
 
 function closeInfo() {
-    infoPanelVisible = false;
-    
-    const iconImage = document.getElementById('iconImage');
-    const iconTitleBlock = document.getElementById('iconTitleBlock');
-    const scrollContainer = document.getElementById('infoScrollContainer');
-    const iconContainer = document.getElementById('iconContainer');
-    
-    // Slide-out инфо-панели вниз
-    scrollContainer.style.transition = 'transform 0.3s ease-out';
-    scrollContainer.style.transform = 'translateY(100%)';
-    
-    // После slide-out — возвращаем икону обратно
-    setTimeout(() => {
-        scrollContainer.style.display = 'none';
-        scrollContainer.style.transform = '';
-        
-        // Возвращаем икону в iconContainer (перед titleBlock)
-        iconImage.style.transition = 'none';
-        iconImage.style.width = '80%';
-        iconImage.style.position = 'relative';
-        iconContainer.insertBefore(iconImage, iconTitleBlock);
-        
-        // Показываем название
-        iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
-        iconTitleBlock.style.opacity = '1';
-        
-    }, 300);
-    
-    // Показываем кнопку "Режим свечи"
-    document.getElementById('candleBtn').style.opacity = '1';
-    document.getElementById('candleBtn').style.pointerEvents = 'auto';
-    
-    // Возвращаем кнопку инфо к исходному виду
-    const infoBtn = document.getElementById('infoBtn');
-    const infoBtnIcon = document.getElementById('infoBtnIcon');
-    const infoBtnClose = document.getElementById('infoBtnClose');
-    infoBtn.style.backgroundColor = '';
-    infoBtnIcon.style.display = 'block';
-    infoBtnClose.style.display = 'none';
+    // Скроллим обратно наверх
+    const scrollContainer = document.getElementById('detailScrollContainer');
+    scrollContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
 }
+
+// Scroll-based трансформация иконы
+(function() {
+    let lastScrollTop = 0;
+    let scrollThreshold = 0; // Порог начала трансформации
+    let maxScroll = 300; // Максимальный скролл для полной трансформации
+    
+    function initScrollTransform() {
+        const scrollContainer = document.getElementById('detailScrollContainer');
+        if (!scrollContainer) return;
+        
+        scrollContainer.addEventListener('scroll', handleDetailScroll, { passive: true });
+    }
+    
+    function handleDetailScroll() {
+        if (candleVisible) return;
+        
+        const scrollContainer = document.getElementById('detailScrollContainer');
+        const iconImage = document.getElementById('iconImage');
+        const iconTitleBlock = document.getElementById('iconTitleBlock');
+        const infoTitleBlock = document.getElementById('infoTitleBlock');
+        const candleBtn = document.getElementById('candleBtn');
+        const infoBtn = document.getElementById('infoBtn');
+        const infoBtnIcon = document.getElementById('infoBtnIcon');
+        const infoBtnClose = document.getElementById('infoBtnClose');
+        
+        const scrollTop = scrollContainer.scrollTop;
+        
+        // Прогресс от 0 до 1
+        const progress = Math.min(1, Math.max(0, scrollTop / maxScroll));
+        
+        // Икона: scale от 1 до 0.5
+        const scale = 1 - (progress * 0.5);
+        iconImage.style.transform = `scale(${scale})`;
+        
+        // Название под иконой: исчезает
+        iconTitleBlock.style.opacity = 1 - progress;
+        
+        // Название в инфо: появляется
+        infoTitleBlock.style.opacity = progress;
+        
+        // Кнопка "Режим свечи": исчезает при скролле
+        candleBtn.style.opacity = 1 - progress;
+        candleBtn.style.pointerEvents = progress > 0.5 ? 'none' : 'auto';
+        
+        // Кнопка инфо: трансформируется в крестик
+        if (progress > 0.5) {
+            infoBtn.style.backgroundColor = '#FFFFFF';
+            infoBtnIcon.style.display = 'none';
+            infoBtnClose.style.display = 'block';
+            infoPanelVisible = true;
+        } else {
+            infoBtn.style.backgroundColor = '';
+            infoBtnIcon.style.display = 'block';
+            infoBtnClose.style.display = 'none';
+            infoPanelVisible = false;
+        }
+        
+        lastScrollTop = scrollTop;
+    }
+    
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', initScrollTransform);
+    
+    // Переинициализация при переключении экранов
+    window.initDetailScrollTransform = initScrollTransform;
+})();
 
 // Позиционировать название между логотипом и изображением
 document.getElementById('candleBtn').addEventListener('click', showCandle);
@@ -1048,35 +1026,7 @@ document.getElementById('infoBtn').addEventListener('click', () => {
 });
 document.getElementById('shareBtn').addEventListener('click', shareIcon);
 
-// Свайп вверх для открытия инфо
-(function() {
-    const detailScreen = document.getElementById('detailScreen');
-    let startY = 0;
-    let startTime = 0;
-    
-    detailScreen.addEventListener('touchstart', (e) => {
-        // Не обрабатываем если в режиме свечи или инфо уже открыто
-        if (candleVisible || infoPanelVisible) return;
-        
-        startY = e.touches[0].clientY;
-        startTime = Date.now();
-    }, { passive: true });
-    
-    detailScreen.addEventListener('touchend', (e) => {
-        // Не обрабатываем если в режиме свечи или инфо уже открыто
-        if (candleVisible || infoPanelVisible) return;
-        
-        const endY = e.changedTouches[0].clientY;
-        const endTime = Date.now();
-        const deltaY = startY - endY; // Свайп вверх - положительное значение
-        const deltaTime = endTime - startTime;
-        
-        // Свайп вверх: минимум 50px, максимум 500ms
-        if (deltaY > 50 && deltaTime < 500) {
-            showInfo();
-        }
-    }, { passive: true });
-})();
+// Кнопка инфо теперь скроллит к инфо или обратно
 
 // Поделиться иконой
 async function shareIcon() {
@@ -1170,8 +1120,8 @@ function donate(amount) {
     }
 }
 
-// Тап в любом месте экрана для выхода из режима свечи
-document.getElementById('iconContainer').addEventListener('click', (e) => {
+// Тап в любом месте scroll-контейнера для выхода из режима свечи
+document.getElementById('detailScrollContainer').addEventListener('click', (e) => {
     if (candleVisible && e.target.id !== 'closeCandleBtn') {
         closeCandle();
     }
