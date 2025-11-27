@@ -810,6 +810,14 @@ function showCandle() {
     infoPanelVisible = false;
     
     const iconImage = document.getElementById('iconImage');
+    const iconContainer = document.getElementById('iconContainer');
+    const iconCenterWrapper = document.getElementById('iconCenterWrapper');
+    
+    // Переключаем контейнер в режим absolute для центрирования только иконы
+    iconContainer.style.display = 'flex';
+    iconContainer.style.alignItems = 'center';
+    iconContainer.style.justifyContent = 'center';
+    iconCenterWrapper.style.position = 'static';
     
     // Проверяем есть ли активный transform
     const currentTransform = iconImage.style.transform;
@@ -881,6 +889,14 @@ function closeCandle() {
     candleVisible = false;
     
     const iconImage = document.getElementById('iconImage');
+    const iconContainer = document.getElementById('iconContainer');
+    const iconCenterWrapper = document.getElementById('iconCenterWrapper');
+    
+    // Возвращаем стили контейнера
+    iconContainer.style.display = 'block';
+    iconContainer.style.alignItems = '';
+    iconContainer.style.justifyContent = '';
+    iconCenterWrapper.style.position = '';
     
     // Плавно возвращаем width к 80%
     iconImage.style.transition = 'width 1.5s ease-in-out';
