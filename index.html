@@ -959,7 +959,7 @@ function showInfo() {
         requestAnimationFrame(() => {
             scrollContainer.style.opacity = '1';
         });
-    }, 1500); // Ждём окончания fade-out основного контейнера
+    }, 300); // Ждём окончания fade-out основного контейнера
 }
 
 function closeInfo() {
@@ -991,7 +991,7 @@ function closeInfo() {
         infoBtn.style.backgroundColor = '';
         infoBtnIcon.style.display = 'block';
         infoBtnClose.style.display = 'none';
-    }, 1500); // Ждём окончания fade-out прокручиваемого контейнера
+    }, 300); // Ждём окончания fade-out прокручиваемого контейнера
 }
 
 // Позиционировать название между логотипом и изображением
