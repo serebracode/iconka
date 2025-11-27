@@ -279,9 +279,6 @@
 
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
-    <!-- Черный фон -->
-    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
-
     <!-- Логотип вверху по центру (обычный режим) -->
     <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; opacity: 1; transition: opacity 1.5s ease-in-out; cursor: pointer;" onclick="goBackToLoading()">
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
@@ -295,10 +292,10 @@
     </button>
 
     <!-- Контейнер для иконы и свечи -->
-    <div id="iconContainer" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 48px); left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 60px);">
+    <div id="iconContainer" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px); bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px + 40px); left: 0; right: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease-out;">
         
         <!-- СЛОЙ 1: ИКОНА -->
-        <div style="display: flex; justify-content: center; margin-bottom: 36px; transition: margin-bottom 1.5s ease-in-out;">
+        <div style="display: flex; justify-content: center; transition: margin-bottom 0.3s ease-out;">
             <img id="iconImage" 
                  style="width: 80%; 
                         height: auto; 
@@ -306,18 +303,18 @@
                         z-index: 1;
                         touch-action: none;
                         transform-origin: center center;
-                        transition: transform 0.3s ease-out, width 1.5s ease-in-out;" 
+                        transition: transform 0.3s ease-out, width 0.3s ease-out;" 
                  alt="Икона">
         </div>
         
         <!-- Название иконы и датировка -->
-        <div id="iconTitleBlock" style="text-align: center; margin-bottom: 36px; transition: margin-bottom 1.5s ease-in-out;">
-            <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400; transition: font-size 1.5s ease-in-out;"></div>
-            <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px; transition: font-size 1.5s ease-in-out;"></div>
+        <div id="iconTitleBlock" style="text-align: center; margin-top: 48px; padding: 0 16px; transition: margin-top 0.3s ease-out, margin-bottom 0.3s ease-out;">
+            <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400; transition: font-size 0.3s ease-out;"></div>
+            <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px; transition: font-size 0.3s ease-out;"></div>
         </div>
         
         <!-- Контент инфо (скрыт по умолчанию) -->
-        <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 1.5s ease-in-out, opacity 1.5s ease-in-out;"></div>
+        <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s ease-out, opacity 0.3s ease-out; margin-top: 36px; padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 60px);"></div>
 
         <!-- СЛОЙ 2: СВЕЧА - СКРЫТА ПО УМОЛЧАНИЮ -->
         <div id="candleLayer" style="position: absolute; 
@@ -920,15 +917,28 @@ function showInfo() {
     infoBtnIcon.style.display = 'none';
     infoBtnClose.style.display = 'block';
     
+    // Переключаем контейнер в режим прокрутки
+    const iconContainer = document.getElementById('iconContainer');
+    iconContainer.style.top = `calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 48px)`;
+    iconContainer.style.bottom = '0';
+    iconContainer.style.overflowY = 'auto';
+    iconContainer.style.display = 'block';
+    iconContainer.style.justifyContent = 'flex-start';
+    iconContainer.style.padding = '0 24px';
+    iconContainer.style.paddingBottom = 'calc(var(--tg-safe-area-inset-bottom, 0px) + 60px)';
+    
     // Меняем размеры и шрифты
     const iconImage = document.getElementById('iconImage');
     const iconTitleText = document.getElementById('iconTitleText');
     const iconDateText = document.getElementById('iconDateText');
+    const iconTitleBlock = document.getElementById('iconTitleBlock');
     const infoContent = document.getElementById('infoContentText');
     
     iconImage.style.width = '50%';
     iconTitleText.style.fontSize = '20px';
     iconDateText.style.fontSize = '16px';
+    iconTitleBlock.style.marginTop = '36px';
+    iconTitleBlock.style.marginBottom = '0';
     
     // Заполняем контент инфо с правами
     const contentHTML = `
@@ -980,10 +990,23 @@ function closeInfo() {
     const iconImage = document.getElementById('iconImage');
     const iconTitleText = document.getElementById('iconTitleText');
     const iconDateText = document.getElementById('iconDateText');
+    const iconTitleBlock = document.getElementById('iconTitleBlock');
     
     iconImage.style.width = '80%';
     iconTitleText.style.fontSize = '16px';
     iconDateText.style.fontSize = '14px';
+    iconTitleBlock.style.marginTop = '48px';
+    iconTitleBlock.style.marginBottom = '0';
+    
+    // Возвращаем контейнер в режим центрирования
+    const iconContainer = document.getElementById('iconContainer');
+    iconContainer.style.top = 'calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px)';
+    iconContainer.style.bottom = 'calc(var(--tg-safe-area-inset-bottom, 0px) + 6px + 40px)';
+    iconContainer.style.overflowY = 'visible';
+    iconContainer.style.display = 'flex';
+    iconContainer.style.justifyContent = 'center';
+    iconContainer.style.padding = '0';
+    iconContainer.style.paddingBottom = '0';
     
     // Показываем кнопку "Режим свечи"
     document.getElementById('candleBtn').style.opacity = '1';
@@ -998,7 +1021,7 @@ function closeInfo() {
     infoBtnClose.style.display = 'none';
     
     // Прокручиваем контейнер наверх
-    document.getElementById('iconContainer').scrollTop = 0;
+    iconContainer.scrollTop = 0;
 }
 
 // Позиционировать название между логотипом и изображением
@@ -1019,6 +1042,7 @@ document.getElementById('shareBtn').addEventListener('click', shareIcon);
     let startY = 0;
     let startTime = 0;
     let startScrollTop = 0;
+    let isDraggingDown = false;
     
     iconContainer.addEventListener('touchstart', (e) => {
         // Не обрабатываем если в режиме свечи
@@ -1027,7 +1051,25 @@ document.getElementById('shareBtn').addEventListener('click', shareIcon);
         startY = e.touches[0].clientY;
         startTime = Date.now();
         startScrollTop = iconContainer.scrollTop;
+        isDraggingDown = false;
     }, { passive: true });
+    
+    iconContainer.addEventListener('touchmove', (e) => {
+        // Не обрабатываем если в режиме свечи
+        if (candleVisible) return;
+        
+        // Если режим инфо и скролл в самом верху и тянем вниз - предотвращаем скролл
+        if (infoPanelVisible && startScrollTop === 0) {
+            const currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            if (deltaY > 0) {
+                // Тянем вниз
+                isDraggingDown = true;
+                e.preventDefault();
+            }
+        }
+    }, { passive: false });
     
     iconContainer.addEventListener('touchend', (e) => {
         // Не обрабатываем если в режиме свечи
@@ -1047,6 +1089,8 @@ document.getElementById('shareBtn').addEventListener('click', shareIcon);
         else if (infoPanelVisible && deltaY < -50 && deltaTime < 500 && startScrollTop === 0) {
             closeInfo();
         }
+        
+        isDraggingDown = false;
     }, { passive: true });
 })();
 
