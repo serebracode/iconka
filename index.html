@@ -856,9 +856,23 @@ function showCandle() {
     // Свеча появляется одновременно
     document.getElementById('candleLayer').style.opacity = '1';
     
-    // Плавно скрываем логотип, название и кнопки
+    // Название и датировка - мгновенно скрываем только если есть zoom
+    const titleBlock = document.getElementById('iconTitleBlock');
+    if (hasZoom) {
+        // При zoom - мгновенно скрываем
+        titleBlock.style.transition = 'none';
+        titleBlock.style.opacity = '0';
+        // Возвращаем transition обратно
+        setTimeout(() => {
+            titleBlock.style.transition = 'opacity 1.5s ease-in-out';
+        }, 50);
+    } else {
+        // Без zoom - плавно скрываем
+        titleBlock.style.opacity = '0';
+    }
+    
+    // Плавно скрываем логотип и кнопки
     document.getElementById('detailLogoHeader').style.opacity = '0';
-    document.getElementById('iconTitleBlock').style.opacity = '0';
     document.getElementById('candleBtn').style.opacity = '0';
     document.getElementById('infoBtn').style.opacity = '0';
     document.getElementById('shareBtn').style.opacity = '0';
