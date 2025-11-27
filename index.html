@@ -837,6 +837,11 @@ let candleVisible = false;
 let infoPanelVisible = false;
 
 function showCandle() {
+    // Сначала сбрасываем zoom/pan если активен
+    if (typeof window.resetImageZoom === 'function') {
+        window.resetImageZoom();
+    }
+    
     candleVisible = true;
     infoPanelVisible = false;
     
@@ -1140,6 +1145,18 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
     // Для double tap
     let lastTapTime = 0;
     let isProcessingDoubleTap = false;
+    
+    // Публичная функция для сброса состояния
+    window.resetImageZoom = function() {
+        currentScale = 1;
+        translateX = 0;
+        translateY = 0;
+        isDoubleTapZoomed = false;
+        isPinching = false;
+        isPanning = false;
+        applyTransform(true);
+        iconImage.style.zIndex = '1';
+    };
     
     // Вспомогательные функции
     function getDistance(touches) {
