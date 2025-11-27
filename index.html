@@ -829,27 +829,24 @@ function showCandle() {
     
     const iconImage = document.getElementById('iconImage');
     
-    // Сбрасываем внутреннее состояние zoom БЕЗ анимации
-    if (typeof window.resetImageZoom === 'function') {
-        // Сохраняем текущий transform
-        const currentTransform = iconImage.style.transform;
-        const hasZoom = currentTransform && currentTransform !== '';
+    // Проверяем есть ли активный transform
+    const currentTransform = iconImage.style.transform;
+    const hasZoom = currentTransform && currentTransform !== '';
+    
+    if (hasZoom) {
+        // Если есть zoom - плавно убираем transform и увеличиваем width одновременно
+        iconImage.style.transition = 'transform 1.5s ease-in-out, width 1.5s ease-in-out';
+        iconImage.style.transform = 'scale(1) translate(0, 0)';
+        iconImage.style.width = '100%';
         
-        if (hasZoom) {
-            // Если есть zoom - плавно переходим к 100% width с анимацией transform
-            iconImage.style.transition = 'transform 1.5s ease-in-out, width 1.5s ease-in-out';
-            iconImage.style.transform = '';
-            iconImage.style.width = '100%';
-        } else {
-            // Если нет zoom - просто анимируем width
-            iconImage.style.transition = 'width 1.5s ease-in-out';
-            iconImage.style.width = '100%';
-        }
-        
-        // Сбрасываем внутренние переменные
-        window.resetImageZoom();
+        // Сбрасываем внутренние переменные zoom ПОСЛЕ анимации
+        setTimeout(() => {
+            if (typeof window.resetImageZoomState === 'function') {
+                window.resetImageZoomState();
+            }
+        }, 1500);
     } else {
-        // Просто анимируем width
+        // Если нет zoom - просто анимируем width
         iconImage.style.transition = 'width 1.5s ease-in-out';
         iconImage.style.width = '100%';
     }
@@ -1136,7 +1133,7 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
     let lastTapTime = 0;
     let isProcessingDoubleTap = false;
     
-    // Публичная функция для сброса состояния
+    // Публичная функция для сброса состояния с анимацией
     window.resetImageZoom = function() {
         currentScale = 1;
         translateX = 0;
@@ -1146,6 +1143,18 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
         isPanning = false;
         applyTransform(true);
         iconImage.style.zIndex = '1';
+    };
+    
+    // Публичная функция для сброса только внутренних переменных БЕЗ анимации
+    window.resetImageZoomState = function() {
+        currentScale = 1;
+        translateX = 0;
+        translateY = 0;
+        isDoubleTapZoomed = false;
+        isPinching = false;
+        isPanning = false;
+        lastTapTime = 0;
+        isProcessingDoubleTap = false;
     };
     
     // Вспомогательные функции
