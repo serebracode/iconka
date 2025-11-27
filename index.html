@@ -829,10 +829,31 @@ function showCandle() {
     
     const iconImage = document.getElementById('iconImage');
     
-    // Убираем transform и сразу анимируем до 100% width
-    iconImage.style.transform = '';
-    iconImage.style.transition = 'width 1.5s ease-in-out';
-    iconImage.style.width = '100%';
+    // Сбрасываем внутреннее состояние zoom БЕЗ анимации
+    if (typeof window.resetImageZoom === 'function') {
+        // Сохраняем текущий transform
+        const currentTransform = iconImage.style.transform;
+        const hasZoom = currentTransform && currentTransform !== '';
+        
+        if (hasZoom) {
+            // Если есть zoom - плавно переходим к 100% width с анимацией transform
+            iconImage.style.transition = 'transform 1.5s ease-in-out, width 1.5s ease-in-out';
+            iconImage.style.transform = '';
+            iconImage.style.width = '100%';
+        } else {
+            // Если нет zoom - просто анимируем width
+            iconImage.style.transition = 'width 1.5s ease-in-out';
+            iconImage.style.width = '100%';
+        }
+        
+        // Сбрасываем внутренние переменные
+        window.resetImageZoom();
+    } else {
+        // Просто анимируем width
+        iconImage.style.transition = 'width 1.5s ease-in-out';
+        iconImage.style.width = '100%';
+    }
+    
     iconImage.style.zIndex = '1';
     
     // Свеча появляется одновременно
@@ -859,11 +880,6 @@ function showCandle() {
         closeBtn.style.opacity = '1';
         closeBtn.style.pointerEvents = 'auto';
     }, 1500);
-    
-    // Сбрасываем внутреннее состояние zoom
-    if (typeof window.resetImageZoom === 'function') {
-        window.resetImageZoom();
-    }
 }
 
 function closeCandle() {
@@ -871,8 +887,13 @@ function closeCandle() {
     
     candleVisible = false;
     
+    const iconImage = document.getElementById('iconImage');
+    
+    // Плавно возвращаем width к 80%
+    iconImage.style.transition = 'width 1.5s ease-in-out';
+    iconImage.style.width = '80%';
+    
     document.getElementById('candleLayer').style.opacity = '0';
-    document.getElementById('iconImage').style.width = '80%';
     
     // Плавно скрываем кнопку закрытия одновременно с появлением других элементов
     const closeBtn = document.getElementById('closeCandleBtn');
@@ -895,7 +916,6 @@ function closeCandle() {
     setTimeout(() => {
         closeBtn.style.display = 'none';
     }, 1500);
-    
 }
 
 function showInfo() {
