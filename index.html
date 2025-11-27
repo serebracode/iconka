@@ -338,10 +338,9 @@
     </div>
     
     <!-- Прокручиваемый контейнер для режима инфо -->
-    <div id="infoScrollContainer" style="display: none; position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 48px); left: 0; right: 0; bottom: 0; overflow-y: auto; z-index: 50; padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 60px); opacity: 0; transition: opacity 1.5s ease-in-out;">
-        <!-- Икона -->
-        <div style="display: flex; justify-content: center; margin-bottom: 36px;">
-            <img id="infoIconImage" src="" alt="Икона" style="width: 50%; height: auto; object-fit: contain;">
+    <div id="infoScrollContainer" style="display: none; position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 48px); left: 0; right: 0; bottom: 0; overflow-y: auto; z-index: 50; padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 60px); opacity: 1;">
+        <!-- Placeholder для иконы (сюда переместится оригинал) -->
+        <div id="infoIconPlaceholder" style="display: flex; justify-content: center; margin-bottom: 36px;">
         </div>
         
         <!-- Название и датировка -->
@@ -912,6 +911,7 @@ function showInfo() {
     const iconImage = document.getElementById('iconImage');
     const iconTitleBlock = document.getElementById('iconTitleBlock');
     const scrollContainer = document.getElementById('infoScrollContainer');
+    const placeholder = document.getElementById('infoIconPlaceholder');
     
     // Вычисляем позицию для иконы (48pt под логотипом)
     const logoBottom = document.getElementById('detailLogoHeader').getBoundingClientRect().bottom;
@@ -931,14 +931,7 @@ function showInfo() {
     
     iconImage.style.transform = `scale(0.5) translateY(${moveY / 0.5}px)`;
     
-    // Готовим инфо-панель (за экраном снизу)
-    scrollContainer.style.display = 'block';
-    scrollContainer.style.opacity = '1';
-    scrollContainer.style.transition = 'transform 0.3s ease-out';
-    scrollContainer.style.transform = 'translateY(100%)';
-    
     // Заполняем данными
-    document.getElementById('infoIconImage').src = selectedIcon.image;
     document.getElementById('infoTitleText').textContent = selectedIcon.title;
     document.getElementById('infoDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
     
@@ -973,10 +966,32 @@ function showInfo() {
     `;
     document.getElementById('infoContentText').innerHTML = infoContent;
     
-    // Запускаем slide-in инфо-панели
-    requestAnimationFrame(() => {
-        scrollContainer.style.transform = 'translateY(0)';
-    });
+    // Готовим инфо-панель (за экраном снизу)
+    scrollContainer.style.display = 'block';
+    scrollContainer.style.transform = 'translateY(100%)';
+    scrollContainer.scrollTop = 0;
+    
+    // После анимации иконы — перемещаем её в scroll-контейнер
+    setTimeout(() => {
+        // Сохраняем текущие размеры иконы
+        const iconWidth = iconImage.getBoundingClientRect().width;
+        
+        // Сбрасываем transform и задаём фиксированную ширину
+        iconImage.style.transition = 'none';
+        iconImage.style.transform = '';
+        iconImage.style.width = iconWidth + 'px';
+        iconImage.style.position = 'relative';
+        iconImage.style.zIndex = '1';
+        
+        // Перемещаем икону в placeholder
+        placeholder.appendChild(iconImage);
+        
+        // Показываем инфо-панель (slide-in)
+        requestAnimationFrame(() => {
+            scrollContainer.style.transition = 'transform 0.3s ease-out';
+            scrollContainer.style.transform = 'translateY(0)';
+        });
+    }, 300);
 }
 
 function closeInfo() {
@@ -985,18 +1000,28 @@ function closeInfo() {
     const iconImage = document.getElementById('iconImage');
     const iconTitleBlock = document.getElementById('iconTitleBlock');
     const scrollContainer = document.getElementById('infoScrollContainer');
+    const iconContainer = document.getElementById('iconContainer');
     
     // Slide-out инфо-панели вниз
     scrollContainer.style.transition = 'transform 0.3s ease-out';
     scrollContainer.style.transform = 'translateY(100%)';
     
-    // Возвращаем икону в исходное положение
-    iconImage.style.transition = 'transform 0.3s ease-out';
-    iconImage.style.transform = '';
-    
-    // Показываем название
-    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
-    iconTitleBlock.style.opacity = '1';
+    // После slide-out — возвращаем икону обратно
+    setTimeout(() => {
+        scrollContainer.style.display = 'none';
+        scrollContainer.style.transform = '';
+        
+        // Возвращаем икону в iconContainer (перед titleBlock)
+        iconImage.style.transition = 'none';
+        iconImage.style.width = '80%';
+        iconImage.style.position = 'relative';
+        iconContainer.insertBefore(iconImage, iconTitleBlock);
+        
+        // Показываем название
+        iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
+        iconTitleBlock.style.opacity = '1';
+        
+    }, 300);
     
     // Показываем кнопку "Режим свечи"
     document.getElementById('candleBtn').style.opacity = '1';
@@ -1009,12 +1034,6 @@ function closeInfo() {
     infoBtn.style.backgroundColor = '';
     infoBtnIcon.style.display = 'block';
     infoBtnClose.style.display = 'none';
-    
-    // Скрываем инфо-контейнер после анимации
-    setTimeout(() => {
-        scrollContainer.style.display = 'none';
-        scrollContainer.style.transform = '';
-    }, 300);
 }
 
 // Позиционировать название между логотипом и изображением
