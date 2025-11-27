@@ -685,9 +685,6 @@ function selectIcon(id) {
             window.dispatchEvent(new Event('iconChanged'));
         }, 400);
         
-        if (tg?.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('light');
-        }
     }, 300);
 }
 
@@ -741,9 +738,6 @@ function goBack() {
             
             // Свайпы остаются отключенными, т.к. список тоже блокирует
             
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
         }, 300);
     }
     // Если открыт экран О проекте — возвращаемся на загрузочный экран
@@ -769,9 +763,6 @@ function goBack() {
                 tg.BackButton.hide();
             }
             
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
         }, 300);
     }
 }
@@ -823,9 +814,6 @@ function goBackToLoading() {
         candleVisible = false;
         infoPanelVisible = false;
         
-        if (tg?.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('light');
-        }
     }, 300);
 }
 
@@ -845,8 +833,11 @@ function showCandle() {
     candleVisible = true;
     infoPanelVisible = false;
     
-    document.getElementById('candleLayer').style.opacity = '1';
-    document.getElementById('iconImage').style.width = '100%';
+    // Запускаем анимацию свечи и width синхронно (после небольшой задержки для завершения resetImageZoom)
+    setTimeout(() => {
+        document.getElementById('candleLayer').style.opacity = '1';
+        document.getElementById('iconImage').style.width = '100%';
+    }, 50);
     
     // Плавно скрываем логотип, название и кнопки
     document.getElementById('detailLogoHeader').style.opacity = '0';
@@ -870,9 +861,6 @@ function showCandle() {
         closeBtn.style.pointerEvents = 'auto';
     }, 1500);
     
-    if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('medium');
-    }
 }
 
 function closeCandle() {
@@ -905,9 +893,6 @@ function closeCandle() {
         closeBtn.style.display = 'none';
     }, 1500);
     
-    if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-    }
 }
 
 function showInfo() {
@@ -924,9 +909,6 @@ function showInfo() {
         modalContent.style.transform = 'translateY(0)';
     });
     
-    if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-    }
 }
 
 function closeInfo() {
@@ -942,9 +924,6 @@ function closeInfo() {
         modal.style.display = 'none';
     }, 300);
     
-    if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-    }
 }
 
 // Позиционировать название между логотипом и изображением
@@ -1026,9 +1005,6 @@ async function shareIcon() {
             tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${text}`);
         }
         
-        if (tg?.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('success');
-        }
     } catch (err) {
         console.log('Share failed:', err);
     }
@@ -1063,9 +1039,6 @@ function showAboutScreen() {
         }
     }, 300);
     
-    if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-    }
 }
 
 function closeAboutScreen() {
@@ -1087,15 +1060,9 @@ function closeAboutScreen() {
         }
     }, 300);
     
-    if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-    }
 }
 
 function donate(amount) {
-    if (tg?.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('medium');
-    }
     
     // Telegram Stars payment
     if (tg?.openInvoice) {
@@ -1342,9 +1309,6 @@ document.getElementById('iconContainer').addEventListener('click', (e) => {
                     iconImage.style.zIndex = '50';
                 }
                 
-                if (tg?.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('light');
-                }
                 
                 lastTapTime = 0;
                 setTimeout(() => {
