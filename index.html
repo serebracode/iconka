@@ -279,6 +279,9 @@
 
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
+    <!-- Черный фон -->
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
+
     <!-- Логотип вверху по центру (обычный режим) -->
     <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; opacity: 1; transition: opacity 1.5s ease-in-out; cursor: pointer;" onclick="goBackToLoading()">
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
@@ -292,10 +295,10 @@
     </button>
 
     <!-- Контейнер для иконы и свечи -->
-    <div id="iconContainer" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 48px); left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 60px);">
+    <div id="iconContainer" style="position: absolute; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px); left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 60px);">
         
         <!-- Обёртка для центрирования в обычном режиме -->
-        <div id="iconCenterWrapper" style="min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: min-height 0.3s ease-out, justify-content 0.3s ease-out;">
+        <div id="iconCenterWrapper" style="min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 48px; transition: min-height 0.3s ease-out, justify-content 0.3s ease-out, padding-top 0.3s ease-out;">
             
             <!-- СЛОЙ 1: ИКОНА -->
             <div style="display: flex; justify-content: center; margin-bottom: 36px;">
@@ -651,8 +654,10 @@ function resetDetailScreenUI() {
         infoContent.style.maxHeight = '0';
         infoContent.style.opacity = '0';
         
-        document.getElementById('iconCenterWrapper').style.justifyContent = 'center';
-        document.getElementById('iconCenterWrapper').style.minHeight = '100%';
+        const wrapper = document.getElementById('iconCenterWrapper');
+        wrapper.style.justifyContent = 'center';
+        wrapper.style.minHeight = '100%';
+        wrapper.style.paddingTop = '48px';
         
         const iconTitleText = document.getElementById('iconTitleText');
         const iconDateText = document.getElementById('iconDateText');
@@ -913,9 +918,11 @@ function closeCandle() {
 function showInfo() {
     infoPanelVisible = true;
     
-    // Скрываем кнопку "Режим свечи"
-    document.getElementById('candleBtn').style.opacity = '0';
-    document.getElementById('candleBtn').style.pointerEvents = 'none';
+    // Скрываем кнопку "Режим свечи" (0.3s)
+    const candleBtn = document.getElementById('candleBtn');
+    candleBtn.style.transition = 'opacity 0.3s ease-out';
+    candleBtn.style.opacity = '0';
+    candleBtn.style.pointerEvents = 'none';
     
     // Трансформируем кнопку инфо в крестик
     const infoBtn = document.getElementById('infoBtn');
@@ -925,9 +932,11 @@ function showInfo() {
     infoBtnIcon.style.display = 'none';
     infoBtnClose.style.display = 'block';
     
-    // Отключаем центрирование
-    document.getElementById('iconCenterWrapper').style.justifyContent = 'flex-start';
-    document.getElementById('iconCenterWrapper').style.minHeight = 'auto';
+    // Отключаем центрирование и убираем padding-top
+    const wrapper = document.getElementById('iconCenterWrapper');
+    wrapper.style.justifyContent = 'flex-start';
+    wrapper.style.minHeight = 'auto';
+    wrapper.style.paddingTop = '0';
     
     // Меняем размеры и шрифты
     const iconImage = document.getElementById('iconImage');
@@ -985,9 +994,11 @@ function closeInfo() {
     infoContent.style.maxHeight = '0';
     infoContent.style.opacity = '0';
     
-    // Возвращаем центрирование
-    document.getElementById('iconCenterWrapper').style.justifyContent = 'center';
-    document.getElementById('iconCenterWrapper').style.minHeight = '100%';
+    // Возвращаем центрирование и padding-top
+    const wrapper = document.getElementById('iconCenterWrapper');
+    wrapper.style.justifyContent = 'center';
+    wrapper.style.minHeight = '100%';
+    wrapper.style.paddingTop = '48px';
     
     // Возвращаем размеры и шрифты
     const iconImage = document.getElementById('iconImage');
@@ -998,9 +1009,11 @@ function closeInfo() {
     iconTitleText.style.fontSize = '16px';
     iconDateText.style.fontSize = '14px';
     
-    // Показываем кнопку "Режим свечи"
-    document.getElementById('candleBtn').style.opacity = '1';
-    document.getElementById('candleBtn').style.pointerEvents = 'auto';
+    // Показываем кнопку "Режим свечи" (0.3s)
+    const candleBtn = document.getElementById('candleBtn');
+    candleBtn.style.transition = 'opacity 0.3s ease-out';
+    candleBtn.style.opacity = '1';
+    candleBtn.style.pointerEvents = 'auto';
     
     // Возвращаем кнопку инфо к исходному виду
     const infoBtn = document.getElementById('infoBtn');
