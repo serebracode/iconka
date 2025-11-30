@@ -947,6 +947,15 @@ function showInfo() {
     // Сбрасываем скролл инфо
     infoScrollContainer.scrollTop = 0;
     
+    // Подготавливаем экран инфо (за экраном снизу)
+    infoScreenState.style.transition = 'none';
+    infoScreenState.style.transform = 'translateY(100%)';
+    infoScreenState.style.opacity = '1';
+    infoScreenState.style.pointerEvents = 'auto';
+    
+    // Форсируем reflow
+    infoScreenState.offsetHeight;
+    
     // Анимация экрана иконы:
     // 1. Название исчезает (fade)
     iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
@@ -957,10 +966,9 @@ function showInfo() {
     iconImage.style.transform = 'scale(0.5) translateY(-100%)';
     iconImage.style.opacity = '0';
     
-    // Анимация экрана инфо: появляется (fade in)
-    infoScreenState.style.transition = 'opacity 0.3s ease-out';
-    infoScreenState.style.opacity = '1';
-    infoScreenState.style.pointerEvents = 'auto';
+    // Анимация экрана инфо: выезжает снизу
+    infoScreenState.style.transition = 'transform 0.3s ease-out';
+    infoScreenState.style.transform = 'translateY(0)';
     
     // Скрываем кнопку "Режим свечи"
     document.getElementById('candleBtn').style.opacity = '0';
@@ -984,10 +992,14 @@ function closeInfo() {
     const iconTitleBlock = document.getElementById('iconTitleBlock');
     const infoScreenState = document.getElementById('infoScreenState');
     
-    // Анимация экрана инфо: исчезает
-    infoScreenState.style.transition = 'opacity 0.3s ease-out';
-    infoScreenState.style.opacity = '0';
-    infoScreenState.style.pointerEvents = 'none';
+    // Анимация экрана инфо: уезжает вниз
+    infoScreenState.style.transition = 'transform 0.3s ease-out';
+    infoScreenState.style.transform = 'translateY(100%)';
+    
+    // После завершения анимации сбрасываем
+    setTimeout(() => {
+        infoScreenState.style.pointerEvents = 'none';
+    }, 300);
     
     // Анимация экрана иконы: возвращается (обратная анимация)
     iconImage.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
