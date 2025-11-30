@@ -1014,15 +1014,37 @@ function closeInfo() {
 (function() {
     let startY = 0;
     let startTime = 0;
+    let isSwipeDown = false;
     
     const detailScreen = document.getElementById('detailScreen');
+    const infoScrollContainer = document.getElementById('infoScrollContainer');
     
     detailScreen.addEventListener('touchstart', (e) => {
         if (candleVisible) return;
         
         startY = e.touches[0].clientY;
         startTime = Date.now();
+        isSwipeDown = false;
+        
+        // Проверяем, можно ли свайпнуть вниз для закрытия инфо
+        if (infoPanelVisible && infoScrollContainer.scrollTop <= 0) {
+            isSwipeDown = true;
+        }
     }, { passive: true });
+    
+    detailScreen.addEventListener('touchmove', (e) => {
+        if (candleVisible) return;
+        
+        // Если в режиме инфо, скролл в самом верху и свайпаем вниз — блокируем скролл
+        if (infoPanelVisible && isSwipeDown) {
+            const currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            if (deltaY > 0 && infoScrollContainer.scrollTop <= 0) {
+                e.preventDefault();
+            }
+        }
+    }, { passive: false });
     
     detailScreen.addEventListener('touchend', (e) => {
         if (candleVisible) return;
@@ -1038,13 +1060,9 @@ function closeInfo() {
         if (!infoPanelVisible && deltaY > 0) {
             // Свайп вверх на экране иконы → показать инфо
             showInfo();
-        } else if (infoPanelVisible && deltaY < 0) {
-            // Свайп вниз на экране инфо
-            const infoScrollContainer = document.getElementById('infoScrollContainer');
-            // Только если скролл в самом верху
-            if (infoScrollContainer.scrollTop <= 5) {
-                closeInfo();
-            }
+        } else if (infoPanelVisible && deltaY < 0 && isSwipeDown) {
+            // Свайп вниз на экране инфо (когда скролл был в самом верху)
+            closeInfo();
         }
     }, { passive: true });
 })();
