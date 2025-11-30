@@ -298,16 +298,16 @@
     <div id="detailScrollContainer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;">
         
         <!-- Верхний отступ (safe area + логотип + gap) -->
-        <div id="scrollSpacer" style="height: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 48px);"></div>
+        <div id="scrollSpacer" style="height: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 24px);"></div>
         
         <!-- Контейнер для иконы -->
-        <div id="iconContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - var(--tg-safe-area-inset-top, 0px) - 14px - 18px - 48px - var(--tg-safe-area-inset-bottom, 0px) - 46px); padding: 0 16px;">
+        <div id="iconContainer" style="display: flex; flex-direction: column; align-items: center; padding: 0 16px;">
             
             <!-- ИКОНА -->
             <img id="iconImage" 
                  style="width: 80%; 
                         height: auto; 
-                        max-height: 70vh; 
+                        max-height: 50vh; 
                         object-fit: contain; 
                         z-index: 1;
                         touch-action: pan-y;
@@ -316,17 +316,20 @@
                  alt="Икона">
             
             <!-- Название иконы и датировка -->
-            <div id="iconTitleBlock" style="margin-top: 48px; text-align: center; z-index: 5; padding: 0 16px; transition: opacity 0.3s ease-out;">
+            <div id="iconTitleBlock" style="margin-top: 24px; text-align: center; z-index: 5; padding: 0 16px; transition: opacity 0.3s ease-out;">
                 <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
                 <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
             </div>
         </div>
         
+        <!-- Отступ между иконой и инфо (будет скрыт при скролле) -->
+        <div id="iconInfoSpacer" style="height: 60vh;"></div>
+        
         <!-- Инфо-контент -->
         <div id="infoContent" style="padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px);">
             
             <!-- Название и датировка (в режиме инфо) -->
-            <div id="infoTitleBlock" style="text-align: center; margin-bottom: 36px; opacity: 0; transition: opacity 0.3s ease-out;">
+            <div id="infoTitleBlock" style="text-align: center; margin-bottom: 24px; opacity: 0; transition: opacity 0.3s ease-out;">
                 <div id="infoTitleText" style="color: #FFFFFF; font-size: 20px; font-weight: 400;"></div>
                 <div id="infoDateText" style="color: #8E8E93; font-size: 16px; margin-top: 4px;"></div>
             </div>
@@ -929,8 +932,37 @@ function closeCandle() {
     }, 1500);
 }
 
-// Целевая позиция скролла для режима инфо
-const INFO_SCROLL_TARGET = 300;
+// Целевая позиция скролла для режима инфо (вычисляется динамически)
+let INFO_SCROLL_TARGET = 300;
+
+function calculateScrollTarget() {
+    const iconImage = document.getElementById('iconImage');
+    const iconContainer = document.getElementById('iconContainer');
+    const iconInfoSpacer = document.getElementById('iconInfoSpacer');
+    
+    if (!iconImage || !iconImage.complete || iconImage.naturalHeight === 0) {
+        // Икона ещё не загружена, подождём
+        return;
+    }
+    
+    const iconRect = iconImage.getBoundingClientRect();
+    const iconHeight = iconRect.height;
+    const scaledIconHeight = iconHeight * 0.5; // После scale(0.5)
+    
+    // Целевой скролл: чтобы уменьшенная икона была под логотипом
+    // Расчёт: высота иконы - (высота иконы * 0.5) + небольшой отступ
+    const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tg-safe-area-inset-top')) || 0;
+    const logoHeight = 18;
+    const gap = 24;
+    
+    // Сколько нужно проскроллить, чтобы инфо-контент был сразу под уменьшенной иконой
+    INFO_SCROLL_TARGET = iconHeight * 0.5 + gap;
+    
+    // Устанавливаем высоту спейсера так, чтобы инфо появлялось сразу под иконой
+    if (iconInfoSpacer) {
+        iconInfoSpacer.style.height = (iconHeight * 0.5 + gap) + 'px';
+    }
+}
 
 function applyScrollTransform(scrollTop) {
     const iconImage = document.getElementById('iconImage');
@@ -974,6 +1006,7 @@ function applyScrollTransform(scrollTop) {
 function showInfo() {
     if (infoPanelVisible || candleVisible) return;
     
+    calculateScrollTarget();
     infoPanelVisible = true;
     
     const scrollContainer = document.getElementById('detailScrollContainer');
