@@ -647,21 +647,29 @@ function showInfo() {
     infoIconImage.src = iconImage.src;
     infoScrollContainer.scrollTop = 0;
     
-    // КЛЮЧЕВОЕ: мгновенно скрываем оригинальную икону
+    // Скрываем оригинальную икону
     iconImage.style.visibility = 'hidden';
     
     iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
     iconTitleBlock.style.opacity = '0';
     
+    // Начальное состояние: внизу, невидим
     infoScreenState.style.transition = 'none';
     infoScreenState.style.transform = 'translateY(100%)';
-    infoScreenState.style.opacity = '1';
+    infoScreenState.style.opacity = '0';
     infoScreenState.style.pointerEvents = 'auto';
     
-    infoScreenState.offsetHeight;
+    infoScreenState.offsetHeight; // reflow
     
+    // Запускаем движение вверх (300ms)
     infoScreenState.style.transition = 'transform 0.3s ease-out';
     infoScreenState.style.transform = 'translateY(0)';
+    
+    // Через 150ms (половина) — запускаем fade in (150ms)
+    setTimeout(() => {
+        infoScreenState.style.transition = 'transform 0.15s ease-out, opacity 0.15s ease-out';
+        infoScreenState.style.opacity = '1';
+    }, 150);
     
     document.getElementById('candleBtn').style.opacity = '0';
     document.getElementById('candleBtn').style.pointerEvents = 'none';
@@ -680,13 +688,19 @@ function closeInfo() {
     const iconTitleBlock = document.getElementById('iconTitleBlock');
     const infoScreenState = document.getElementById('infoScreenState');
     
-    infoScreenState.style.transition = 'transform 0.3s ease-out';
-    infoScreenState.style.transform = 'translateY(100%)';
+    // Сначала fade out (первые 150ms)
+    infoScreenState.style.transition = 'opacity 0.15s ease-out';
+    infoScreenState.style.opacity = '0';
     
+    // Через 150ms — запускаем движение вниз (150ms)
+    setTimeout(() => {
+        infoScreenState.style.transition = 'transform 0.15s ease-out';
+        infoScreenState.style.transform = 'translateY(100%)';
+    }, 150);
+    
+    // После полной анимации (300ms) — сбрасываем
     setTimeout(() => {
         infoScreenState.style.pointerEvents = 'none';
-        infoScreenState.style.opacity = '0';
-        // КЛЮЧЕВОЕ: показываем оригинальную икону обратно
         iconImage.style.visibility = 'visible';
     }, 300);
     
