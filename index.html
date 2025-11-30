@@ -317,21 +317,21 @@
     <!-- СОСТОЯНИЕ 2: Экран инфо (скроллируемый) -->
     <div id="infoScreenState" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 15; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-out;">
         
-        <!-- Уменьшенная икона вверху -->
-        <div id="infoIconWrapper" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 24px); left: 50%; transform: translateX(-50%); z-index: 20; display: flex; justify-content: center;">
-            <img id="infoIconImage" 
-                 style="width: 40vw; 
-                        height: auto; 
-                        max-height: 30vh; 
-                        object-fit: contain;" 
-                 alt="Икона">
-        </div>
-        
         <!-- Скроллируемый контент -->
         <div id="infoScrollContainer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden;">
             
-            <!-- Отступ под иконку -->
-            <div id="infoSpacer" style="height: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 24px + 40vw * 1.2 + 24px);"></div>
+            <!-- Отступ под логотип -->
+            <div style="height: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 24px);"></div>
+            
+            <!-- Уменьшенная икона (внутри скролла) -->
+            <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+                <img id="infoIconImage" 
+                     style="width: 40%; 
+                            height: auto; 
+                            max-height: 35vh; 
+                            object-fit: contain;" 
+                     alt="Икона">
+            </div>
             
             <!-- Контент -->
             <div id="infoContent" style="padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px);">
@@ -935,10 +935,9 @@ function showInfo() {
     
     infoPanelVisible = true;
     
-    const iconScreenState = document.getElementById('iconScreenState');
-    const infoScreenState = document.getElementById('infoScreenState');
     const iconImage = document.getElementById('iconImage');
     const iconTitleBlock = document.getElementById('iconTitleBlock');
+    const infoScreenState = document.getElementById('infoScreenState');
     const infoIconImage = document.getElementById('infoIconImage');
     const infoScrollContainer = document.getElementById('infoScrollContainer');
     
@@ -950,14 +949,16 @@ function showInfo() {
     
     // Анимация экрана иконы:
     // 1. Название исчезает (fade)
+    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
     iconTitleBlock.style.opacity = '0';
     
-    // 2. Икона уменьшается и едет вверх
-    iconImage.style.transform = 'scale(0.5) translateY(-50vh)';
+    // 2. Икона уменьшается до 50% и едет вверх
+    iconImage.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+    iconImage.style.transform = 'scale(0.5) translateY(-100%)';
     iconImage.style.opacity = '0';
     
-    // Анимация экрана инфо:
-    // Появляется (fade in)
+    // Анимация экрана инфо: появляется (fade in)
+    infoScreenState.style.transition = 'opacity 0.3s ease-out';
     infoScreenState.style.opacity = '1';
     infoScreenState.style.pointerEvents = 'auto';
     
@@ -984,12 +985,16 @@ function closeInfo() {
     const infoScreenState = document.getElementById('infoScreenState');
     
     // Анимация экрана инфо: исчезает
+    infoScreenState.style.transition = 'opacity 0.3s ease-out';
     infoScreenState.style.opacity = '0';
     infoScreenState.style.pointerEvents = 'none';
     
-    // Анимация экрана иконы: возвращается
-    iconImage.style.transform = 'scale(1)';
+    // Анимация экрана иконы: возвращается (обратная анимация)
+    iconImage.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+    iconImage.style.transform = 'scale(1) translateY(0)';
     iconImage.style.opacity = '1';
+    
+    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
     iconTitleBlock.style.opacity = '1';
     
     // Показываем кнопку "Режим свечи"
