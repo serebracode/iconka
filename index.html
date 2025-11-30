@@ -944,8 +944,9 @@ function applyScrollTransform(scrollTop) {
     // Прогресс от 0 до 1
     const progress = Math.min(1, Math.max(0, scrollTop / INFO_SCROLL_TARGET));
     
-    // Икона: scale от 1 до 0.5 (скроллится естественно вместе с контентом)
+    // Икона: scale от 1 до 0.5 (от верхнего края, чтобы не прыгала)
     const scale = 1 - (progress * 0.5);
+    iconImage.style.transformOrigin = 'center top';
     iconImage.style.transform = `scale(${scale})`;
     
     // Название под иконой: исчезает
@@ -1064,7 +1065,8 @@ function closeInfo() {
 (function() {
     let startY = 0;
     let startTime = 0;
-    let isAtTop = true;
+    let startScrollTop = 0;
+    let isSwiping = false;
     
     const detailScreen = document.getElementById('detailScreen');
     const scrollContainer = document.getElementById('detailScrollContainer');
@@ -1074,33 +1076,31 @@ function closeInfo() {
         
         startY = e.touches[0].clientY;
         startTime = Date.now();
-        isAtTop = scrollContainer.scrollTop <= 5;
+        startScrollTop = scrollContainer.scrollTop;
+        isSwiping = true;
     }, { passive: true });
     
     detailScreen.addEventListener('touchmove', (e) => {
-        if (candleVisible) return;
+        if (candleVisible || !isSwiping) return;
         
-        // Блокируем скролл вниз когда в начале и свайпаем вниз (для возврата)
-        if (!infoPanelVisible) {
-            // На экране иконы - блокируем скролл, только свайп работает
-            const currentY = e.touches[0].clientY;
-            const deltaY = currentY - startY;
-            if (deltaY < 0) {
-                // Свайп вверх - блокируем стандартный скролл
-                e.preventDefault();
-            }
-        } else if (isAtTop) {
-            // В режиме инфо, в самом верху, свайп вниз
-            const currentY = e.touches[0].clientY;
-            const deltaY = currentY - startY;
-            if (deltaY > 0 && scrollContainer.scrollTop <= 0) {
-                e.preventDefault();
-            }
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - startY;
+        
+        // На экране иконы — блокируем естественный скролл вверх
+        if (!infoPanelVisible && deltaY < 0) {
+            e.preventDefault();
+        }
+        
+        // В режиме инфо, в самом верху, свайп вниз — блокируем
+        if (infoPanelVisible && startScrollTop <= 5 && deltaY > 0 && scrollContainer.scrollTop <= 5) {
+            e.preventDefault();
         }
     }, { passive: false });
     
     detailScreen.addEventListener('touchend', (e) => {
-        if (candleVisible) return;
+        if (candleVisible || !isSwiping) return;
+        
+        isSwiping = false;
         
         const endY = e.changedTouches[0].clientY;
         const endTime = Date.now();
@@ -1113,8 +1113,8 @@ function closeInfo() {
         if (!infoPanelVisible && deltaY > 0) {
             // Свайп вверх на экране иконы → показать инфо
             showInfo();
-        } else if (infoPanelVisible && deltaY < 0 && isAtTop) {
-            // Свайп вниз на экране инфо (когда скролл был в самом верху)
+        } else if (infoPanelVisible && deltaY < 0 && startScrollTop <= 5) {
+            // Свайп вниз на экране инфо (когда скролл БЫЛ в самом верху в начале свайпа)
             closeInfo();
         }
     }, { passive: true });
