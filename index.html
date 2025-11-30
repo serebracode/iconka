@@ -24,7 +24,6 @@
             position: relative;
         }
 
-        /* Анимации с оптимизацией */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -35,22 +34,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        @keyframes glow {
-            0%, 100% { opacity: 0.8; transform: translateX(-50%) scale(1); }
-            50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(48px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideUpPanel {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        /* Оптимизация анимаций */
         .animated {
             will-change: transform, opacity;
         }
@@ -71,17 +54,6 @@
             display: block;
         }
 
-        /* Скрыть input number arrows */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-
-        /* Safe Area support */
         .safe-area-top {
             padding-top: env(safe-area-inset-top, 0);
         }
@@ -90,7 +62,6 @@
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
 
-        /* Telegram-style Spinner */
         .tg-spinner {
             display: inline-block;
             border-radius: 50%;
@@ -98,15 +69,12 @@
             border-top-color: var(--tg-theme-link-color, #007AFF);
             animation: tg-spin 0.8s linear infinite;
         }
-        .tg-spinner.size-s { width: 16px; height: 16px; border-width: 2px; }
         .tg-spinner.size-m { width: 24px; height: 24px; border-width: 2.5px; }
-        .tg-spinner.size-l { width: 32px; height: 32px; border-width: 3px; }
 
         @keyframes tg-spin {
             to { transform: rotate(360deg); }
         }
 
-        /* Анимация перехода загрузка → список */
         .loading-fadeout {
             animation: fadeOut 0.3s ease-out forwards;
         }
@@ -124,7 +92,6 @@
             to { opacity: 0; }
         }
 
-        /* Круглая кнопка нативного стиля ТГ */
         .tg-round-btn {
             background-color: rgba(255, 255, 255, 0.08);
             border: none;
@@ -140,39 +107,26 @@
         .tg-round-btn:active {
             background-color: rgba(255, 255, 255, 0.15);
         }
+        
+        #candleBtn:active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
     </style>
 </head>
 <body>
 
 <!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loadingScreen" class="screen active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="showListScreen()">
-    <!-- Иконка SVG -->
-    <img id="loadingIcon" src="./id/iconka_icon.svg" 
-         alt="Iconka" 
-         class="animated"
-         style="width: 107px; 
-                height: 107px; 
-                margin-bottom: 27px; 
-                opacity: 1;
-                transition: opacity 0.3s ease-out;
-                animation: fadeInScale 0.6s ease-out;">
+    <img id="loadingIcon" src="./id/iconka_icon.svg" alt="Iconka" class="animated"
+         style="width: 107px; height: 107px; margin-bottom: 27px; opacity: 1; transition: opacity 0.3s ease-out; animation: fadeInScale 0.6s ease-out;">
     
-    <!-- Логотип SVG -->
-    <img id="loadingLogotype" src="./id/iconka_logotype.svg" 
-         alt="Iconka" 
-         class="animated"
-         style="width: 183px; 
-                height: 27px;
-                opacity: 1;
-                transition: opacity 0.3s ease-out; 
-                animation: fadeInScale 0.6s ease-out 0.2s both;">
+    <img id="loadingLogotype" src="./id/iconka_logotype.svg" alt="Iconka" class="animated"
+         style="width: 183px; height: 27px; opacity: 1; transition: opacity 0.3s ease-out; animation: fadeInScale 0.6s ease-out 0.2s both;">
     
-    <!-- Спиннер загрузки данных -->
     <div id="loadingSpinner" style="margin-top: 24px; display: none;">
         <div class="tg-spinner size-m"></div>
     </div>
     
-    <!-- Кнопка О проекте -->
     <button id="aboutBtn" onclick="event.stopPropagation(); showAboutScreen();" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 24px); left: 50%; transform: translateX(-50%); background: transparent; border: none; color: #8E8E93; font-size: 16px; font-weight: 400; font-family: inherit; cursor: pointer; padding: 12px 24px; opacity: 1; transition: opacity 0.3s ease-out;">
         О проекте
     </button>
@@ -180,7 +134,6 @@
 
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
-    <!-- Логотип вверху по центру (на уровне нативных кнопок ТГ) -->
     <div id="listIconHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; cursor: pointer;" onclick="goBackToLoading()">
         <img id="listIcon" src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px; opacity: 0;">
     </div>
@@ -206,26 +159,18 @@
 <!-- ЭКРАН О ПРОЕКТЕ -->
 <div id="aboutScreen" class="screen" style="overflow-y: auto;">
     <div style="display: flex; flex-direction: column; align-items: center; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 43px + 50px); padding-left: 24px; padding-right: 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 48px); min-height: 100vh;">
-        <!-- Логотип -->
         <img src="./id/iconka_icon.svg" alt="Iconka" style="width: 107px; height: 107px; border-radius: 24px; margin-bottom: 27px;">
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 183px; height: 27px;">
-        
-        <!-- Версия -->
         <div style="color: #8E8E93; font-size: 14px; margin-top: 8px;">Версия 1.0</div>
         
-        <!-- Описание проекта -->
         <div style="margin-top: 30px; max-width: 400px; text-align: left;">
             <p style="color: #FFFFFF; font-size: 16px; line-height: 1.5; margin: 0;">Проект «Иконка» это не история про фанатизм или крайности — это спокойный просветительский проект, созданный с уважением к культурному наследию христиан. Его цель — вернуть слову «иконка» исходный смысл, вместо того чтобы называть им всё подряд. Здесь собраны подлинные образцы иконописи, к которым можно обратиться без суеты и лишних интерпретаций.</p>
         </div>
         
-        <!-- Блок поддержки (отступ 48px) -->
         <div style="width: 100%; max-width: 400px; margin-top: 48px;">
-            <!-- Заголовок -->
             <h2 style="color: #FFFFFF; font-size: 20px; font-weight: 600; margin: 0 0 24px 0; text-align: center;">Поддержите развитие проекта!</h2>
             
-            <!-- Таймлайн -->
             <div style="padding-left: 20px; margin-bottom: 24px;">
-                <!-- Пункт 1 - Активный -->
                 <div style="display: flex; position: relative;">
                     <div style="position: relative; margin-right: 20px;">
                         <div style="width: 16px; height: 16px; background-color: #D4A017; border-radius: 50%; position: relative; z-index: 2;"></div>
@@ -237,7 +182,6 @@
                     </div>
                 </div>
                 
-                <!-- Пункт 2 - Неактивный -->
                 <div style="display: flex; position: relative;">
                     <div style="position: relative; margin-right: 20px;">
                         <div style="width: 16px; height: 16px; background-color: #8E8E93; border-radius: 50%; position: relative; z-index: 2;"></div>
@@ -249,7 +193,6 @@
                     </div>
                 </div>
                 
-                <!-- Пункт 3 - Неактивный -->
                 <div style="display: flex; position: relative;">
                     <div style="position: relative; margin-right: 20px;">
                         <div style="width: 16px; height: 16px; background-color: #8E8E93; border-radius: 50%; position: relative; z-index: 2;"></div>
@@ -261,13 +204,11 @@
                 </div>
             </div>
             
-            <!-- Кнопка доната -->
             <button onclick="donate(25)" style="width: 100%; padding: 16px; background-color: #2C2C2E; border: none; border-radius: 12px; color: #F3C200; font-size: 17px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
                 <span>25★</span>
             </button>
         </div>
         
-        <!-- Футер с копирайтом -->
         <div style="margin-top: auto; padding-top: 48px; text-align: center;">
             <div style="color: #8E8E93; font-size: 16px; line-height: 1.6;">
                 <div>© Иконка, 2025</div>
@@ -279,96 +220,54 @@
 
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
-    <!-- Черный фон -->
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
 
-    <!-- Логотип вверху по центру -->
     <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; opacity: 1; transition: opacity 1.5s ease-in-out; cursor: pointer;" onclick="goBackToLoading()">
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
     </div>
 
-    <!-- Кнопка закрытия режима свечи -->
     <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 3px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px; opacity: 0; transition: opacity 1.5s ease-in-out;">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M1 1L13 13M13 1L1 13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
         </svg>
     </button>
 
-    <!-- СОСТОЯНИЕ 1: Экран иконы (статичный) -->
+    <!-- СОСТОЯНИЕ 1: Экран иконы -->
     <div id="iconScreenState" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
-        
-        <!-- Икона -->
         <img id="iconImage" 
-             style="width: 80%; 
-                    height: auto; 
-                    max-height: 70vh; 
-                    object-fit: contain;
-                    transform-origin: center center;
-                    transition: transform 0.3s ease-out, opacity 0.3s ease-out;" 
+             style="width: 80%; height: auto; max-height: 70vh; object-fit: contain; transform-origin: center center; transition: transform 0.3s ease-out, opacity 0.3s ease-out;" 
              alt="Икона">
         
-        <!-- Название и датировка -->
         <div id="iconTitleBlock" style="margin-top: 48px; text-align: center; padding: 0 16px; transition: opacity 0.3s ease-out;">
             <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
             <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
         </div>
     </div>
     
-    <!-- СОСТОЯНИЕ 2: Экран инфо (скроллируемый) -->
+    <!-- СОСТОЯНИЕ 2: Экран инфо -->
     <div id="infoScreenState" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 15; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-out;">
-        
-        <!-- Скроллируемый контент -->
         <div id="infoScrollContainer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden;">
-            
-            <!-- Отступ под логотип -->
             <div style="height: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 24px);"></div>
             
-            <!-- Уменьшенная икона (внутри скролла) -->
             <div style="display: flex; justify-content: center; margin-bottom: 24px;">
-                <img id="infoIconImage" 
-                     style="width: 40%; 
-                            height: auto; 
-                            max-height: 35vh; 
-                            object-fit: contain;" 
-                     alt="Икона">
+                <img id="infoIconImage" style="width: 40%; height: auto; max-height: 35vh; object-fit: contain;" alt="Икона">
             </div>
             
-            <!-- Контент -->
             <div id="infoContent" style="padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px);">
-                
-                <!-- Название и датировка -->
                 <div id="infoTitleBlock" style="text-align: center; margin-bottom: 24px;">
                     <div id="infoTitleText" style="color: #FFFFFF; font-size: 20px; font-weight: 400;"></div>
                     <div id="infoDateText" style="color: #8E8E93; font-size: 16px; margin-top: 4px;"></div>
                 </div>
-                
-                <!-- Описание и детали -->
                 <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6;"></div>
             </div>
         </div>
     </div>
     
     <!-- СЛОЙ СВЕЧИ -->
-    <div id="candleLayer" style="position: absolute; 
-                bottom: 0; 
-                left: 0;
-                right: 0;
-                z-index: 20; 
-                display: flex; 
-                align-items: flex-end; 
-                justify-content: center; 
-                pointer-events: none;
-                opacity: 0;
-                transition: opacity 1.5s ease-in-out;">
-        <img src="./video/3.png" 
-             alt="Свеча" 
-             style="width: 100%; 
-                    height: auto; 
-                    object-fit: contain; 
-                    display: block;">
+    <div id="candleLayer" style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; pointer-events: none; opacity: 0; transition: opacity 1.5s ease-in-out;">
+        <img src="./video/3.png" alt="Свеча" style="width: 100%; height: auto; object-fit: contain; display: block;">
     </div>
 
-    <!-- Кнопка Поделиться -->
     <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out;">
         <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
             <path d="M14 4V18M14 4L9 9M14 4L19 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -376,18 +275,10 @@
         </svg>
     </button>
 
-    <!-- Кнопка Режим свечи -->
     <button id="candleBtn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 50%; transform: translateX(-50%); z-index: 100; height: 40px; padding: 0 20px; background-color: rgba(255, 255, 255, 0.08); border: none; border-radius: 20px; color: #FFFFFF; font-size: 14px; font-family: inherit; cursor: pointer; opacity: 1; transition: opacity 0.3s ease-out, background-color 0.2s; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; font-weight: 400;">
         Режим свечи
     </button>
-    
-    <style>
-        #candleBtn:active {
-            background-color: rgba(255, 255, 255, 0.15);
-        }
-    </style>
 
-    <!-- Кнопка Инфо -->
     <button id="infoBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); right: 20px; z-index: 150; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out, background-color 0.3s ease-out;">
         <svg id="infoBtnIcon" width="20" height="20" viewBox="0 0 28 28" fill="none">
             <circle cx="14" cy="14" r="12" stroke="#FFFFFF" stroke-width="1.5"/>
@@ -397,7 +288,6 @@
             <path d="M1 1L13 13M13 1L1 13" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
         </svg>
     </button>
-
 </div>
 
 <script>
@@ -408,105 +298,58 @@ async function lockOrientation() {
     try {
         if (screen.orientation && screen.orientation.lock) {
             await screen.orientation.lock('portrait');
-            console.log('Orientation locked to portrait');
         }
-    } catch (e) {
-        console.log('Orientation lock not supported:', e);
-    }
+    } catch (e) {}
 }
 lockOrientation();
 
 // ============================================
-// ОПРЕДЕЛЕНИЕ ПЛАТФОРМЫ
+// ПЛАТФОРМА
 // ============================================
 function getPlatform() {
     const urlParams = new URLSearchParams(window.location.search);
     const testPlatform = urlParams.get('platform');
     if (testPlatform) return testPlatform;
-    
     const tgPlatform = window.Telegram?.WebApp?.platform;
     if (tgPlatform) return tgPlatform;
-    
     const ua = navigator.userAgent;
     if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
     if (/Android/i.test(ua)) return 'android';
-    if (/Mac/i.test(ua)) return 'macos';
-    if (/Win/i.test(ua)) return 'windows';
-    if (/Linux/i.test(ua)) return 'linux';
     return 'web';
 }
-
 const PLATFORM = getPlatform();
 document.body.setAttribute('data-platform', PLATFORM);
-console.log('Platform:', PLATFORM);
 
 // ============================================
-// ЗАГРУЗКА ДАННЫХ О СВЯТЫХ
+// ДАННЫЕ
 // ============================================
 let ICONS_DATA = [];
 let selectedIcon = null;
-let dataLoaded = false;
-
-function showSpinner() {
-    const spinner = document.getElementById('loadingSpinner');
-    if (spinner) spinner.style.display = 'block';
-}
-
-function hideSpinner() {
-    const spinner = document.getElementById('loadingSpinner');
-    if (spinner) spinner.style.display = 'none';
-}
 
 async function loadIconsData() {
-    showSpinner();
+    document.getElementById('loadingSpinner').style.display = 'block';
     try {
         const response = await fetch('./data/icons.json');
-        if (!response.ok) {
-            throw new Error('Failed to load icons data');
-        }
+        if (!response.ok) throw new Error('Failed');
         const data = await response.json();
         ICONS_DATA = Array.isArray(data.icons) ? data.icons : [];
-        dataLoaded = true;
-        console.log('Icons data loaded:', ICONS_DATA.length, 'icons');
-    } catch (error) {
-        console.error('Error loading icons data:', error);
+    } catch (e) {
         ICONS_DATA = [];
-    } finally {
-        hideSpinner();
     }
+    document.getElementById('loadingSpinner').style.display = 'none';
 }
 
 // ============================================
-// TELEGRAM MINI APP ИНТЕГРАЦИЯ
+// TELEGRAM
 // ============================================
 const tg = window.Telegram?.WebApp;
 
 if (tg) {
     tg.ready();
     tg.expand();
-    
-    try {
-        if (tg.requestFullscreen) {
-            tg.requestFullscreen();
-        }
-    } catch (e) {
-        console.log('Fullscreen not supported:', e);
-    }
-    
-    try {
-        if (tg.lockOrientation) {
-            tg.lockOrientation();
-        }
-    } catch (e) {
-        console.log('TG orientation lock not supported:', e);
-    }
-    
-    // Отключаем вертикальные свайпы для сворачивания приложения
-    if (tg.disableVerticalSwipes) {
-        tg.disableVerticalSwipes();
-        console.log('Vertical swipes disabled');
-    }
-    
+    try { tg.requestFullscreen?.(); } catch(e) {}
+    try { tg.lockOrientation?.(); } catch(e) {}
+    tg.disableVerticalSwipes?.();
     tg.setHeaderColor('#000000');
     tg.setBackgroundColor('#000000');
     
@@ -515,46 +358,17 @@ if (tg) {
         Object.keys(tg.themeParams).forEach(key => {
             root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, tg.themeParams[key]);
         });
-        
-        if (!tg.themeParams.secondary_bg_color || 
-            tg.themeParams.secondary_bg_color === tg.themeParams.bg_color) {
-            root.style.setProperty('--tg-theme-secondary-bg-color', '#2C2C2E');
-        }
     }
-    
-    tg.onEvent('themeChanged', function() {
-        if (tg.themeParams) {
-            const root = document.documentElement;
-            Object.keys(tg.themeParams).forEach(key => {
-                root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, tg.themeParams[key]);
-            });
-            
-            tg.setHeaderColor('#000000');
-            tg.setBackgroundColor('#000000');
-        }
-    });
-    
     tg.MainButton.hide();
-    
-    console.log('Telegram WebApp initialized:', {
-        version: tg.version,
-        platform: tg.platform,
-        theme: tg.colorScheme,
-        safeAreaInset: tg.safeAreaInset,
-        contentSafeAreaInset: tg.contentSafeAreaInset
-    });
 }
 
 // ============================================
-// ОСНОВНАЯ ЛОГИКА ПРИЛОЖЕНИЯ
+// ЛОГИКА
 // ============================================
 
 function showListScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const listScreen = document.getElementById('listScreen');
-    const listIcon = document.getElementById('listIcon');
-    const listHeader = document.getElementById('listHeader');
-    const iconsList = document.getElementById('iconsList');
     
     loadingScreen.classList.add('loading-fadeout');
     renderIconsList();
@@ -564,20 +378,16 @@ function showListScreen() {
         loadingScreen.classList.remove('loading-fadeout');
         loadingScreen.style.display = 'none';
         
-        // Сбрасываем opacity элементов загрузочного экрана для следующего показа
         document.getElementById('loadingIcon').style.opacity = '1';
         document.getElementById('loadingLogotype').style.opacity = '1';
         document.getElementById('aboutBtn').style.opacity = '1';
         
         listScreen.classList.add('active');
-        listIcon.classList.add('list-fadein');
-        listHeader.classList.add('list-fadein');
-        iconsList.classList.add('list-fadein');
+        document.getElementById('listIcon').classList.add('list-fadein');
+        document.getElementById('listHeader').classList.add('list-fadein');
+        document.getElementById('iconsList').classList.add('list-fadein');
         
-        // Показать нативную кнопку "Назад" для возврата на экран загрузки
-        if (tg?.BackButton) {
-            tg.BackButton.show();
-        }
+        tg?.BackButton?.show();
     }, 300);
 }
 
@@ -590,11 +400,11 @@ function renderIconsList(searchQuery = '') {
     list.innerHTML = filtered.map((icon, index) => `
         <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative;">
             <img src="${icon.image.replace('icons/', 'icons/preview/').replace('.jpg', '_preview.jpg')}" 
-                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDMyIiBoZWlnaHQ9IjQzMiIgdmlld0JveD0iMCAwIDQzMiA0MzIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8yMzI2XzIyNikiPgo8cmVjdCB3aWR0aD0iNDMxLjM0IiBoZWlnaHQ9IjQzMS4zNCIgZmlsbD0iYmxhY2siLz4KPHJlY3Qgd2lkdGg9IjQzMSIgaGVpZ2h0PSI0MzEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8cGF0aCBkPSJNMjE2LjE2IDI4OC41NUMyODUuNjcxIDI4OC41NSAzNDIuMDIgMjMyLjIwMSAzNDIuMDIgMTYyLjY5QzM0Mi4wMiA5My4xNzk1IDI4NS42NzEgMzYuODMgMjE2LjE2IDM2LjgzQzE0Ni42NDkgMzYuODMgOTAuMyA5My4xNzk1IDkwLjMgMTYyLjY5QzkwLjMgMjMyLjIwMSAxNDYuNjQ5IDI4OC41NSAyMTYuMTYgMjg4LjU1WiIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPgo8cGF0aCBkPSJNMjE2LjI1IDk4LjIxQzI1NS40NjIgOTguMjEgMjg3LjI1IDEzMC4wNzUgMjg3LjI1IDE2OS4zODNWMjY1LjkyNkMzNTEuMTQ3IDI5Mi42ODkgMzk2IDM1NS4xNCAzOTYgNDI3Ljg0MVY0NzFIMzdWNDI3Ljg0MUMzNyAzNTUuMzMxIDgxLjYyMDEgMjkzLjAxOCAxNDUuMjUgMjY2LjEzOVYxNjkuMzgzQzE0NS4yNSAxMzAuMDc1IDE3Ny4wMzggOTguMjEgMjE2LjI1IDk4LjIxWiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTI2OS4yNSAyMDMuMkMyNjkuMjUgMjU1LjQ5IDI0NS41MTggMjk0LjIxIDIxNi4yNSAyOTQuMjFDMTg2Ljk4MiAyOTQuMjEgMTYzLjI1IDI1OC4yMzEgMTYzLjI1IDIwMy4yQzE2My4yNSAxNzMuODggMjY5LjIzOSAxNzMuODggMjY5LjIzOSAyMDMuMkgyNjkuMjVaIiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjEiLz4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF8yMzI2XzIyNiI+CjxyZWN0IHdpZHRoPSI0MzEuMzQiIGhlaWdodD0iNDMxLjM0IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPg=='" 
+                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDMyIiBoZWlnaHQ9IjQzMiIgdmlld0JveD0iMCAwIDQzMiA0MzIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQzMSIgaGVpZ2h0PSI0MzEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvc3ZnPg=='" 
                  alt="${icon.title}" 
-                 style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: var(--tg-theme-secondary-bg-color, #3A3A3C); flex-shrink: 0;">
+                 style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: #3A3A3C; flex-shrink: 0;">
             <div style="flex: 1; color: #FFFFFF; font-size: 16px; font-weight: 400; line-height: 1.4;">${icon.title}</div>
-            ${index < filtered.length - 1 ? '<div style="position: absolute; bottom: 0; left: 72px; right: 0; height: 0.5px; background-color: var(--tg-theme-secondary-bg-color, #38383A);"></div>' : ''}
+            ${index < filtered.length - 1 ? '<div style="position: absolute; bottom: 0; left: 72px; right: 0; height: 0.5px; background-color: #38383A;"></div>' : ''}
         </div>
     `).join('');
 }
@@ -612,16 +422,6 @@ document.getElementById('clearSearch').addEventListener('click', () => {
     renderIconsList();
 });
 
-document.getElementById('listScreen').addEventListener('touchstart', (e) => {
-    const searchInput = document.getElementById('searchInput');
-    const searchContainer = document.getElementById('searchContainer');
-    
-    if (!searchContainer.contains(e.target) && document.activeElement === searchInput) {
-        e.preventDefault();
-        searchInput.blur();
-    }
-}, { passive: false, capture: true });
-
 function selectIcon(id) {
     selectedIcon = ICONS_DATA.find(s => s.id === id);
     if (!selectedIcon) return;
@@ -629,50 +429,30 @@ function selectIcon(id) {
     const listScreen = document.getElementById('listScreen');
     const detailScreen = document.getElementById('detailScreen');
     
-    // Анимация исчезновения списка
     listScreen.classList.add('loading-fadeout');
     
-    // Подготавливаем экран иконы
     document.getElementById('iconImage').src = selectedIcon.image;
-    
     document.getElementById('iconTitleText').textContent = selectedIcon.title;
     document.getElementById('iconDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
     
-    // Заполняем инфо-контент
     document.getElementById('infoTitleText').textContent = selectedIcon.title;
     document.getElementById('infoDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
     
     const infoContent = `
         ${selectedIcon.description_full ? `<p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">${selectedIcon.description_full}</p>` : ''}
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Автор:</strong>
-            <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
-        </div>
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Датировка:</strong>
-            <span style="margin-left: 8px;">${(selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span>
-        </div>
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Размер:</strong>
-            <span style="margin-left: 8px;">${selectedIcon.size || 'Неизвестно'}</span>
-        </div>
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Техника:</strong>
-            <span style="margin-left: 8px;">${selectedIcon.technique || 'Неизвестно'}</span>
-        </div>
-        <div style="margin: 12px 0;">
-            <strong style="color: #FFFFFF;">Местонахождение:</strong>
-            <span style="margin-left: 8px;">${selectedIcon.location || 'Неизвестно'}</span>
-        </div>
+        <div style="margin: 12px 0;"><strong>Автор:</strong> <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span></div>
+        <div style="margin: 12px 0;"><strong>Датировка:</strong> <span style="margin-left: 8px;">${(selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span></div>
+        <div style="margin: 12px 0;"><strong>Размер:</strong> <span style="margin-left: 8px;">${selectedIcon.size || 'Неизвестно'}</span></div>
+        <div style="margin: 12px 0;"><strong>Техника:</strong> <span style="margin-left: 8px;">${selectedIcon.technique || 'Неизвестно'}</span></div>
+        <div style="margin: 12px 0;"><strong>Местонахождение:</strong> <span style="margin-left: 8px;">${selectedIcon.location || 'Неизвестно'}</span></div>
         <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
             <p style="margin: 0; font-size: 14px; color: #8E8E93; line-height: 1.5; padding-bottom: 20px;">
-                ${selectedIcon.rights || 'Изображение иконы предоставлено для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.'}
+                ${selectedIcon.rights || 'Изображение предоставлено для некоммерческого использования.'}
             </p>
         </div>
     `;
     document.getElementById('infoContentText').innerHTML = infoContent;
     
-    // После анимации показываем экран иконы
     setTimeout(() => {
         listScreen.classList.remove('active');
         listScreen.classList.remove('loading-fadeout');
@@ -680,24 +460,16 @@ function selectIcon(id) {
         detailScreen.classList.add('active');
         detailScreen.classList.add('detail-fadein');
         
-        // Показать нативную кнопку "Назад" в Telegram
-        if (tg?.BackButton) {
-            tg.BackButton.show();
-        }
+        tg?.BackButton?.show();
         
-        // Сбросить состояние
         candleVisible = false;
         infoPanelVisible = false;
         resetDetailScreenUI();
         
-        // Убираем класс анимации после завершения
         setTimeout(() => {
             detailScreen.classList.remove('detail-fadein');
-            
-            // Диспатчим событие для сброса zoom
             window.dispatchEvent(new Event('iconChanged'));
         }, 400);
-        
     }, 300);
 }
 
@@ -707,19 +479,16 @@ function resetDetailScreenUI() {
     const iconImage = document.getElementById('iconImage');
     iconImage.style.transform = 'scale(1)';
     iconImage.style.opacity = '1';
+    iconImage.style.visibility = 'visible';
     
     document.getElementById('iconTitleBlock').style.opacity = '1';
     
-    // Скрываем экран инфо
     const infoScreenState = document.getElementById('infoScreenState');
     infoScreenState.style.opacity = '0';
     infoScreenState.style.pointerEvents = 'none';
+    infoScreenState.style.transform = 'translateY(100%)';
     
-    // Сбрасываем скролл инфо
-    const infoScrollContainer = document.getElementById('infoScrollContainer');
-    if (infoScrollContainer) {
-        infoScrollContainer.scrollTop = 0;
-    }
+    document.getElementById('infoScrollContainer').scrollTop = 0;
     
     document.getElementById('detailLogoHeader').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
@@ -731,13 +500,10 @@ function resetDetailScreenUI() {
     document.getElementById('closeCandleBtn').style.display = 'none';
     document.getElementById('closeCandleBtn').style.opacity = '0';
     
-    // Возвращаем кнопку инфо к исходному виду
     const infoBtn = document.getElementById('infoBtn');
-    const infoBtnIcon = document.getElementById('infoBtnIcon');
-    const infoBtnClose = document.getElementById('infoBtnClose');
+    document.getElementById('infoBtnIcon').style.display = 'block';
+    document.getElementById('infoBtnClose').style.display = 'none';
     infoBtn.style.backgroundColor = '';
-    infoBtnIcon.style.display = 'block';
-    infoBtnClose.style.display = 'none';
 }
 
 function goBack() {
@@ -746,109 +512,65 @@ function goBack() {
     const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
     
-    // Если открыт экран иконы — возвращаемся на список
     if (detailScreen.classList.contains('active')) {
         detailScreen.classList.add('loading-fadeout');
-        
         setTimeout(() => {
             detailScreen.classList.remove('active');
             detailScreen.classList.remove('loading-fadeout');
-            
             listScreen.classList.add('active');
-            
-            // Восстанавливаем opacity элементов списка
             document.getElementById('listIcon').style.opacity = '1';
             document.getElementById('listHeader').style.opacity = '1';
             document.getElementById('iconsList').style.opacity = '1';
-            
-            // Сбросить состояние свечи
             candleVisible = false;
             infoPanelVisible = false;
-            
-            // Свайпы остаются отключенными, т.к. список тоже блокирует
-            
         }, 300);
-    }
-    // Если открыт экран О проекте — возвращаемся на загрузочный экран
-    else if (aboutScreen.classList.contains('active')) {
+    } else if (aboutScreen.classList.contains('active')) {
         closeAboutScreen();
-    }
-    // Если открыт экран списка — возвращаемся на загрузочный экран
-    else if (listScreen.classList.contains('active')) {
+    } else if (listScreen.classList.contains('active')) {
         listScreen.classList.add('loading-fadeout');
-        
         setTimeout(() => {
             listScreen.classList.remove('active');
             listScreen.classList.remove('loading-fadeout');
-            
-            // Убираем класс loading-fadeout с загрузочного экрана если он там остался
             loadingScreen.classList.remove('loading-fadeout');
-            
             loadingScreen.style.display = 'flex';
             loadingScreen.classList.add('active');
-            
-            // Скрыть нативную кнопку "Назад"
-            if (tg?.BackButton) {
-                tg.BackButton.hide();
-            }
-            
+            tg?.BackButton?.hide();
         }, 300);
     }
 }
 
-// Функция для возврата на экран загрузки из любого места
 function goBackToLoading() {
     const listScreen = document.getElementById('listScreen');
     const detailScreen = document.getElementById('detailScreen');
     const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
     
-    // Определяем текущий активный экран
     let currentScreen = null;
-    if (detailScreen.classList.contains('active')) {
-        currentScreen = detailScreen;
-    } else if (listScreen.classList.contains('active')) {
-        currentScreen = listScreen;
-    } else if (aboutScreen.classList.contains('active')) {
-        currentScreen = aboutScreen;
-    }
+    if (detailScreen.classList.contains('active')) currentScreen = detailScreen;
+    else if (listScreen.classList.contains('active')) currentScreen = listScreen;
+    else if (aboutScreen.classList.contains('active')) currentScreen = aboutScreen;
     
     if (!currentScreen) return;
     
     currentScreen.classList.add('loading-fadeout');
-    
     setTimeout(() => {
         currentScreen.classList.remove('active');
         currentScreen.classList.remove('loading-fadeout');
-        
-        // Восстанавливаем opacity элементов списка для будущего показа
         if (currentScreen === listScreen) {
             document.getElementById('listIcon').style.opacity = '1';
             document.getElementById('listHeader').style.opacity = '1';
             document.getElementById('iconsList').style.opacity = '1';
         }
-        
-        // Убираем класс loading-fadeout с загрузочного экрана если он там остался
         loadingScreen.classList.remove('loading-fadeout');
-        
         loadingScreen.style.display = 'flex';
         loadingScreen.classList.add('active');
-        
-        // Скрыть нативную кнопку "Назад"
-        if (tg?.BackButton) {
-            tg.BackButton.hide();
-        }
-        
-        // Сбросить состояние
+        tg?.BackButton?.hide();
         candleVisible = false;
         infoPanelVisible = false;
-        
     }, 300);
 }
 
-if (tg?.BackButton) {
-    tg.BackButton.onClick(goBack);
-}
+tg?.BackButton?.onClick(goBack);
 
 let candleVisible = false;
 let infoPanelVisible = false;
@@ -856,7 +578,6 @@ let infoPanelVisible = false;
 function showCandle() {
     candleVisible = true;
     
-    // Если в режиме инфо - сначала закрываем
     if (infoPanelVisible) {
         closeInfo();
         setTimeout(showCandle, 350);
@@ -864,28 +585,19 @@ function showCandle() {
     }
     
     const iconImage = document.getElementById('iconImage');
-    
-    // Увеличиваем икону до 100%
     iconImage.style.transition = 'transform 1.5s ease-in-out';
-    iconImage.style.transform = 'scale(1.25)'; // 80% * 1.25 = 100%
+    iconImage.style.transform = 'scale(1.25)';
     
-    // Свеча появляется
     document.getElementById('candleLayer').style.opacity = '1';
-    
-    // Скрываем название
     document.getElementById('iconTitleBlock').style.opacity = '0';
-    
-    // Скрываем логотип и кнопки
     document.getElementById('detailLogoHeader').style.opacity = '0';
     document.getElementById('candleBtn').style.opacity = '0';
     document.getElementById('infoBtn').style.opacity = '0';
     document.getElementById('shareBtn').style.opacity = '0';
-    
     document.getElementById('candleBtn').style.pointerEvents = 'none';
     document.getElementById('infoBtn').style.pointerEvents = 'none';
     document.getElementById('shareBtn').style.pointerEvents = 'none';
     
-    // Показать кнопку закрытия
     const closeBtn = document.getElementById('closeCandleBtn');
     closeBtn.style.display = 'flex';
     closeBtn.style.opacity = '0';
@@ -898,41 +610,32 @@ function showCandle() {
 
 function closeCandle() {
     if (!candleVisible) return;
-    
     candleVisible = false;
     
     const iconImage = document.getElementById('iconImage');
-    
-    // Возвращаем икону к исходному размеру
     iconImage.style.transition = 'transform 1.5s ease-in-out';
     iconImage.style.transform = 'scale(1)';
     
     document.getElementById('candleLayer').style.opacity = '0';
     
-    // Скрываем кнопку закрытия
     const closeBtn = document.getElementById('closeCandleBtn');
     closeBtn.style.opacity = '0';
     closeBtn.style.pointerEvents = 'none';
     
-    // Показываем логотип, название и кнопки
     document.getElementById('detailLogoHeader').style.opacity = '1';
     document.getElementById('iconTitleBlock').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('infoBtn').style.opacity = '1';
     document.getElementById('shareBtn').style.opacity = '1';
-    
     document.getElementById('candleBtn').style.pointerEvents = 'auto';
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     document.getElementById('shareBtn').style.pointerEvents = 'auto';
     
-    setTimeout(() => {
-        closeBtn.style.display = 'none';
-    }, 1500);
+    setTimeout(() => { closeBtn.style.display = 'none'; }, 1500);
 }
 
 function showInfo() {
     if (infoPanelVisible || candleVisible) return;
-    
     infoPanelVisible = true;
     
     const iconImage = document.getElementById('iconImage');
@@ -941,119 +644,85 @@ function showInfo() {
     const infoIconImage = document.getElementById('infoIconImage');
     const infoScrollContainer = document.getElementById('infoScrollContainer');
     
-    // Копируем src иконки
     infoIconImage.src = iconImage.src;
-    
-    // Сбрасываем скролл инфо
     infoScrollContainer.scrollTop = 0;
     
-    // Подготавливаем экран инфо (за экраном снизу, прозрачный)
-    infoScreenState.style.transition = 'none';
-    infoScreenState.style.transform = 'translateY(100%)';
-    infoScreenState.style.opacity = '0';
-    infoScreenState.style.pointerEvents = 'auto';
+    // КЛЮЧЕВОЕ: мгновенно скрываем оригинальную икону
+    iconImage.style.visibility = 'hidden';
     
-    // Форсируем reflow
-    infoScreenState.offsetHeight;
-    
-    // Анимация экрана иконы:
-    // 1. Название исчезает (fade)
     iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
     iconTitleBlock.style.opacity = '0';
     
-    // 2. Икона уменьшается до 50% и едет вверх
-    iconImage.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-    iconImage.style.transform = 'scale(0.5) translateY(-100%)';
-    iconImage.style.opacity = '0';
-    
-    // Анимация экрана инфо: выезжает снизу + fade in
-    infoScreenState.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-    infoScreenState.style.transform = 'translateY(0)';
+    infoScreenState.style.transition = 'none';
+    infoScreenState.style.transform = 'translateY(100%)';
     infoScreenState.style.opacity = '1';
+    infoScreenState.style.pointerEvents = 'auto';
     
-    // Скрываем кнопку "Режим свечи"
+    infoScreenState.offsetHeight;
+    
+    infoScreenState.style.transition = 'transform 0.3s ease-out';
+    infoScreenState.style.transform = 'translateY(0)';
+    
     document.getElementById('candleBtn').style.opacity = '0';
     document.getElementById('candleBtn').style.pointerEvents = 'none';
     
-    // Трансформируем кнопку инфо в крестик
     const infoBtn = document.getElementById('infoBtn');
-    const infoBtnIcon = document.getElementById('infoBtnIcon');
-    const infoBtnClose = document.getElementById('infoBtnClose');
     infoBtn.style.backgroundColor = '#FFFFFF';
-    infoBtnIcon.style.display = 'none';
-    infoBtnClose.style.display = 'block';
+    document.getElementById('infoBtnIcon').style.display = 'none';
+    document.getElementById('infoBtnClose').style.display = 'block';
 }
 
 function closeInfo() {
     if (!infoPanelVisible) return;
-    
     infoPanelVisible = false;
     
     const iconImage = document.getElementById('iconImage');
     const iconTitleBlock = document.getElementById('iconTitleBlock');
     const infoScreenState = document.getElementById('infoScreenState');
     
-    // Анимация экрана инфо: уезжает вниз + fade out
-    infoScreenState.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+    infoScreenState.style.transition = 'transform 0.3s ease-out';
     infoScreenState.style.transform = 'translateY(100%)';
-    infoScreenState.style.opacity = '0';
     
-    // После завершения анимации сбрасываем
     setTimeout(() => {
         infoScreenState.style.pointerEvents = 'none';
+        infoScreenState.style.opacity = '0';
+        // КЛЮЧЕВОЕ: показываем оригинальную икону обратно
+        iconImage.style.visibility = 'visible';
     }, 300);
-    
-    // Анимация экрана иконы: возвращается (обратная анимация)
-    iconImage.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-    iconImage.style.transform = 'scale(1) translateY(0)';
-    iconImage.style.opacity = '1';
     
     iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
     iconTitleBlock.style.opacity = '1';
     
-    // Показываем кнопку "Режим свечи"
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('candleBtn').style.pointerEvents = 'auto';
     
-    // Возвращаем кнопку инфо к исходному виду
     const infoBtn = document.getElementById('infoBtn');
-    const infoBtnIcon = document.getElementById('infoBtnIcon');
-    const infoBtnClose = document.getElementById('infoBtnClose');
     infoBtn.style.backgroundColor = '';
-    infoBtnIcon.style.display = 'block';
-    infoBtnClose.style.display = 'none';
+    document.getElementById('infoBtnIcon').style.display = 'block';
+    document.getElementById('infoBtnClose').style.display = 'none';
 }
 
-// Свайп для перехода между экраном иконы и экраном инфо
+// Свайп
 (function() {
     let startY = 0;
     let startTime = 0;
-    let isSwipeDown = false;
+    let startScrollTop = 0;
     
     const detailScreen = document.getElementById('detailScreen');
     const infoScrollContainer = document.getElementById('infoScrollContainer');
     
     detailScreen.addEventListener('touchstart', (e) => {
         if (candleVisible) return;
-        
         startY = e.touches[0].clientY;
         startTime = Date.now();
-        isSwipeDown = false;
-        
-        // Проверяем, можно ли свайпнуть вниз для закрытия инфо
-        if (infoPanelVisible && infoScrollContainer.scrollTop <= 0) {
-            isSwipeDown = true;
-        }
+        startScrollTop = infoScrollContainer.scrollTop;
     }, { passive: true });
     
     detailScreen.addEventListener('touchmove', (e) => {
         if (candleVisible) return;
-        
-        // Если в режиме инфо, скролл в самом верху и свайпаем вниз — блокируем скролл
-        if (infoPanelVisible && isSwipeDown) {
+        if (infoPanelVisible && startScrollTop <= 0) {
             const currentY = e.touches[0].clientY;
             const deltaY = currentY - startY;
-            
             if (deltaY > 0 && infoScrollContainer.scrollTop <= 0) {
                 e.preventDefault();
             }
@@ -1062,69 +731,49 @@ function closeInfo() {
     
     detailScreen.addEventListener('touchend', (e) => {
         if (candleVisible) return;
-        
         const endY = e.changedTouches[0].clientY;
         const endTime = Date.now();
         const deltaY = startY - endY;
         const deltaTime = endTime - startTime;
         
-        // Минимум 50px, максимум 500ms
         if (Math.abs(deltaY) < 50 || deltaTime > 500) return;
         
         if (!infoPanelVisible && deltaY > 0) {
-            // Свайп вверх на экране иконы → показать инфо
             showInfo();
-        } else if (infoPanelVisible && deltaY < 0 && isSwipeDown) {
-            // Свайп вниз на экране инфо (когда скролл был в самом верху)
+        } else if (infoPanelVisible && deltaY < 0 && startScrollTop <= 0) {
             closeInfo();
         }
     }, { passive: true });
 })();
 
-// Позиционировать название между логотипом и изображением
 document.getElementById('candleBtn').addEventListener('click', showCandle);
 document.getElementById('closeCandleBtn').addEventListener('click', closeCandle);
 document.getElementById('infoBtn').addEventListener('click', () => {
-    if (infoPanelVisible) {
-        closeInfo();
-    } else {
-        showInfo();
-    }
+    if (infoPanelVisible) closeInfo();
+    else showInfo();
 });
 document.getElementById('shareBtn').addEventListener('click', shareIcon);
 
-// Поделиться иконой
 async function shareIcon() {
     if (!selectedIcon) return;
-    
-    const shareData = {
-        title: selectedIcon.title,
-        text: `${selectedIcon.title} — икона в приложении «Иконка»`,
-        url: window.location.href
-    };
-    
     try {
         if (navigator.share) {
-            await navigator.share(shareData);
+            await navigator.share({
+                title: selectedIcon.title,
+                text: `${selectedIcon.title} — икона в приложении «Иконка»`,
+                url: window.location.href
+            });
         } else if (tg?.openTelegramLink) {
-            // Fallback для Telegram
-            const text = encodeURIComponent(`${selectedIcon.title} — икона в приложении «Иконка»\n${window.location.href}`);
+            const text = encodeURIComponent(`${selectedIcon.title} — икона\n${window.location.href}`);
             tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${text}`);
         }
-        
-    } catch (err) {
-        console.log('Share failed:', err);
-    }
+    } catch (e) {}
 }
 
-// ============================================
-// ЭКРАН О ПРОЕКТЕ
-// ============================================
 function showAboutScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
     
-    // Скрываем элементы загрузочного экрана
     document.getElementById('loadingIcon').style.opacity = '0';
     document.getElementById('loadingLogotype').style.opacity = '0';
     document.getElementById('aboutBtn').style.opacity = '0';
@@ -1132,20 +781,12 @@ function showAboutScreen() {
     setTimeout(() => {
         loadingScreen.classList.remove('active');
         loadingScreen.style.display = 'none';
-        
-        // Сбрасываем opacity для следующего показа
         document.getElementById('loadingIcon').style.opacity = '1';
         document.getElementById('loadingLogotype').style.opacity = '1';
         document.getElementById('aboutBtn').style.opacity = '1';
-        
         aboutScreen.classList.add('active');
-        
-        // Показать нативную кнопку "Назад"
-        if (tg?.BackButton) {
-            tg.BackButton.show();
-        }
+        tg?.BackButton?.show();
     }, 300);
-    
 }
 
 function closeAboutScreen() {
@@ -1153,141 +794,56 @@ function closeAboutScreen() {
     const aboutScreen = document.getElementById('aboutScreen');
     
     aboutScreen.classList.add('loading-fadeout');
-    
     setTimeout(() => {
         aboutScreen.classList.remove('active');
         aboutScreen.classList.remove('loading-fadeout');
-        
         loadingScreen.style.display = 'flex';
         loadingScreen.classList.add('active');
-        
-        // Скрыть нативную кнопку "Назад"
-        if (tg?.BackButton) {
-            tg.BackButton.hide();
-        }
+        tg?.BackButton?.hide();
     }, 300);
-    
 }
 
 function donate(amount) {
-    
-    // Telegram Stars payment
-    if (tg?.openInvoice) {
-        // Здесь будет интеграция с Telegram Payments
-        console.log('Donate:', amount, 'stars');
-        
-        // Пока просто показываем алерт
-        if (tg?.showAlert) {
-            tg.showAlert(`Спасибо за желание поддержать проект! Оплата ${amount}★ будет доступна в следующих версиях.`);
-        }
-    } else {
-        console.log('Telegram payments not available');
+    if (tg?.showAlert) {
+        tg.showAlert(`Спасибо за желание поддержать проект! Оплата ${amount}★ будет доступна в следующих версиях.`);
     }
 }
 
-// Тап в любом месте экрана иконы для выхода из режима свечи
 document.getElementById('iconScreenState').addEventListener('click', (e) => {
     if (candleVisible && e.target.id !== 'closeCandleBtn') {
         closeCandle();
     }
 });
 
-// ============================================
-// ВЗАИМОДЕЙСТВИЕ С ИЗОБРАЖЕНИЕМ ИКОНЫ
-// ============================================
+// Zoom
 (function() {
     const iconImage = document.getElementById('iconImage');
+    let currentScale = 1, translateX = 0, translateY = 0;
+    let isDoubleTapZoomed = false, isPinching = false, isPanning = false;
+    let initialDistance = 0, initialScale = 1;
+    let panStartX = 0, panStartY = 0;
+    let lastTapTime = 0, isProcessingDoubleTap = false;
     
-    // Состояние
-    let currentScale = 1;
-    let translateX = 0;
-    let translateY = 0;
-    let isDoubleTapZoomed = false;
+    function applyTransform(animated = true) {
+        iconImage.style.transition = animated ? 'transform 0.3s ease-out' : 'none';
+        iconImage.style.transform = `scale(${currentScale}) translate(${translateX}px, ${translateY}px)`;
+        iconImage.style.transformOrigin = 'center center';
+    }
     
-    // Для pinch
-    let isPinching = false;
-    let initialDistance = 0;
-    let initialScale = 1;
-    let pinchStartX = 0;
-    let pinchStartY = 0;
-    
-    // Для pan (перемещения одним пальцем)
-    let isPanning = false;
-    let panStartX = 0;
-    let panStartY = 0;
-    
-    // Для double tap
-    let lastTapTime = 0;
-    let isProcessingDoubleTap = false;
-    
-    // Публичная функция для сброса состояния с анимацией
-    window.resetImageZoom = function() {
-        currentScale = 1;
-        translateX = 0;
-        translateY = 0;
-        isDoubleTapZoomed = false;
-        isPinching = false;
-        isPanning = false;
-        applyTransform(true);
-        iconImage.style.zIndex = '1';
-    };
-    
-    // Публичная функция для сброса только внутренних переменных БЕЗ анимации
-    window.resetImageZoomState = function() {
-        currentScale = 1;
-        translateX = 0;
-        translateY = 0;
-        isDoubleTapZoomed = false;
-        isPinching = false;
-        isPanning = false;
-        lastTapTime = 0;
-        isProcessingDoubleTap = false;
-    };
-    
-    // Вспомогательные функции
     function getDistance(touches) {
         const dx = touches[0].clientX - touches[1].clientX;
         const dy = touches[0].clientY - touches[1].clientY;
         return Math.sqrt(dx * dx + dy * dy);
     }
     
-    function getCenter(touches) {
-        return {
-            x: (touches[0].clientX + touches[1].clientX) / 2,
-            y: (touches[0].clientY + touches[1].clientY) / 2
-        };
-    }
-    
-    function applyTransform(animated = true) {
-        if (animated) {
-            iconImage.style.transition = 'transform 0.3s ease-out';
-        } else {
-            iconImage.style.transition = 'none';
-        }
-        iconImage.style.transform = `scale(${currentScale}) translate(${translateX}px, ${translateY}px)`;
-        iconImage.style.transformOrigin = 'center center';
-    }
-    
     function getLimits(scale) {
-        // Получаем оригинальные размеры
         const tempTransform = iconImage.style.transform;
         iconImage.style.transform = 'none';
         const rect = iconImage.getBoundingClientRect();
         iconImage.style.transform = tempTransform;
-        
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
-        
-        const scaledWidth = rect.width * scale;
-        const scaledHeight = rect.height * scale;
-        
-        const overflowX = Math.max(0, (scaledWidth - screenWidth) / 2);
-        const overflowY = Math.max(0, (scaledHeight - screenHeight) / 2);
-        
-        return {
-            maxX: overflowX / scale,
-            maxY: overflowY / scale
-        };
+        const overflowX = Math.max(0, (rect.width * scale - window.innerWidth) / 2);
+        const overflowY = Math.max(0, (rect.height * scale - window.innerHeight) / 2);
+        return { maxX: overflowX / scale, maxY: overflowY / scale };
     }
     
     function constrainTranslate(scale, x, y) {
@@ -1298,23 +854,16 @@ document.getElementById('iconScreenState').addEventListener('click', (e) => {
         };
     }
     
-    // TOUCHSTART
     iconImage.addEventListener('touchstart', (e) => {
         if (candleVisible) return;
-        
         if (e.touches.length === 2) {
-            // Начало pinch
             isPinching = true;
             isPanning = false;
             initialDistance = getDistance(e.touches);
             initialScale = currentScale;
-            const center = getCenter(e.touches);
-            pinchStartX = translateX;
-            pinchStartY = translateY;
             iconImage.style.transition = 'none';
             iconImage.style.zIndex = '50';
         } else if (e.touches.length === 1 && isDoubleTapZoomed) {
-            // Начало pan (только если уже увеличено через double tap)
             isPanning = true;
             panStartX = e.touches[0].clientX;
             panStartY = e.touches[0].clientY;
@@ -1322,150 +871,85 @@ document.getElementById('iconScreenState').addEventListener('click', (e) => {
         }
     }, { passive: false });
     
-    // TOUCHMOVE
     iconImage.addEventListener('touchmove', (e) => {
         if (candleVisible) return;
-        
         if (isPinching && e.touches.length === 2) {
             e.preventDefault();
-            
-            const currentDistance = getDistance(e.touches);
-            let newScale = initialScale * (currentDistance / initialDistance);
-            
-            // Ограничения scale
-            if (isDoubleTapZoomed) {
-                // Если double tap активен: от 1.25x до 3x
-                newScale = Math.max(1.25, Math.min(3, newScale));
-            } else {
-                // Если double tap НЕ активен: от 1x до 3x
-                newScale = Math.max(1, Math.min(3, newScale));
-            }
-            
+            let newScale = initialScale * (getDistance(e.touches) / initialDistance);
+            newScale = isDoubleTapZoomed ? Math.max(1.25, Math.min(3, newScale)) : Math.max(1, Math.min(3, newScale));
             currentScale = newScale;
-            
-            // Применяем ограничения к translate
             const constrained = constrainTranslate(currentScale, translateX, translateY);
             translateX = constrained.x;
             translateY = constrained.y;
-            
             applyTransform(false);
-            
         } else if (isPanning && e.touches.length === 1 && isDoubleTapZoomed) {
             e.preventDefault();
-            
             const deltaX = e.touches[0].clientX - panStartX;
             const deltaY = e.touches[0].clientY - panStartY;
-            
             panStartX = e.touches[0].clientX;
             panStartY = e.touches[0].clientY;
-            
-            // Делим на currentScale для компенсации
-            const newX = translateX + (deltaX / currentScale);
-            const newY = translateY + (deltaY / currentScale);
-            
-            const constrained = constrainTranslate(currentScale, newX, newY);
+            const constrained = constrainTranslate(currentScale, translateX + deltaX / currentScale, translateY + deltaY / currentScale);
             translateX = constrained.x;
             translateY = constrained.y;
-            
             applyTransform(false);
         }
     }, { passive: false });
     
-    // TOUCHEND
     iconImage.addEventListener('touchend', (e) => {
         if (candleVisible) return;
-        
-        // Завершение pinch
         if (isPinching && e.touches.length < 2) {
             isPinching = false;
-            
             if (!isDoubleTapZoomed) {
-                // Если НЕ в режиме double tap - возвращаем к 1x
-                currentScale = 1;
-                translateX = 0;
-                translateY = 0;
+                currentScale = 1; translateX = 0; translateY = 0;
                 applyTransform(true);
-                setTimeout(() => {
-                    iconImage.style.zIndex = '1';
-                }, 300);
+                setTimeout(() => { iconImage.style.zIndex = '1'; }, 300);
             } else {
-                // Если в режиме double tap - оставляем как есть
                 applyTransform(true);
             }
         }
-        
-        // Завершение pan
         if (isPanning && e.touches.length === 0) {
             isPanning = false;
             applyTransform(true);
         }
-        
-        // Обработка double tap (только если не было pinch/pan)
         if (!isPinching && !isPanning && e.touches.length === 0 && !isProcessingDoubleTap) {
             const currentTime = Date.now();
             const timeSinceLastTap = currentTime - lastTapTime;
-            
             if (timeSinceLastTap > 50 && timeSinceLastTap < 300) {
-                // Double tap!
                 e.preventDefault();
                 isProcessingDoubleTap = true;
-                
                 if (isDoubleTapZoomed) {
-                    // Возврат к 1x
-                    currentScale = 1;
-                    translateX = 0;
-                    translateY = 0;
+                    currentScale = 1; translateX = 0; translateY = 0;
                     isDoubleTapZoomed = false;
                     applyTransform(true);
                     iconImage.style.zIndex = '1';
                 } else {
-                    // Увеличение до 2x
-                    currentScale = 2;
-                    translateX = 0;
-                    translateY = 0;
+                    currentScale = 2; translateX = 0; translateY = 0;
                     isDoubleTapZoomed = true;
                     applyTransform(true);
                     iconImage.style.zIndex = '50';
                 }
-                
-                
                 lastTapTime = 0;
-                setTimeout(() => {
-                    isProcessingDoubleTap = false;
-                }, 400);
+                setTimeout(() => { isProcessingDoubleTap = false; }, 400);
             } else {
                 lastTapTime = currentTime;
             }
         }
     }, { passive: false });
     
-    // Сброс при смене иконы
     window.addEventListener('iconChanged', () => {
-        currentScale = 1;
-        translateX = 0;
-        translateY = 0;
-        isDoubleTapZoomed = false;
-        isPinching = false;
-        isPanning = false;
-        isProcessingDoubleTap = false;
-        lastTapTime = 0;
+        currentScale = 1; translateX = 0; translateY = 0;
+        isDoubleTapZoomed = false; isPinching = false; isPanning = false;
+        isProcessingDoubleTap = false; lastTapTime = 0;
         iconImage.style.transform = '';
         iconImage.style.zIndex = '1';
-        iconImage.style.transition = 'transform 0.3s ease-out, width 1.5s ease-in-out';
+        iconImage.style.transition = 'transform 0.3s ease-out';
     });
 })();
 
-// ============================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================
+// Инициализация
 (async function init() {
     await loadIconsData();
-    
-    console.log('Iconka Mini App loaded', {
-        icons: ICONS_DATA.length,
-        telegram: !!tg,
-        version: tg?.version
-    });
+    console.log('Iconka loaded:', ICONS_DATA.length, 'icons');
 })();
 </script>
 
