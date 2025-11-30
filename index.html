@@ -294,48 +294,57 @@
         </svg>
     </button>
 
-    <!-- Единый scroll-контейнер -->
-    <div id="detailScrollContainer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;">
+    <!-- СОСТОЯНИЕ 1: Экран иконы (статичный) -->
+    <div id="iconScreenState" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
         
-        <!-- Верхний отступ (safe area + логотип + gap) -->
-        <div id="scrollSpacer" style="height: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 24px);"></div>
+        <!-- Икона -->
+        <img id="iconImage" 
+             style="width: 80%; 
+                    height: auto; 
+                    max-height: 70vh; 
+                    object-fit: contain;
+                    transform-origin: center center;
+                    transition: transform 0.3s ease-out, opacity 0.3s ease-out;" 
+             alt="Икона">
         
-        <!-- Контейнер для иконы -->
-        <div id="iconContainer" style="display: flex; flex-direction: column; align-items: center; padding: 0 16px;">
-            
-            <!-- ИКОНА -->
-            <img id="iconImage" 
-                 style="width: 80%; 
-                        height: auto; 
-                        max-height: 50vh; 
-                        object-fit: contain; 
-                        z-index: 1;
-                        touch-action: pan-y;
-                        transform-origin: center top;
-                        transition: transform 0.3s ease-out, width 1.5s ease-in-out;" 
-                 alt="Икона">
-            
-            <!-- Название иконы и датировка -->
-            <div id="iconTitleBlock" style="margin-top: 24px; text-align: center; z-index: 5; padding: 0 16px; transition: opacity 0.3s ease-out;">
-                <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
-                <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
-            </div>
+        <!-- Название и датировка -->
+        <div id="iconTitleBlock" style="margin-top: 48px; text-align: center; padding: 0 16px; transition: opacity 0.3s ease-out;">
+            <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
+            <div id="iconDateText" style="color: #8E8E93; font-size: 14px; margin-top: 4px;"></div>
         </div>
+    </div>
+    
+    <!-- СОСТОЯНИЕ 2: Экран инфо (скроллируемый) -->
+    <div id="infoScreenState" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 15; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-out;">
         
-        <!-- Отступ между иконой и инфо (будет скрыт при скролле) -->
-        <div id="iconInfoSpacer" style="height: 60vh;"></div>
-        
-        <!-- Инфо-контент -->
-        <div id="infoContent" style="padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px);">
+        <!-- Скроллируемый контент -->
+        <div id="infoScrollContainer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden;">
             
-            <!-- Название и датировка (в режиме инфо) -->
-            <div id="infoTitleBlock" style="text-align: center; margin-bottom: 24px; opacity: 0; transition: opacity 0.3s ease-out;">
-                <div id="infoTitleText" style="color: #FFFFFF; font-size: 20px; font-weight: 400;"></div>
-                <div id="infoDateText" style="color: #8E8E93; font-size: 16px; margin-top: 4px;"></div>
+            <!-- Отступ под логотип -->
+            <div style="height: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 24px);"></div>
+            
+            <!-- Уменьшенная икона (внутри скролла) -->
+            <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+                <img id="infoIconImage" 
+                     style="width: 40%; 
+                            height: auto; 
+                            max-height: 35vh; 
+                            object-fit: contain;" 
+                     alt="Икона">
             </div>
             
-            <!-- Контент инфо -->
-            <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6;"></div>
+            <!-- Контент -->
+            <div id="infoContent" style="padding: 0 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px);">
+                
+                <!-- Название и датировка -->
+                <div id="infoTitleBlock" style="text-align: center; margin-bottom: 24px;">
+                    <div id="infoTitleText" style="color: #FFFFFF; font-size: 20px; font-weight: 400;"></div>
+                    <div id="infoDateText" style="color: #8E8E93; font-size: 16px; margin-top: 4px;"></div>
+                </div>
+                
+                <!-- Описание и детали -->
+                <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6;"></div>
+            </div>
         </div>
     </div>
     
@@ -671,9 +680,6 @@ function selectIcon(id) {
         detailScreen.classList.add('active');
         detailScreen.classList.add('detail-fadein');
         
-        // Сбрасываем скролл
-        document.getElementById('detailScrollContainer').scrollTop = 0;
-        
         // Показать нативную кнопку "Назад" в Telegram
         if (tg?.BackButton) {
             tg.BackButton.show();
@@ -700,10 +706,20 @@ function resetDetailScreenUI() {
     
     const iconImage = document.getElementById('iconImage');
     iconImage.style.transform = 'scale(1)';
-    iconImage.style.width = '80%';
+    iconImage.style.opacity = '1';
     
     document.getElementById('iconTitleBlock').style.opacity = '1';
-    document.getElementById('infoTitleBlock').style.opacity = '0';
+    
+    // Скрываем экран инфо
+    const infoScreenState = document.getElementById('infoScreenState');
+    infoScreenState.style.opacity = '0';
+    infoScreenState.style.pointerEvents = 'none';
+    
+    // Сбрасываем скролл инфо
+    const infoScrollContainer = document.getElementById('infoScrollContainer');
+    if (infoScrollContainer) {
+        infoScrollContainer.scrollTop = 0;
+    }
     
     document.getElementById('detailLogoHeader').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
@@ -722,13 +738,6 @@ function resetDetailScreenUI() {
     infoBtn.style.backgroundColor = '';
     infoBtnIcon.style.display = 'block';
     infoBtnClose.style.display = 'none';
-    
-    // Сбрасываем скролл
-    const scrollContainer = document.getElementById('detailScrollContainer');
-    if (scrollContainer) {
-        scrollContainer.scrollTop = 0;
-        scrollContainer.style.overflow = 'auto';
-    }
 }
 
 function goBack() {
@@ -849,22 +858,16 @@ function showCandle() {
     
     // Если в режиме инфо - сначала закрываем
     if (infoPanelVisible) {
-        infoPanelVisible = false;
-        const scrollContainer = document.getElementById('detailScrollContainer');
-        scrollContainer.scrollTop = 0;
-        applyScrollTransform(0);
+        closeInfo();
+        setTimeout(showCandle, 350);
+        return;
     }
-    
-    const scrollContainer = document.getElementById('detailScrollContainer');
-    scrollContainer.scrollTop = 0;
-    scrollContainer.style.overflow = 'hidden';
     
     const iconImage = document.getElementById('iconImage');
     
     // Увеличиваем икону до 100%
-    iconImage.style.transition = 'transform 1.5s ease-in-out, width 1.5s ease-in-out';
-    iconImage.style.transform = 'scale(1)';
-    iconImage.style.width = '100%';
+    iconImage.style.transition = 'transform 1.5s ease-in-out';
+    iconImage.style.transform = 'scale(1.25)'; // 80% * 1.25 = 100%
     
     // Свеча появляется
     document.getElementById('candleLayer').style.opacity = '1';
@@ -899,12 +902,10 @@ function closeCandle() {
     candleVisible = false;
     
     const iconImage = document.getElementById('iconImage');
-    const scrollContainer = document.getElementById('detailScrollContainer');
     
     // Возвращаем икону к исходному размеру
-    iconImage.style.transition = 'transform 1.5s ease-in-out, width 1.5s ease-in-out';
+    iconImage.style.transition = 'transform 1.5s ease-in-out';
     iconImage.style.transform = 'scale(1)';
-    iconImage.style.width = '80%';
     
     document.getElementById('candleLayer').style.opacity = '0';
     
@@ -924,122 +925,63 @@ function closeCandle() {
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     document.getElementById('shareBtn').style.pointerEvents = 'auto';
     
-    // Возвращаем скролл
-    scrollContainer.style.overflow = 'auto';
-    
     setTimeout(() => {
         closeBtn.style.display = 'none';
     }, 1500);
 }
 
-// Целевая позиция скролла для режима инфо (вычисляется динамически)
-let INFO_SCROLL_TARGET = 300;
-
-function calculateScrollTarget() {
-    const iconImage = document.getElementById('iconImage');
-    const iconContainer = document.getElementById('iconContainer');
-    const iconInfoSpacer = document.getElementById('iconInfoSpacer');
-    
-    if (!iconImage || !iconImage.complete || iconImage.naturalHeight === 0) {
-        // Икона ещё не загружена, подождём
-        return;
-    }
-    
-    const iconRect = iconImage.getBoundingClientRect();
-    const iconHeight = iconRect.height;
-    const scaledIconHeight = iconHeight * 0.5; // После scale(0.5)
-    
-    // Целевой скролл: чтобы уменьшенная икона была под логотипом
-    // Расчёт: высота иконы - (высота иконы * 0.5) + небольшой отступ
-    const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tg-safe-area-inset-top')) || 0;
-    const logoHeight = 18;
-    const gap = 24;
-    
-    // Сколько нужно проскроллить, чтобы инфо-контент был сразу под уменьшенной иконой
-    INFO_SCROLL_TARGET = iconHeight * 0.5 + gap;
-    
-    // Устанавливаем высоту спейсера так, чтобы инфо появлялось сразу под иконой
-    if (iconInfoSpacer) {
-        iconInfoSpacer.style.height = (iconHeight * 0.5 + gap) + 'px';
-    }
-}
-
-function applyScrollTransform(scrollTop) {
-    const iconImage = document.getElementById('iconImage');
-    const iconTitleBlock = document.getElementById('iconTitleBlock');
-    const infoTitleBlock = document.getElementById('infoTitleBlock');
-    const candleBtn = document.getElementById('candleBtn');
-    const infoBtn = document.getElementById('infoBtn');
-    const infoBtnIcon = document.getElementById('infoBtnIcon');
-    const infoBtnClose = document.getElementById('infoBtnClose');
-    
-    // Прогресс от 0 до 1
-    const progress = Math.min(1, Math.max(0, scrollTop / INFO_SCROLL_TARGET));
-    
-    // Икона: scale от 1 до 0.5 (от верхнего края, чтобы не прыгала)
-    const scale = 1 - (progress * 0.5);
-    iconImage.style.transformOrigin = 'center top';
-    iconImage.style.transform = `scale(${scale})`;
-    
-    // Название под иконой: исчезает
-    iconTitleBlock.style.opacity = 1 - progress;
-    
-    // Название в инфо: появляется
-    infoTitleBlock.style.opacity = progress;
-    
-    // Кнопка "Режим свечи": исчезает при скролле
-    candleBtn.style.opacity = 1 - progress;
-    candleBtn.style.pointerEvents = progress > 0.5 ? 'none' : 'auto';
-    
-    // Кнопка инфо: трансформируется в крестик
-    if (progress > 0.5) {
-        infoBtn.style.backgroundColor = '#FFFFFF';
-        infoBtnIcon.style.display = 'none';
-        infoBtnClose.style.display = 'block';
-    } else {
-        infoBtn.style.backgroundColor = '';
-        infoBtnIcon.style.display = 'block';
-        infoBtnClose.style.display = 'none';
-    }
-}
-
 function showInfo() {
     if (infoPanelVisible || candleVisible) return;
     
-    calculateScrollTarget();
     infoPanelVisible = true;
     
-    const scrollContainer = document.getElementById('detailScrollContainer');
     const iconImage = document.getElementById('iconImage');
+    const iconTitleBlock = document.getElementById('iconTitleBlock');
+    const infoScreenState = document.getElementById('infoScreenState');
+    const infoIconImage = document.getElementById('infoIconImage');
+    const infoScrollContainer = document.getElementById('infoScrollContainer');
     
-    // Анимируем скролл
-    iconImage.style.transition = 'transform 0.3s ease-out';
+    // Копируем src иконки
+    infoIconImage.src = iconImage.src;
     
-    // Плавная анимация скролла
-    const startScroll = scrollContainer.scrollTop;
-    const targetScroll = INFO_SCROLL_TARGET;
-    const duration = 300;
-    const startTime = performance.now();
+    // Сбрасываем скролл инфо
+    infoScrollContainer.scrollTop = 0;
     
-    function animateScroll(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // ease-out
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentScroll = startScroll + (targetScroll - startScroll) * easeOut;
-        
-        scrollContainer.scrollTop = currentScroll;
-        applyScrollTransform(currentScroll);
-        
-        if (progress < 1) {
-            requestAnimationFrame(animateScroll);
-        } else {
-            iconImage.style.transition = 'transform 0.05s linear';
-        }
-    }
+    // Подготавливаем экран инфо (за экраном снизу, прозрачный)
+    infoScreenState.style.transition = 'none';
+    infoScreenState.style.transform = 'translateY(100%)';
+    infoScreenState.style.opacity = '0';
+    infoScreenState.style.pointerEvents = 'auto';
     
-    requestAnimationFrame(animateScroll);
+    // Форсируем reflow
+    infoScreenState.offsetHeight;
+    
+    // Анимация экрана иконы:
+    // 1. Название исчезает (fade)
+    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
+    iconTitleBlock.style.opacity = '0';
+    
+    // 2. Икона уменьшается до 50% и едет вверх
+    iconImage.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+    iconImage.style.transform = 'scale(0.5) translateY(-100%)';
+    iconImage.style.opacity = '0';
+    
+    // Анимация экрана инфо: выезжает снизу + fade in
+    infoScreenState.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+    infoScreenState.style.transform = 'translateY(0)';
+    infoScreenState.style.opacity = '1';
+    
+    // Скрываем кнопку "Режим свечи"
+    document.getElementById('candleBtn').style.opacity = '0';
+    document.getElementById('candleBtn').style.pointerEvents = 'none';
+    
+    // Трансформируем кнопку инфо в крестик
+    const infoBtn = document.getElementById('infoBtn');
+    const infoBtnIcon = document.getElementById('infoBtnIcon');
+    const infoBtnClose = document.getElementById('infoBtnClose');
+    infoBtn.style.backgroundColor = '#FFFFFF';
+    infoBtnIcon.style.display = 'none';
+    infoBtnClose.style.display = 'block';
 }
 
 function closeInfo() {
@@ -1047,93 +989,79 @@ function closeInfo() {
     
     infoPanelVisible = false;
     
-    const scrollContainer = document.getElementById('detailScrollContainer');
     const iconImage = document.getElementById('iconImage');
+    const iconTitleBlock = document.getElementById('iconTitleBlock');
+    const infoScreenState = document.getElementById('infoScreenState');
     
-    // Анимируем скролл обратно
-    iconImage.style.transition = 'transform 0.3s ease-out';
+    // Анимация экрана инфо: уезжает вниз + fade out
+    infoScreenState.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+    infoScreenState.style.transform = 'translateY(100%)';
+    infoScreenState.style.opacity = '0';
     
-    const startScroll = scrollContainer.scrollTop;
-    const targetScroll = 0;
-    const duration = 300;
-    const startTime = performance.now();
+    // После завершения анимации сбрасываем
+    setTimeout(() => {
+        infoScreenState.style.pointerEvents = 'none';
+    }, 300);
     
-    function animateScroll(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // ease-out
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentScroll = startScroll + (targetScroll - startScroll) * easeOut;
-        
-        scrollContainer.scrollTop = currentScroll;
-        applyScrollTransform(currentScroll);
-        
-        if (progress < 1) {
-            requestAnimationFrame(animateScroll);
-        } else {
-            iconImage.style.transition = 'transform 0.05s linear';
-        }
-    }
+    // Анимация экрана иконы: возвращается (обратная анимация)
+    iconImage.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+    iconImage.style.transform = 'scale(1) translateY(0)';
+    iconImage.style.opacity = '1';
     
-    requestAnimationFrame(animateScroll);
+    iconTitleBlock.style.transition = 'opacity 0.3s ease-out';
+    iconTitleBlock.style.opacity = '1';
+    
+    // Показываем кнопку "Режим свечи"
+    document.getElementById('candleBtn').style.opacity = '1';
+    document.getElementById('candleBtn').style.pointerEvents = 'auto';
+    
+    // Возвращаем кнопку инфо к исходному виду
+    const infoBtn = document.getElementById('infoBtn');
+    const infoBtnIcon = document.getElementById('infoBtnIcon');
+    const infoBtnClose = document.getElementById('infoBtnClose');
+    infoBtn.style.backgroundColor = '';
+    infoBtnIcon.style.display = 'block';
+    infoBtnClose.style.display = 'none';
 }
-
-// Обработка скролла для трансформации (когда скроллят руками в режиме инфо)
-(function() {
-    const scrollContainer = document.getElementById('detailScrollContainer');
-    
-    scrollContainer.addEventListener('scroll', () => {
-        if (candleVisible) return;
-        
-        const scrollTop = scrollContainer.scrollTop;
-        applyScrollTransform(scrollTop);
-        
-        // Обновляем состояние infoPanelVisible
-        infoPanelVisible = scrollTop > INFO_SCROLL_TARGET * 0.5;
-    }, { passive: true });
-})();
 
 // Свайп для перехода между экраном иконы и экраном инфо
 (function() {
     let startY = 0;
     let startTime = 0;
-    let startScrollTop = 0;
-    let isSwiping = false;
+    let isSwipeDown = false;
     
     const detailScreen = document.getElementById('detailScreen');
-    const scrollContainer = document.getElementById('detailScrollContainer');
+    const infoScrollContainer = document.getElementById('infoScrollContainer');
     
     detailScreen.addEventListener('touchstart', (e) => {
         if (candleVisible) return;
         
         startY = e.touches[0].clientY;
         startTime = Date.now();
-        startScrollTop = scrollContainer.scrollTop;
-        isSwiping = true;
+        isSwipeDown = false;
+        
+        // Проверяем, можно ли свайпнуть вниз для закрытия инфо
+        if (infoPanelVisible && infoScrollContainer.scrollTop <= 0) {
+            isSwipeDown = true;
+        }
     }, { passive: true });
     
     detailScreen.addEventListener('touchmove', (e) => {
-        if (candleVisible || !isSwiping) return;
+        if (candleVisible) return;
         
-        const currentY = e.touches[0].clientY;
-        const deltaY = currentY - startY;
-        
-        // На экране иконы — блокируем естественный скролл вверх
-        if (!infoPanelVisible && deltaY < 0) {
-            e.preventDefault();
-        }
-        
-        // В режиме инфо, в самом верху, свайп вниз — блокируем
-        if (infoPanelVisible && startScrollTop <= 5 && deltaY > 0 && scrollContainer.scrollTop <= 5) {
-            e.preventDefault();
+        // Если в режиме инфо, скролл в самом верху и свайпаем вниз — блокируем скролл
+        if (infoPanelVisible && isSwipeDown) {
+            const currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            if (deltaY > 0 && infoScrollContainer.scrollTop <= 0) {
+                e.preventDefault();
+            }
         }
     }, { passive: false });
     
     detailScreen.addEventListener('touchend', (e) => {
-        if (candleVisible || !isSwiping) return;
-        
-        isSwiping = false;
+        if (candleVisible) return;
         
         const endY = e.changedTouches[0].clientY;
         const endTime = Date.now();
@@ -1146,8 +1074,8 @@ function closeInfo() {
         if (!infoPanelVisible && deltaY > 0) {
             // Свайп вверх на экране иконы → показать инфо
             showInfo();
-        } else if (infoPanelVisible && deltaY < 0 && startScrollTop <= 5) {
-            // Свайп вниз на экране инфо (когда скролл БЫЛ в самом верху в начале свайпа)
+        } else if (infoPanelVisible && deltaY < 0 && isSwipeDown) {
+            // Свайп вниз на экране инфо (когда скролл был в самом верху)
             closeInfo();
         }
     }, { passive: true });
@@ -1257,8 +1185,8 @@ function donate(amount) {
     }
 }
 
-// Тап в любом месте scroll-контейнера для выхода из режима свечи
-document.getElementById('detailScrollContainer').addEventListener('click', (e) => {
+// Тап в любом месте экрана иконы для выхода из режима свечи
+document.getElementById('iconScreenState').addEventListener('click', (e) => {
     if (candleVisible && e.target.id !== 'closeCandleBtn') {
         closeCandle();
     }
