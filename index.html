@@ -947,10 +947,10 @@ function showInfo() {
     // Сбрасываем скролл инфо
     infoScrollContainer.scrollTop = 0;
     
-    // Подготавливаем экран инфо (за экраном снизу)
+    // Подготавливаем экран инфо (за экраном снизу, прозрачный)
     infoScreenState.style.transition = 'none';
     infoScreenState.style.transform = 'translateY(100%)';
-    infoScreenState.style.opacity = '1';
+    infoScreenState.style.opacity = '0';
     infoScreenState.style.pointerEvents = 'auto';
     
     // Форсируем reflow
@@ -966,9 +966,10 @@ function showInfo() {
     iconImage.style.transform = 'scale(0.5) translateY(-100%)';
     iconImage.style.opacity = '0';
     
-    // Анимация экрана инфо: выезжает снизу
-    infoScreenState.style.transition = 'transform 0.3s ease-out';
+    // Анимация экрана инфо: выезжает снизу + fade in
+    infoScreenState.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
     infoScreenState.style.transform = 'translateY(0)';
+    infoScreenState.style.opacity = '1';
     
     // Скрываем кнопку "Режим свечи"
     document.getElementById('candleBtn').style.opacity = '0';
@@ -992,9 +993,10 @@ function closeInfo() {
     const iconTitleBlock = document.getElementById('iconTitleBlock');
     const infoScreenState = document.getElementById('infoScreenState');
     
-    // Анимация экрана инфо: уезжает вниз
-    infoScreenState.style.transition = 'transform 0.3s ease-out';
+    // Анимация экрана инфо: уезжает вниз + fade out
+    infoScreenState.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
     infoScreenState.style.transform = 'translateY(100%)';
+    infoScreenState.style.opacity = '0';
     
     // После завершения анимации сбрасываем
     setTimeout(() => {
