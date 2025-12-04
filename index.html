@@ -692,6 +692,13 @@ function toggleInfo() {
     const infoBtn = document.getElementById('infoBtn');
     
     infoPanelVisible = !infoPanelVisible;
+    
+    if (!infoPanelVisible) {
+        // Закрытие: сначала блокируем скролл и сбрасываем позицию
+        detailContent.style.overflow = 'hidden';
+        detailContent.scrollTop = 0;
+    }
+    
     detailContent.classList.toggle('info-open', infoPanelVisible);
     
     // Скрыть/показать кнопку свечи
@@ -707,7 +714,6 @@ function toggleInfo() {
         infoBtn.style.backgroundColor = '';
         document.getElementById('infoBtnIcon').style.display = 'block';
         document.getElementById('infoBtnClose').style.display = 'none';
-        detailContent.scrollTop = 0;
     }
 }
 
