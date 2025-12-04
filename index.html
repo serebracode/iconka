@@ -197,6 +197,11 @@
 </head>
 <body>
 
+<!-- ГЛОБАЛЬНЫЙ ЛОГОТИП (для списка и иконы) -->
+<div id="globalLogo" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 100; cursor: pointer; display: none; transition: opacity 0.3s ease-out;" onclick="goBackToLoading()">
+    <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
+</div>
+
 <!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loadingScreen" class="screen active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="showListScreen()">
     <img id="loadingIcon" src="./id/iconka_icon.svg" alt="Iconka" class="animated"
@@ -216,10 +221,6 @@
 
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
-    <div id="listIconHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; cursor: pointer;" onclick="goBackToLoading()">
-        <img id="listIcon" src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px; opacity: 0;">
-    </div>
-    
     <div id="listHeader" style="padding: 16px 16px 12px 16px; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 56px); position: sticky; top: 0; z-index: 50; background-color: #000000; opacity: 0;">
         <div id="searchContainer" style="background-color: #1C1C1E; border-radius: 10px; padding: 8px 12px; display: flex; align-items: center;">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 8px; flex-shrink: 0;">
@@ -303,10 +304,6 @@
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
-
-    <div id="detailLogoHeader" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 60; opacity: 1; transition: opacity 1.5s ease-in-out; cursor: pointer;" onclick="goBackToLoading()">
-        <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
-    </div>
 
     <button id="closeCandleBtn" class="tg-round-btn" style="display: none; position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 3px); left: 50%; transform: translateX(-50%); z-index: 200; width: 40px; height: 40px; opacity: 0; transition: opacity 1.5s ease-in-out;">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -441,6 +438,7 @@ if (tg) {
 function showListScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const listScreen = document.getElementById('listScreen');
+    const globalLogo = document.getElementById('globalLogo');
     
     loadingScreen.classList.add('loading-fadeout');
     renderIconsList();
@@ -455,7 +453,8 @@ function showListScreen() {
         document.getElementById('aboutBtn').style.opacity = '1';
         
         listScreen.classList.add('active');
-        document.getElementById('listIcon').classList.add('list-fadein');
+        globalLogo.style.display = 'block';
+        globalLogo.classList.add('list-fadein');
         document.getElementById('listHeader').classList.add('list-fadein');
         document.getElementById('iconsList').classList.add('list-fadein');
         
@@ -551,7 +550,6 @@ function resetDetailScreenUI() {
     detailContent.scrollTop = 0;
     
     document.getElementById('candleLayer').style.opacity = '0';
-    document.getElementById('detailLogoHeader').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('infoBtn').style.opacity = '1';
     document.getElementById('shareBtn').style.opacity = '1';
@@ -572,6 +570,7 @@ function goBack() {
     const detailScreen = document.getElementById('detailScreen');
     const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
+    const globalLogo = document.getElementById('globalLogo');
     
     if (detailScreen.classList.contains('active')) {
         detailScreen.classList.add('loading-fadeout');
@@ -579,7 +578,6 @@ function goBack() {
             detailScreen.classList.remove('active');
             detailScreen.classList.remove('loading-fadeout');
             listScreen.classList.add('active');
-            document.getElementById('listIcon').style.opacity = '1';
             document.getElementById('listHeader').style.opacity = '1';
             document.getElementById('iconsList').style.opacity = '1';
             candleVisible = false;
@@ -589,9 +587,12 @@ function goBack() {
         closeAboutScreen();
     } else if (listScreen.classList.contains('active')) {
         listScreen.classList.add('loading-fadeout');
+        globalLogo.style.opacity = '0';
         setTimeout(() => {
             listScreen.classList.remove('active');
             listScreen.classList.remove('loading-fadeout');
+            globalLogo.style.display = 'none';
+            globalLogo.style.opacity = '1';
             loadingScreen.classList.remove('loading-fadeout');
             loadingScreen.style.display = 'flex';
             loadingScreen.classList.add('active');
@@ -605,6 +606,7 @@ function goBackToLoading() {
     const detailScreen = document.getElementById('detailScreen');
     const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
+    const globalLogo = document.getElementById('globalLogo');
     
     let currentScreen = null;
     if (detailScreen.classList.contains('active')) currentScreen = detailScreen;
@@ -614,14 +616,13 @@ function goBackToLoading() {
     if (!currentScreen) return;
     
     currentScreen.classList.add('loading-fadeout');
+    globalLogo.style.opacity = '0';
+    
     setTimeout(() => {
         currentScreen.classList.remove('active');
         currentScreen.classList.remove('loading-fadeout');
-        if (currentScreen === listScreen) {
-            document.getElementById('listIcon').style.opacity = '1';
-            document.getElementById('listHeader').style.opacity = '1';
-            document.getElementById('iconsList').style.opacity = '1';
-        }
+        globalLogo.style.display = 'none';
+        globalLogo.style.opacity = '1';
         loadingScreen.classList.remove('loading-fadeout');
         loadingScreen.style.display = 'flex';
         loadingScreen.classList.add('active');
@@ -646,7 +647,7 @@ function showCandle() {
     candleVisible = true;
     
     document.getElementById('candleLayer').style.opacity = '1';
-    document.getElementById('detailLogoHeader').style.opacity = '0';
+    document.getElementById('globalLogo').style.opacity = '0';
     document.getElementById('candleBtn').style.opacity = '0';
     document.getElementById('infoBtn').style.opacity = '0';
     document.getElementById('shareBtn').style.opacity = '0';
@@ -674,7 +675,7 @@ function closeCandle() {
     closeBtn.style.opacity = '0';
     closeBtn.style.pointerEvents = 'none';
     
-    document.getElementById('detailLogoHeader').style.opacity = '1';
+    document.getElementById('globalLogo').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('infoBtn').style.opacity = '1';
     document.getElementById('shareBtn').style.opacity = '1';
