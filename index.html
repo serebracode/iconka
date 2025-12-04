@@ -439,6 +439,8 @@ function showListScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const listScreen = document.getElementById('listScreen');
     const globalLogo = document.getElementById('globalLogo');
+    const listHeader = document.getElementById('listHeader');
+    const iconsList = document.getElementById('iconsList');
     
     loadingScreen.classList.add('loading-fadeout');
     renderIconsList();
@@ -452,11 +454,23 @@ function showListScreen() {
         document.getElementById('loadingLogotype').style.opacity = '1';
         document.getElementById('aboutBtn').style.opacity = '1';
         
+        // Сброс состояния перед показом
+        globalLogo.classList.remove('list-fadein');
+        listHeader.classList.remove('list-fadein');
+        iconsList.classList.remove('list-fadein');
+        globalLogo.style.opacity = '0';
+        listHeader.style.opacity = '0';
+        iconsList.style.opacity = '0';
+        
         listScreen.classList.add('active');
         globalLogo.style.display = 'block';
-        globalLogo.classList.add('list-fadein');
-        document.getElementById('listHeader').classList.add('list-fadein');
-        document.getElementById('iconsList').classList.add('list-fadein');
+        
+        // Запуск анимаций
+        requestAnimationFrame(() => {
+            globalLogo.classList.add('list-fadein');
+            listHeader.classList.add('list-fadein');
+            iconsList.classList.add('list-fadein');
+        });
         
         tg?.BackButton?.show();
     }, 300);
@@ -609,6 +623,8 @@ function goBackToLoading() {
     const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
     const globalLogo = document.getElementById('globalLogo');
+    const loadingIcon = document.getElementById('loadingIcon');
+    const loadingLogotype = document.getElementById('loadingLogotype');
     
     let currentScreen = null;
     if (detailScreen.classList.contains('active')) currentScreen = detailScreen;
@@ -625,9 +641,24 @@ function goBackToLoading() {
         currentScreen.classList.remove('loading-fadeout');
         globalLogo.style.display = 'none';
         globalLogo.style.opacity = '1';
+        
+        // Сброс и перезапуск анимаций loadingScreen
+        loadingIcon.style.animation = 'none';
+        loadingLogotype.style.animation = 'none';
+        loadingIcon.style.opacity = '0';
+        loadingIcon.style.borderRadius = '0';
+        loadingLogotype.style.opacity = '0';
+        
         loadingScreen.classList.remove('loading-fadeout');
         loadingScreen.style.display = 'flex';
         loadingScreen.classList.add('active');
+        
+        // Перезапуск анимаций
+        requestAnimationFrame(() => {
+            loadingIcon.style.animation = 'fadeIn 1.2s ease-out forwards, roundCorners 1.2s ease-out 1.5s forwards';
+            loadingLogotype.style.animation = 'fadeIn 2.5s ease-out 1.5s forwards';
+        });
+        
         tg?.BackButton?.hide();
         candleVisible = false;
         infoPanelVisible = false;
