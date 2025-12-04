@@ -34,6 +34,11 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        @keyframes roundCorners {
+            from { border-radius: 0; }
+            to { border-radius: 24px; }
+        }
+
         .animated {
             will-change: transform, opacity;
         }
@@ -205,10 +210,10 @@
 <!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loadingScreen" class="screen active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="showListScreen()">
     <img id="loadingIcon" src="./id/iconka_icon.svg" alt="Iconka" class="animated"
-         style="width: 107px; height: 107px; margin-bottom: 27px; opacity: 1; transition: opacity 0.3s ease-out; animation: fadeInScale 0.6s ease-out;">
+         style="width: 107px; height: 107px; margin-bottom: 27px; opacity: 1; transition: opacity 0.3s ease-out; border-radius: 0; animation: fadeInScale 0.5s ease-out, roundCorners 0.4s ease-out 0.5s forwards;">
     
     <img id="loadingLogotype" src="./id/iconka_logotype.svg" alt="Iconka" class="animated"
-         style="width: 183px; height: 27px; opacity: 1; transition: opacity 0.3s ease-out; animation: fadeInScale 0.6s ease-out 0.2s both;">
+         style="width: 183px; height: 27px; opacity: 1; transition: opacity 0.3s ease-out; animation: fadeIn 0.4s ease-out 0.5s both;">
     
     <div id="loadingSpinner" style="margin-top: 24px; display: none;">
         <div class="tg-spinner size-m"></div>
