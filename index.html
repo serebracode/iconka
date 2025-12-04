@@ -62,19 +62,6 @@
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
 
-        .tg-spinner {
-            display: inline-block;
-            border-radius: 50%;
-            border: 2px solid var(--tg-theme-hint-color, #8E8E93);
-            border-top-color: var(--tg-theme-link-color, #007AFF);
-            animation: tg-spin 0.8s linear infinite;
-        }
-        .tg-spinner.size-m { width: 24px; height: 24px; border-width: 2.5px; }
-
-        @keyframes tg-spin {
-            to { transform: rotate(360deg); }
-        }
-
         .loading-fadeout {
             animation: fadeOut 0.3s ease-out forwards;
         }
@@ -121,11 +108,7 @@
          style="width: 107px; height: 107px; margin-bottom: 27px; opacity: 1; transition: opacity 0.3s ease-out; animation: fadeInScale 0.6s ease-out;">
     
     <img id="loadingLogotype" src="./id/iconka_logotype.svg" alt="Iconka" class="animated"
-         style="width: 183px; height: 27px; opacity: 1; transition: opacity 0.3s ease-out; animation: fadeInScale 0.6s ease-out 0.3s both;">
-    
-    <div id="loadingSpinner" style="margin-top: 24px; display: none;">
-        <div class="tg-spinner size-m"></div>
-    </div>
+         style="width: 183px; height: 27px; opacity: 1; transition: opacity 0.3s ease-out; animation: fadeInScale 0.6s ease-out 0.2s both;">
     
     <button id="aboutBtn" onclick="event.stopPropagation(); showAboutScreen();" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 24px); left: 50%; transform: translateX(-50%); background: transparent; border: none; color: #8E8E93; font-size: 16px; font-weight: 400; font-family: inherit; cursor: pointer; padding: 12px 24px; opacity: 1; transition: opacity 0.3s ease-out;">
         О проекте
@@ -327,7 +310,6 @@ let ICONS_DATA = [];
 let selectedIcon = null;
 
 async function loadIconsData() {
-    document.getElementById('loadingSpinner').style.display = 'block';
     try {
         const response = await fetch('./data/icons.json');
         if (!response.ok) throw new Error('Failed');
@@ -336,7 +318,6 @@ async function loadIconsData() {
     } catch (e) {
         ICONS_DATA = [];
     }
-    document.getElementById('loadingSpinner').style.display = 'none';
 }
 
 // ============================================
