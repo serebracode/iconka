@@ -210,7 +210,7 @@
 <!-- ЭКРАН ЗАГРУЗКИ -->
 <div id="loadingScreen" class="screen active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;" onclick="showListScreen()">
     <img id="loadingIcon" src="./id/iconka_icon.svg" alt="Iconka" class="animated"
-         style="width: 107px; height: 107px; margin-bottom: 27px; opacity: 1; transition: opacity 0.3s ease-out; border-radius: 0; animation: fadeInScale 0.5s ease-out, roundCorners 1.2s ease-out 1.5s forwards;">
+         style="width: 107px; height: 107px; margin-bottom: 27px; opacity: 0; transition: opacity 0.3s ease-out; border-radius: 0; animation: fadeIn 0.5s ease-out forwards, roundCorners 1.2s ease-out 1.5s forwards;">
     
     <img id="loadingLogotype" src="./id/iconka_logotype.svg" alt="Iconka" class="animated"
          style="width: 183px; height: 27px; opacity: 0; transition: opacity 0.3s ease-out; animation: fadeIn 1.8s ease-out 1.5s forwards;">
@@ -426,6 +426,7 @@ if (tg) {
     tg.disableVerticalSwipes?.();
     tg.setHeaderColor('#000000');
     tg.setBackgroundColor('#000000');
+    tg.BackButton?.hide();
     
     if (tg.themeParams) {
         const root = document.documentElement;
@@ -603,6 +604,8 @@ function goBack() {
             loadingScreen.classList.add('active');
             tg?.BackButton?.hide();
         }, 300);
+    } else if (loadingScreen.classList.contains('active')) {
+        tg?.close?.();
     }
 }
 
