@@ -115,6 +115,17 @@
 
         /* ========== DETAIL SCREEN STYLES ========== */
         #detailContent {
+            --info-progress: 0;
+            --icon-section-height: 100vh;
+            --icon-section-padding-top: 0px;
+            --icon-section-padding-bottom: 0px;
+            --icon-width: 80%;
+            --title-opacity: 1;
+            --title-offset: 0px;
+            --title-height: 100px;
+            --title-margin: 48px;
+            --info-opacity: 0;
+            --info-offset: 30px;
             position: absolute;
             top: 0;
             left: 0;
@@ -123,10 +134,20 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
         }
 
         #detailContent.info-open {
             overflow-y: auto;
+        }
+
+        #detailContent.is-settling .icon-section,
+        #detailContent.is-settling .icon-wrapper,
+        #detailContent.is-settling .icon-title,
+        #detailContent.is-settling .info-section {
+            transition-duration: 360ms;
+            transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .icon-section {
@@ -134,26 +155,21 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 0 16px;
-            transition: min-height 0.3s ease-out;
+            flex: 0 0 var(--icon-section-height);
+            min-height: var(--icon-section-height);
+            padding: var(--icon-section-padding-top) 16px var(--icon-section-padding-bottom);
+            transition-property: flex-basis, min-height, padding;
         }
 
         #detailContent.info-open .icon-section {
-            min-height: auto;
-            padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 14px + 18px + 36px);
-            padding-bottom: 24px;
+            min-height: 42vh;
         }
 
         .icon-wrapper {
-            width: 80%;
+            width: var(--icon-width);
             display: flex;
             justify-content: center;
-            transition: width 0.3s ease-out;
-        }
-
-        #detailContent.info-open .icon-wrapper {
-            width: 40%;
+            transition-property: width;
         }
 
         #iconImage {
@@ -168,35 +184,32 @@
         }
 
         .icon-title {
-            margin-top: 48px;
+            margin-top: var(--title-margin);
             text-align: center;
-            transition: opacity 0.15s ease-out, margin 0.3s ease-out, height 0.3s ease-out;
+            opacity: var(--title-opacity);
+            transform: translateY(var(--title-offset));
+            max-height: var(--title-height);
+            overflow: hidden;
+            transition-property: opacity, transform, max-height, margin;
         }
 
         #detailContent.info-open .icon-title {
             opacity: 0;
-            height: 0;
-            margin: 0;
-            overflow: hidden;
         }
 
         .info-section {
             padding: 0 24px;
             padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px);
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.25s ease-out 0.1s, transform 0.25s ease-out 0.1s;
+            opacity: var(--info-opacity);
+            transform: translateY(var(--info-offset));
+            transition-property: opacity, transform;
             pointer-events: none;
-            max-height: 0;
-            overflow: hidden;
         }
 
         #detailContent.info-open .info-section {
             opacity: 1;
             transform: translateY(0);
             pointer-events: auto;
-            max-height: none;
-            overflow: visible;
         }
     </style>
 </head>
@@ -561,6 +574,19 @@ function selectIcon(id) {
 function resetDetailScreenUI() {
     const detailContent = document.getElementById('detailContent');
     detailContent.classList.remove('info-open');
+    detailContent.classList.remove('is-settling');
+    detailContent.style.removeProperty('--info-progress');
+    detailContent.style.removeProperty('--icon-section-height');
+    detailContent.style.removeProperty('--icon-section-padding-top');
+    detailContent.style.removeProperty('--icon-section-padding-bottom');
+    detailContent.style.removeProperty('--icon-width');
+    detailContent.style.removeProperty('--title-opacity');
+    detailContent.style.removeProperty('--title-offset');
+    detailContent.style.removeProperty('--title-height');
+    detailContent.style.removeProperty('--title-margin');
+    detailContent.style.removeProperty('--info-opacity');
+    detailContent.style.removeProperty('--info-offset');
+    detailContent.style.removeProperty('overflow');
     detailContent.scrollTop = 0;
     
     document.getElementById('candleLayer').style.opacity = '0';
@@ -670,6 +696,25 @@ tg?.BackButton?.onClick(goBack);
 let candleVisible = false;
 let infoPanelVisible = false;
 
+function applyInfoProgress(value) {
+    const progress = Math.max(0, Math.min(1, value));
+    const detailContent = document.getElementById('detailContent');
+    const safeTop = parseFloat(getComputedStyle(document.documentElement)
+        .getPropertyValue('--tg-safe-area-inset-top')) || 0;
+
+    detailContent.style.setProperty('--info-progress', progress.toFixed(4));
+    detailContent.style.setProperty('--icon-section-height', `${100 - 58 * progress}vh`);
+    detailContent.style.setProperty('--icon-section-padding-top', `${(safeTop + 68) * progress}px`);
+    detailContent.style.setProperty('--icon-section-padding-bottom', `${24 * progress}px`);
+    detailContent.style.setProperty('--icon-width', `${80 - 40 * progress}%`);
+    detailContent.style.setProperty('--title-opacity', (1 - progress).toFixed(4));
+    detailContent.style.setProperty('--title-offset', `${-16 * progress}px`);
+    detailContent.style.setProperty('--title-height', `${100 * (1 - progress)}px`);
+    detailContent.style.setProperty('--title-margin', `${48 * (1 - progress)}px`);
+    detailContent.style.setProperty('--info-opacity', progress.toFixed(4));
+    detailContent.style.setProperty('--info-offset', `${30 * (1 - progress)}px`);
+}
+
 function showCandle() {
     if (infoPanelVisible) {
         toggleInfo();
@@ -719,21 +764,26 @@ function closeCandle() {
     setTimeout(() => { closeBtn.style.display = 'none'; }, 1500);
 }
 
-function toggleInfo() {
+function setInfoPanel(open, animate = true) {
     if (candleVisible) return;
     
     const detailContent = document.getElementById('detailContent');
     const infoBtn = document.getElementById('infoBtn');
     
-    infoPanelVisible = !infoPanelVisible;
-    
-    if (!infoPanelVisible) {
-        // Закрытие: сначала блокируем скролл и сбрасываем позицию
-        detailContent.style.overflow = 'hidden';
+    infoPanelVisible = open;
+
+    if (!open) {
         detailContent.scrollTop = 0;
     }
-    
-    detailContent.classList.toggle('info-open', infoPanelVisible);
+
+    detailContent.classList.toggle('is-settling', animate);
+    detailContent.classList.toggle('info-open', open);
+    applyInfoProgress(open ? 1 : 0);
+    detailContent.style.removeProperty('overflow');
+
+    if (animate) {
+        window.setTimeout(() => detailContent.classList.remove('is-settling'), 380);
+    }
     
     // Скрыть/показать кнопку свечи
     document.getElementById('candleBtn').style.opacity = infoPanelVisible ? '0' : '1';
@@ -751,10 +801,17 @@ function toggleInfo() {
     }
 }
 
+function toggleInfo() {
+    setInfoPanel(!infoPanelVisible);
+}
+
 // Свайп
 (function() {
     let startY = 0;
     let startTime = 0;
+    let startProgress = 0;
+    let progress = 0;
+    let tracking = false;
     
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
@@ -763,22 +820,45 @@ function toggleInfo() {
         if (candleVisible) return;
         startY = e.touches[0].clientY;
         startTime = Date.now();
+        startProgress = infoPanelVisible ? 1 : 0;
+        progress = startProgress;
+        tracking = !infoPanelVisible || detailContent.scrollTop <= 0;
+        detailContent.classList.remove('is-settling');
     }, { passive: true });
+
+    detailScreen.addEventListener('touchmove', (e) => {
+        if (candleVisible || !tracking) return;
+
+        const deltaY = startY - e.touches[0].clientY;
+        if (startProgress === 1 && deltaY > 0) {
+            tracking = false;
+            return;
+        }
+
+        progress = Math.max(0, Math.min(1, startProgress + deltaY / (window.innerHeight * 0.42)));
+        if (progress === startProgress) return;
+
+        e.preventDefault();
+        applyInfoProgress(progress);
+    }, { passive: false });
     
     detailScreen.addEventListener('touchend', (e) => {
         if (candleVisible) return;
         const endY = e.changedTouches[0].clientY;
         const endTime = Date.now();
-        const deltaY = startY - endY;
         const deltaTime = endTime - startTime;
-        
-        if (Math.abs(deltaY) < 50 || deltaTime > 500) return;
-        
-        if (!infoPanelVisible && deltaY > 0) {
-            toggleInfo();
-        } else if (infoPanelVisible && deltaY < 0 && detailContent.scrollTop <= 0) {
-            toggleInfo();
-        }
+        const velocity = (startY - endY) / Math.max(deltaTime, 1);
+
+        if (!tracking) return;
+        const shouldOpen = velocity > 0.35 || (velocity > -0.35 && progress >= 0.5);
+        setInfoPanel(shouldOpen);
+        tracking = false;
+    }, { passive: true });
+
+    detailScreen.addEventListener('touchcancel', () => {
+        if (!tracking) return;
+        setInfoPanel(startProgress === 1);
+        tracking = false;
     }, { passive: true });
 })();
 
