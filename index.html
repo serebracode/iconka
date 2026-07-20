@@ -242,7 +242,7 @@
         }
 
         #detailContent.candle-active #iconImage {
-            transform: translate3d(0, var(--candle-icon-shift-y, 0px), 0) scale(var(--candle-icon-scale, 1.25));
+            transform: scale(var(--candle-icon-scale, 1.25));
         }
 
         body.candle-transition #candleLayer {
@@ -449,7 +449,7 @@
         </div>
     </div>
     
-    <!-- ДИНАМИЧЕСКОЕ ЗАТЕМНЕНИЕ: световой вырез связывает центр иконы с пламенем -->
+    <!-- ДИНАМИЧЕСКОЕ ЗАТЕМНЕНИЕ: световой вырез связывает верхний ореол с пламенем -->
     <svg id="candleHalo" aria-hidden="true" preserveAspectRatio="none">
         <defs>
             <filter id="haloBlur" x="-50%" y="-50%" width="200%" height="200%">
@@ -704,7 +704,6 @@ function resetDetailScreenUI() {
     detailContent.style.removeProperty('--info-opacity');
     detailContent.style.removeProperty('--info-offset');
     detailContent.style.removeProperty('--candle-icon-scale');
-    detailContent.style.removeProperty('--candle-icon-shift-y');
     document.getElementById('candleLayer').style.removeProperty('transform');
     detailContent.style.removeProperty('overflow');
     detailContent.scrollTop = 0;
@@ -815,19 +814,17 @@ let infoSettleTimer = null;
 const CANDLE_ICON_TRANSITION_MS = 4800;
 const CANDLE_FLAME_X = 0.5;
 const CANDLE_FLAME_Y = 0.55;
-const CANDLE_ICON_FOCUS_VIEWPORT_Y = 0.385;
-const CANDLE_FLAME_VIEWPORT_Y = 0.575;
+const CANDLE_HALO_VIEWPORT_Y = 0.35;
+const CANDLE_FLAME_VIEWPORT_Y = 0.5;
 
-function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShiftY) {
+function updateCandleHaloGeometry(iconBounds, candleScale, candleShiftY) {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const candleImage = document.querySelector('#candleLayer img');
     const candleBounds = candleImage.getBoundingClientRect();
 
     const focusX = iconBounds.left + iconBounds.width * 0.5;
-    const focusY = iconBounds.top + iconBounds.height * 0.5
-        + iconBounds.height * (0.45 - 0.5) * candleScale
-        + iconShiftY;
+    const focusY = height * CANDLE_HALO_VIEWPORT_Y;
     const flameX = candleBounds.left + candleBounds.width * CANDLE_FLAME_X;
     const flameY = candleBounds.top + candleBounds.height * CANDLE_FLAME_Y + candleShiftY;
     const scaledIconWidth = iconBounds.width * candleScale;
@@ -897,17 +894,13 @@ function showCandle() {
     const candleLayer = document.getElementById('candleLayer');
     const candleBounds = document.querySelector('#candleLayer img').getBoundingClientRect();
     const candleScale = iconBounds.width > 0 ? window.innerWidth / iconBounds.width : 1.25;
-    const currentFocusY = iconBounds.top + iconBounds.height * 0.5
-        + iconBounds.height * (0.45 - 0.5) * candleScale;
     const currentFlameY = candleBounds.top + candleBounds.height * CANDLE_FLAME_Y;
-    const iconShiftY = window.innerHeight * CANDLE_ICON_FOCUS_VIEWPORT_Y - currentFocusY;
     const candleShiftY = window.innerHeight * CANDLE_FLAME_VIEWPORT_Y - currentFlameY;
     detailContent.style.setProperty('--candle-icon-scale', candleScale.toFixed(4));
-    detailContent.style.setProperty('--candle-icon-shift-y', `${iconShiftY.toFixed(2)}px`);
     // Свеча позиционируется до появления: она проявляется уже в конечной точке,
     // а не въезжает в неё из исходного положения.
     candleLayer.style.transform = `translate3d(0, ${candleShiftY.toFixed(2)}px, 0)`;
-    updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShiftY);
+    updateCandleHaloGeometry(iconBounds, candleScale, candleShiftY);
     document.getElementById('globalLogo').classList.remove('list-fadein');
     document.body.classList.add('candle-transition', 'candle-active');
     detailContent.classList.add('candle-transition', 'candle-active');
