@@ -18,6 +18,8 @@
         }
 
         body {
+            --candle-transition-duration: 1500ms;
+            --candle-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
             background-color: #000000;
             color: #FFFFFF;
@@ -182,6 +184,7 @@
             height: auto;
             max-height: 70vh;
             object-fit: contain;
+            transition-property: max-height;
         }
 
         #detailContent.info-open #iconImage {
@@ -203,8 +206,8 @@
         }
 
         #detailContent.candle-transition .icon-title {
-            transition-duration: 1.5s;
-            transition-timing-function: ease-in-out;
+            transition-duration: var(--candle-transition-duration);
+            transition-timing-function: var(--candle-transition-easing);
         }
 
         #detailContent.candle-active .icon-title {
@@ -212,6 +215,36 @@
             max-height: 0;
             margin-top: 0;
             transform: translateY(-12px);
+        }
+
+        body.candle-transition #globalLogo,
+        body.candle-transition #candleLayer,
+        body.candle-transition #closeCandleBtn,
+        body.candle-transition #shareBtn,
+        body.candle-transition #candleBtn,
+        body.candle-transition #infoBtn {
+            transition-duration: var(--candle-transition-duration) !important;
+            transition-timing-function: var(--candle-transition-easing) !important;
+        }
+
+        #detailContent.candle-transition .icon-section,
+        #detailContent.candle-transition .icon-wrapper,
+        #detailContent.candle-transition #iconImage {
+            transition-duration: var(--candle-transition-duration);
+            transition-timing-function: var(--candle-transition-easing);
+        }
+
+        #detailContent.candle-active .icon-section {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        #detailContent.candle-active .icon-wrapper {
+            width: 100%;
+        }
+
+        #detailContent.candle-active #iconImage {
+            max-height: 100vh;
         }
 
         .info-section {
@@ -596,6 +629,7 @@ function resetDetailScreenUI() {
     detailContent.classList.remove('is-dragging');
     detailContent.classList.remove('candle-active');
     detailContent.classList.remove('candle-transition');
+    document.body.classList.remove('candle-active', 'candle-transition');
     detailContent.style.removeProperty('--info-progress');
     detailContent.style.removeProperty('--icon-section-height');
     detailContent.style.removeProperty('--icon-section-padding-top');
@@ -717,6 +751,7 @@ tg?.BackButton?.onClick(goBack);
 let candleVisible = false;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
+const CANDLE_TRANSITION_MS = 1500;
 
 function applyInfoProgress(value) {
     const progress = Math.max(0, Math.min(1, value));
@@ -746,6 +781,7 @@ function showCandle() {
     
     candleVisible = true;
 
+    document.body.classList.add('candle-transition', 'candle-active');
     document.getElementById('detailContent').classList.add('candle-transition', 'candle-active');
     document.getElementById('candleLayer').style.opacity = '1';
     document.getElementById('globalLogo').style.opacity = '0';
@@ -760,10 +796,12 @@ function showCandle() {
     closeBtn.style.display = 'flex';
     closeBtn.style.opacity = '0';
     closeBtn.style.pointerEvents = 'none';
-    setTimeout(() => {
+    requestAnimationFrame(() => {
         closeBtn.style.opacity = '1';
+    });
+    setTimeout(() => {
         closeBtn.style.pointerEvents = 'auto';
-    }, 1500);
+    }, CANDLE_TRANSITION_MS);
 }
 
 function closeCandle() {
@@ -771,6 +809,7 @@ function closeCandle() {
     candleVisible = false;
 
     const detailContent = document.getElementById('detailContent');
+    document.body.classList.remove('candle-active');
     detailContent.classList.remove('candle-active');
     document.getElementById('candleLayer').style.opacity = '0';
     
@@ -789,7 +828,8 @@ function closeCandle() {
     setTimeout(() => {
         closeBtn.style.display = 'none';
         detailContent.classList.remove('candle-transition');
-    }, 1500);
+        document.body.classList.remove('candle-transition');
+    }, CANDLE_TRANSITION_MS);
 }
 
 function setInfoPanel(open, animate = true) {
