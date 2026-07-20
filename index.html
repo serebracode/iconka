@@ -244,7 +244,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: translate3d(0, var(--candle-icon-shift-y, 0px), 0) scale(var(--candle-icon-scale, 1.25));
-            filter: blur(2px);
+            filter: blur(1px);
         }
 
         body.candle-transition #candleLayer {
@@ -284,19 +284,19 @@
                 opacity: 0.96;
             }
             22% {
-                transform: rotate(-1.15deg) scale(1.045, 1.018);
+                transform: rotate(-1.725deg) scale(1.0675, 1.027);
                 opacity: 0.86;
             }
             47% {
-                transform: rotate(0.85deg) scale(0.982, 1.04);
+                transform: rotate(1.275deg) scale(0.973, 1.06);
                 opacity: 1;
             }
             71% {
-                transform: rotate(-0.55deg) scale(1.025, 0.992);
+                transform: rotate(-0.825deg) scale(1.0375, 0.988);
                 opacity: 0.89;
             }
             87% {
-                transform: rotate(0.45deg) scale(0.99, 1.025);
+                transform: rotate(0.675deg) scale(0.985, 1.0375);
                 opacity: 0.98;
             }
         }
@@ -829,7 +829,7 @@ const CANDLE_FLAME_Y = 0.55;
 const CANDLE_FLAME_TOP_Y = 0.485;
 const CANDLE_ICON_CENTER_VIEWPORT_Y = 0.45;
 const CANDLE_ICON_OPTICAL_Y = 0.375;
-const CANDLE_HALO_SHIFT_VIEWPORT_Y = 0.2;
+const CANDLE_HALO_SHIFT_VIEWPORT_Y = 0.1;
 const CANDLE_FLAME_TOP_VIEWPORT_Y = 0.525;
 
 function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShiftY) {
@@ -847,9 +847,9 @@ function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShi
     const flameY = candleBounds.top + candleBounds.height * CANDLE_FLAME_Y + candleShiftY;
     focusY = Math.min(focusY, flameY - height * 0.06);
     const scaledIconWidth = iconBounds.width * candleScale;
-    const scaledIconHeight = iconBounds.height * candleScale;
-    const radiusX = Math.min(scaledIconWidth * 0.42, width * 0.46);
-    const radiusY = Math.min(scaledIconHeight * 0.28, height * 0.25);
+    // Вертикальный овал 4:3 сохраняет пропорции независимо от формата иконы.
+    const radiusX = Math.min(scaledIconWidth * 0.42, width * 0.46, height * 0.1875);
+    const radiusY = radiusX * 4 / 3;
     const flameNeck = Math.max(12, width * 0.025);
     const distance = Math.max(1, flameY - focusY);
     const controlY = flameY - distance * 0.34;
