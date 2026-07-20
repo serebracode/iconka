@@ -18,8 +18,8 @@
         }
 
         body {
-            --candle-transition-duration: 1500ms;
-            --candle-icon-transition-duration: 2400ms;
+            --candle-transition-duration: 3000ms;
+            --candle-icon-transition-duration: 4800ms;
             --candle-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
             background-color: #000000;
@@ -265,7 +265,7 @@
 
         body.candle-active #candleLayer::before {
             opacity: 0.88;
-            animation: candleHaloBreathing 3.8s ease-in-out infinite;
+            animation: candleHaloBreathing 5.1s ease-in-out infinite;
         }
 
         #candleLayer > img {
@@ -790,7 +790,7 @@ tg?.BackButton?.onClick(goBack);
 let candleVisible = false;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
-const CANDLE_ICON_TRANSITION_MS = 2400;
+const CANDLE_ICON_TRANSITION_MS = 4800;
 
 function applyInfoProgress(value) {
     const progress = Math.max(0, Math.min(1, value));
