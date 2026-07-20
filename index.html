@@ -186,7 +186,7 @@
             max-height: 70vh;
             object-fit: contain;
             transform-origin: center center;
-            transition-property: transform;
+            transition-property: transform, filter;
         }
 
         #detailContent.info-open #iconImage {
@@ -244,6 +244,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: translate3d(0, var(--candle-icon-shift-y, 0px), 0) scale(var(--candle-icon-scale, 1.25));
+            filter: blur(2px);
         }
 
         body.candle-transition #candleLayer {
