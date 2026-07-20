@@ -244,7 +244,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: translate3d(0, var(--candle-icon-shift-y, 0px), 0) scale(var(--candle-icon-scale, 1.25));
-            filter: blur(2px);
+            filter: blur(1px);
         }
 
         body.candle-transition #candleLayer {
@@ -258,7 +258,7 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            z-index: 21;
+            z-index: 19;
             opacity: 0;
             pointer-events: none;
             transition-property: opacity;
@@ -274,8 +274,19 @@
             will-change: transform, opacity;
         }
 
+        #haloFocus {
+            transform-box: fill-box;
+            transform-origin: center;
+            will-change: transform;
+        }
+
         body.candle-active #haloCutout {
             animation: candleHaloBreathing 5.1s ease-in-out infinite;
+        }
+
+        body.candle-active #haloFocus {
+            animation: candleHaloShapeMorph var(--halo-shape-duration, 15s) ease-in-out infinite;
+            animation-delay: var(--halo-shape-delay, 0s);
         }
 
         @keyframes candleHaloBreathing {
@@ -284,25 +295,35 @@
                 opacity: 0.96;
             }
             22% {
-                transform: rotate(-1.15deg) scale(1.045, 1.018);
-                opacity: 0.86;
+                transform: rotate(-1.294deg) scale(1.0506, 1.0203);
+                opacity: 0.885;
             }
             47% {
-                transform: rotate(0.85deg) scale(0.982, 1.04);
-                opacity: 1;
+                transform: rotate(0.956deg) scale(0.9798, 1.045);
+                opacity: 0.99;
             }
             71% {
-                transform: rotate(-0.55deg) scale(1.025, 0.992);
-                opacity: 0.89;
+                transform: rotate(-0.619deg) scale(1.0281, 0.991);
+                opacity: 0.908;
             }
             87% {
-                transform: rotate(0.45deg) scale(0.99, 1.025);
-                opacity: 0.98;
+                transform: rotate(0.506deg) scale(0.9888, 1.0281);
+                opacity: 0.975;
             }
         }
 
+        @keyframes candleHaloShapeMorph {
+            0%, 100% { transform: scaleY(1); }
+            13% { transform: scaleY(0.91); }
+            31% { transform: scaleY(0.75); }
+            46% { transform: scaleY(0.82); }
+            68% { transform: scaleY(1); }
+            83% { transform: scaleY(0.86); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            body.candle-active #haloCutout {
+            body.candle-active #haloCutout,
+            body.candle-active #haloFocus {
                 animation: none;
             }
         }
@@ -465,7 +486,7 @@
                 </g>
             </mask>
         </defs>
-        <rect id="haloShade" fill="rgba(0, 0, 0, 0.62)" mask="url(#haloMask)"/>
+        <rect id="haloShade" fill="#000000" mask="url(#haloMask)"/>
     </svg>
 
     <!-- СЛОЙ СВЕЧИ -->
@@ -827,8 +848,9 @@ const CANDLE_ICON_TRANSITION_MS = 4800;
 const CANDLE_FLAME_X = 0.5;
 const CANDLE_FLAME_Y = 0.55;
 const CANDLE_FLAME_TOP_Y = 0.485;
-const CANDLE_ICON_CENTER_VIEWPORT_Y = 0.35;
+const CANDLE_ICON_CENTER_VIEWPORT_Y = 0.45;
 const CANDLE_ICON_OPTICAL_Y = 0.375;
+const CANDLE_HALO_SHIFT_VIEWPORT_Y = 0.1;
 const CANDLE_FLAME_TOP_VIEWPORT_Y = 0.525;
 
 function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShiftY) {
@@ -838,15 +860,17 @@ function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShi
     const candleBounds = candleImage.getBoundingClientRect();
 
     const focusX = iconBounds.left + iconBounds.width * 0.5;
-    const focusY = iconBounds.top + iconBounds.height * 0.5
+    let focusY = iconBounds.top + iconBounds.height * 0.5
         + iconBounds.height * (CANDLE_ICON_OPTICAL_Y - 0.5) * candleScale
-        + iconShiftY;
+        + iconShiftY
+        + height * CANDLE_HALO_SHIFT_VIEWPORT_Y;
     const flameX = candleBounds.left + candleBounds.width * CANDLE_FLAME_X;
     const flameY = candleBounds.top + candleBounds.height * CANDLE_FLAME_Y + candleShiftY;
+    focusY = Math.min(focusY, flameY - height * 0.06);
     const scaledIconWidth = iconBounds.width * candleScale;
-    const scaledIconHeight = iconBounds.height * candleScale;
-    const radiusX = Math.min(scaledIconWidth * 0.42, width * 0.46);
-    const radiusY = Math.min(scaledIconHeight * 0.28, height * 0.25);
+    // Вертикальный овал 4:3 сохраняет пропорции независимо от формата иконы.
+    const radiusX = Math.min(scaledIconWidth * 0.42, width * 0.46, height * 0.1875);
+    const radiusY = radiusX * 4 / 3;
     const flameNeck = Math.max(12, width * 0.025);
     const distance = Math.max(1, flameY - focusY);
     const controlY = flameY - distance * 0.34;
@@ -875,6 +899,12 @@ function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShi
     const cutout = document.getElementById('haloCutout');
     cutout.style.setProperty('--flame-x', `${flameX}px`);
     cutout.style.setProperty('--flame-y', `${flameY}px`);
+
+    // Каждый вход начинается с другой фазы и немного другого темпа морфинга,
+    // поэтому переход овала в круг не выглядит как повторяющийся цикл.
+    const morphDuration = 13 + Math.random() * 5;
+    halo.style.setProperty('--halo-shape-duration', `${morphDuration.toFixed(2)}s`);
+    halo.style.setProperty('--halo-shape-delay', `${(-Math.random() * morphDuration).toFixed(2)}s`);
 }
 
 function applyInfoProgress(value) {
