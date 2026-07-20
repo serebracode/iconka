@@ -142,6 +142,10 @@
             overflow-y: auto;
         }
 
+        #detailContent.is-dragging {
+            overflow: hidden;
+        }
+
         #detailContent.is-settling .icon-section,
         #detailContent.is-settling .icon-wrapper,
         #detailContent.is-settling .icon-title,
@@ -159,6 +163,7 @@
             min-height: var(--icon-section-height);
             padding: var(--icon-section-padding-top) 16px var(--icon-section-padding-bottom);
             transition-property: flex-basis, min-height, padding;
+            overflow-anchor: none;
         }
 
         #detailContent.info-open .icon-section {
@@ -197,6 +202,18 @@
             opacity: 0;
         }
 
+        #detailContent.candle-transition .icon-title {
+            transition-duration: 1.5s;
+            transition-timing-function: ease-in-out;
+        }
+
+        #detailContent.candle-active .icon-title {
+            opacity: 0;
+            max-height: 0;
+            margin-top: 0;
+            transform: translateY(-12px);
+        }
+
         .info-section {
             padding: 0 24px;
             padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 80px);
@@ -204,6 +221,7 @@
             transform: translateY(var(--info-offset));
             transition-property: opacity, transform;
             pointer-events: none;
+            overflow-anchor: none;
         }
 
         #detailContent.info-open .info-section {
@@ -575,6 +593,9 @@ function resetDetailScreenUI() {
     const detailContent = document.getElementById('detailContent');
     detailContent.classList.remove('info-open');
     detailContent.classList.remove('is-settling');
+    detailContent.classList.remove('is-dragging');
+    detailContent.classList.remove('candle-active');
+    detailContent.classList.remove('candle-transition');
     detailContent.style.removeProperty('--info-progress');
     detailContent.style.removeProperty('--icon-section-height');
     detailContent.style.removeProperty('--icon-section-padding-top');
@@ -695,6 +716,7 @@ tg?.BackButton?.onClick(goBack);
 
 let candleVisible = false;
 let infoPanelVisible = false;
+let infoSettleTimer = null;
 
 function applyInfoProgress(value) {
     const progress = Math.max(0, Math.min(1, value));
@@ -723,7 +745,8 @@ function showCandle() {
     }
     
     candleVisible = true;
-    
+
+    document.getElementById('detailContent').classList.add('candle-transition', 'candle-active');
     document.getElementById('candleLayer').style.opacity = '1';
     document.getElementById('globalLogo').style.opacity = '0';
     document.getElementById('candleBtn').style.opacity = '0';
@@ -746,7 +769,9 @@ function showCandle() {
 function closeCandle() {
     if (!candleVisible) return;
     candleVisible = false;
-    
+
+    const detailContent = document.getElementById('detailContent');
+    detailContent.classList.remove('candle-active');
     document.getElementById('candleLayer').style.opacity = '0';
     
     const closeBtn = document.getElementById('closeCandleBtn');
@@ -761,7 +786,10 @@ function closeCandle() {
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     document.getElementById('shareBtn').style.pointerEvents = 'auto';
     
-    setTimeout(() => { closeBtn.style.display = 'none'; }, 1500);
+    setTimeout(() => {
+        closeBtn.style.display = 'none';
+        detailContent.classList.remove('candle-transition');
+    }, 1500);
 }
 
 function setInfoPanel(open, animate = true) {
@@ -772,9 +800,10 @@ function setInfoPanel(open, animate = true) {
     
     infoPanelVisible = open;
 
-    if (!open) {
-        detailContent.scrollTop = 0;
-    }
+    detailContent.scrollTop = 0;
+    detailContent.classList.remove('is-dragging');
+
+    window.clearTimeout(infoSettleTimer);
 
     detailContent.classList.toggle('is-settling', animate);
     detailContent.classList.toggle('info-open', open);
@@ -782,7 +811,10 @@ function setInfoPanel(open, animate = true) {
     detailContent.style.removeProperty('overflow');
 
     if (animate) {
-        window.setTimeout(() => detailContent.classList.remove('is-settling'), 380);
+        infoSettleTimer = window.setTimeout(() => {
+            detailContent.classList.remove('is-settling');
+            infoSettleTimer = null;
+        }, 380);
     }
     
     // Скрыть/показать кнопку свечи
@@ -822,7 +854,9 @@ function toggleInfo() {
         startTime = Date.now();
         startProgress = infoPanelVisible ? 1 : 0;
         progress = startProgress;
-        tracking = !infoPanelVisible || detailContent.scrollTop <= 0;
+        tracking = true;
+        window.clearTimeout(infoSettleTimer);
+        infoSettleTimer = null;
         detailContent.classList.remove('is-settling');
     }, { passive: true });
 
@@ -830,7 +864,11 @@ function toggleInfo() {
         if (candleVisible || !tracking) return;
 
         const deltaY = startY - e.touches[0].clientY;
-        if (startProgress === 1 && deltaY > 0) {
+
+        // При открытом описании свайп вверх принадлежит обычному скроллу.
+        // Свайп вниз закрывает панель только у верхней границы, включая
+        // небольшую дробную погрешность scrollTop в iOS/Telegram WebView.
+        if (startProgress === 1 && (deltaY > 0 || detailContent.scrollTop > 2)) {
             tracking = false;
             return;
         }
@@ -839,6 +877,7 @@ function toggleInfo() {
         if (progress === startProgress) return;
 
         e.preventDefault();
+        detailContent.classList.add('is-dragging');
         applyInfoProgress(progress);
     }, { passive: false });
     
@@ -849,6 +888,7 @@ function toggleInfo() {
         const deltaTime = endTime - startTime;
         const velocity = (startY - endY) / Math.max(deltaTime, 1);
 
+        detailContent.classList.remove('is-dragging');
         if (!tracking) return;
         const shouldOpen = velocity > 0.35 || (velocity > -0.35 && progress >= 0.5);
         setInfoPanel(shouldOpen);
@@ -856,6 +896,7 @@ function toggleInfo() {
     }, { passive: true });
 
     detailScreen.addEventListener('touchcancel', () => {
+        detailContent.classList.remove('is-dragging');
         if (!tracking) return;
         setInfoPanel(startProgress === 1);
         tracking = false;
