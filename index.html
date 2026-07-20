@@ -246,13 +246,9 @@
         }
 
         body.candle-transition #candleLayer {
-            transition-property: opacity, transform !important;
-            transition-duration: var(--candle-transition-duration), var(--candle-icon-transition-duration) !important;
-            transition-timing-function: var(--candle-transition-easing), var(--candle-transition-easing) !important;
-        }
-
-        body.candle-active #candleLayer {
-            transform: translate3d(0, var(--candle-layer-shift-y, 0px), 0);
+            transition-property: opacity !important;
+            transition-duration: var(--candle-transition-duration) !important;
+            transition-timing-function: var(--candle-transition-easing) !important;
         }
 
         #candleHalo {
@@ -709,7 +705,7 @@ function resetDetailScreenUI() {
     detailContent.style.removeProperty('--info-offset');
     detailContent.style.removeProperty('--candle-icon-scale');
     detailContent.style.removeProperty('--candle-icon-shift-y');
-    document.getElementById('candleLayer').style.removeProperty('--candle-layer-shift-y');
+    document.getElementById('candleLayer').style.removeProperty('transform');
     detailContent.style.removeProperty('overflow');
     detailContent.scrollTop = 0;
     
@@ -908,7 +904,9 @@ function showCandle() {
     const candleShiftY = window.innerHeight * CANDLE_FLAME_VIEWPORT_Y - currentFlameY;
     detailContent.style.setProperty('--candle-icon-scale', candleScale.toFixed(4));
     detailContent.style.setProperty('--candle-icon-shift-y', `${iconShiftY.toFixed(2)}px`);
-    candleLayer.style.setProperty('--candle-layer-shift-y', `${candleShiftY.toFixed(2)}px`);
+    // Свеча позиционируется до появления: она проявляется уже в конечной точке,
+    // а не въезжает в неё из исходного положения.
+    candleLayer.style.transform = `translate3d(0, ${candleShiftY.toFixed(2)}px, 0)`;
     updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShiftY);
     document.getElementById('globalLogo').classList.remove('list-fadein');
     document.body.classList.add('candle-transition', 'candle-active');
@@ -937,6 +935,7 @@ function closeCandle() {
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     
     setTimeout(() => {
+        candleLayer.style.removeProperty('transform');
         detailContent.classList.remove('candle-transition');
         document.body.classList.remove('candle-transition');
     }, CANDLE_ICON_TRANSITION_MS);
