@@ -274,8 +274,19 @@
             will-change: transform, opacity;
         }
 
+        #haloFocus {
+            transform-box: fill-box;
+            transform-origin: center;
+            will-change: transform;
+        }
+
         body.candle-active #haloCutout {
             animation: candleHaloBreathing 5.1s ease-in-out infinite;
+        }
+
+        body.candle-active #haloFocus {
+            animation: candleHaloShapeMorph var(--halo-shape-duration, 15s) ease-in-out infinite;
+            animation-delay: var(--halo-shape-delay, 0s);
         }
 
         @keyframes candleHaloBreathing {
@@ -284,25 +295,35 @@
                 opacity: 0.96;
             }
             22% {
-                transform: rotate(-1.725deg) scale(1.0675, 1.027);
-                opacity: 0.86;
+                transform: rotate(-1.294deg) scale(1.0506, 1.0203);
+                opacity: 0.885;
             }
             47% {
-                transform: rotate(1.275deg) scale(0.973, 1.06);
-                opacity: 1;
+                transform: rotate(0.956deg) scale(0.9798, 1.045);
+                opacity: 0.99;
             }
             71% {
-                transform: rotate(-0.825deg) scale(1.0375, 0.988);
-                opacity: 0.89;
+                transform: rotate(-0.619deg) scale(1.0281, 0.991);
+                opacity: 0.908;
             }
             87% {
-                transform: rotate(0.675deg) scale(0.985, 1.0375);
-                opacity: 0.98;
+                transform: rotate(0.506deg) scale(0.9888, 1.0281);
+                opacity: 0.975;
             }
         }
 
+        @keyframes candleHaloShapeMorph {
+            0%, 100% { transform: scaleY(1); }
+            13% { transform: scaleY(0.91); }
+            31% { transform: scaleY(0.75); }
+            46% { transform: scaleY(0.82); }
+            68% { transform: scaleY(1); }
+            83% { transform: scaleY(0.86); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            body.candle-active #haloCutout {
+            body.candle-active #haloCutout,
+            body.candle-active #haloFocus {
                 animation: none;
             }
         }
@@ -878,6 +899,12 @@ function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShi
     const cutout = document.getElementById('haloCutout');
     cutout.style.setProperty('--flame-x', `${flameX}px`);
     cutout.style.setProperty('--flame-y', `${flameY}px`);
+
+    // Каждый вход начинается с другой фазы и немного другого темпа морфинга,
+    // поэтому переход овала в круг не выглядит как повторяющийся цикл.
+    const morphDuration = 13 + Math.random() * 5;
+    halo.style.setProperty('--halo-shape-duration', `${morphDuration.toFixed(2)}s`);
+    halo.style.setProperty('--halo-shape-delay', `${(-Math.random() * morphDuration).toFixed(2)}s`);
 }
 
 function applyInfoProgress(value) {
