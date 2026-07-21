@@ -224,6 +224,7 @@
         body.candle-transition #globalLogo,
         body.candle-transition #candleLayer,
         body.candle-transition #candleBaseVideo,
+        body.candle-transition #candleFlameViewport,
         body.candle-transition #shareBtn,
         body.candle-transition #candleBtn,
         body.candle-transition #infoBtn {
@@ -277,7 +278,7 @@
         #candleBaseVideo {
             position: fixed;
             inset: 0;
-            z-index: 21;
+            z-index: 19;
             width: 100%;
             height: 100%;
             display: block;
@@ -285,11 +286,32 @@
             object-position: center;
             opacity: 0;
             pointer-events: none;
+            mix-blend-mode: screen;
             transition-property: opacity;
         }
 
         body.candle-active #candleBaseVideo {
             opacity: 1;
+        }
+
+        #candleFlameViewport {
+            position: absolute;
+            z-index: 21;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            transition-property: opacity;
+        }
+
+        body.candle-active #candleFlameViewport {
+            opacity: 1;
+        }
+
+        #candleFlame {
+            position: absolute;
+            display: block;
+            max-width: none;
         }
 
         .info-section {
@@ -444,6 +466,13 @@
     <!-- ТЕЛО СВЕЧИ ОСТАЁТСЯ ОТДЕЛЬНЫМ -->
     <div id="candleLayer">
         <img id="candleBody" src="./video/crdl.png" alt="Свеча">
+    </div>
+
+    <!-- ОТДЕЛЬНЫЙ ОГОНЬ В ПРЕЖНЕЙ ТОЧКЕ ФИТИЛЯ -->
+    <div id="candleFlameViewport" aria-hidden="true">
+        <video id="candleFlame" muted playsinline loop preload="auto">
+            <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
+        </video>
     </div>
 
     <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out;">
@@ -692,8 +721,11 @@ function resetDetailScreenUI() {
     
     document.getElementById('candleLayer').style.opacity = '0';
     const candleBaseVideo = document.getElementById('candleBaseVideo');
+    const candleFlame = document.getElementById('candleFlame');
     candleBaseVideo.pause();
+    candleFlame.pause();
     if (candleBaseVideo.readyState >= 1) candleBaseVideo.currentTime = 0;
+    if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     document.getElementById('shareBtn').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('infoBtn').style.opacity = '1';
@@ -801,17 +833,44 @@ let infoSettleTimer = null;
 let candleWakeLock = null;
 let candleWakeLockPending = false;
 const CANDLE_ICON_TRANSITION_MS = 4800;
+const CANDLE_VIDEO_WIDTH = 1080;
+const CANDLE_VIDEO_HEIGHT = 1920;
+const CANDLE_FLAME_X = 540;
+const CANDLE_FLAME_BASE_Y = 1155;
+const CANDLE_FLAME_CROP_LEFT = 475;
+const CANDLE_FLAME_CROP_TOP = 1010;
+const CANDLE_FLAME_CROP_WIDTH = 135;
+const CANDLE_FLAME_CROP_HEIGHT = 150;
+const CANDLE_FLAME_SCALE = 1.68;
+const CANDLE_FLAME_OFFSET_X = 5;
 const CANDLE_BODY_SCALE = 0.67;
 const CANDLE_BODY_HEIGHT_VIEWPORT = 0.45 * CANDLE_BODY_SCALE;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
 const CANDLE_WICK_TIP_Y = 14 / 560;
 const CANDLE_ICON_CENTER_VIEWPORT_Y = 0.45;
 
-function positionCandleBody() {
+function positionCandleAssets() {
     const body = document.getElementById('candleBody');
+    const flameViewport = document.getElementById('candleFlameViewport');
+    const flame = document.getElementById('candleFlame');
     const bodyHeight = window.innerHeight * CANDLE_BODY_HEIGHT_VIEWPORT;
     body.style.height = `${bodyHeight}px`;
     body.style.top = `${window.innerHeight * CANDLE_WICK_VIEWPORT_Y - bodyHeight * CANDLE_WICK_TIP_Y}px`;
+
+    const bodyBounds = body.getBoundingClientRect();
+    const flameScale = window.innerWidth / CANDLE_VIDEO_WIDTH * CANDLE_FLAME_SCALE;
+    const wickTipY = bodyBounds.top + bodyBounds.height * CANDLE_WICK_TIP_Y;
+    const flameX = window.innerWidth * 0.5 + CANDLE_FLAME_OFFSET_X;
+    const flameY = wickTipY + 10;
+
+    flameViewport.style.width = `${CANDLE_FLAME_CROP_WIDTH * flameScale}px`;
+    flameViewport.style.height = `${CANDLE_FLAME_CROP_HEIGHT * flameScale}px`;
+    flameViewport.style.left = `${flameX - (CANDLE_FLAME_X - CANDLE_FLAME_CROP_LEFT) * flameScale}px`;
+    flameViewport.style.top = `${flameY - (CANDLE_FLAME_BASE_Y - CANDLE_FLAME_CROP_TOP) * flameScale}px`;
+    flame.style.width = `${CANDLE_VIDEO_WIDTH * flameScale}px`;
+    flame.style.height = `${CANDLE_VIDEO_HEIGHT * flameScale}px`;
+    flame.style.left = `${-CANDLE_FLAME_CROP_LEFT * flameScale}px`;
+    flame.style.top = `${-CANDLE_FLAME_CROP_TOP * flameScale}px`;
 }
 
 function applyInfoProgress(value) {
@@ -887,14 +946,17 @@ function showCandle() {
     const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
     const candleLayer = document.getElementById('candleLayer');
     const candleBaseVideo = document.getElementById('candleBaseVideo');
+    const candleFlame = document.getElementById('candleFlame');
     const candleScale = iconBounds.width > 0 ? window.innerWidth / iconBounds.width : 1.25;
     const currentIconCenterY = iconBounds.top + iconBounds.height * 0.5;
     const iconShiftY = window.innerHeight * CANDLE_ICON_CENTER_VIEWPORT_Y - currentIconCenterY;
     detailContent.style.setProperty('--candle-icon-scale', candleScale.toFixed(4));
     detailContent.style.setProperty('--candle-icon-shift-y', `${iconShiftY.toFixed(2)}px`);
-    positionCandleBody();
+    positionCandleAssets();
     if (candleBaseVideo.readyState >= 1) candleBaseVideo.currentTime = 0;
+    if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     candleBaseVideo.play().catch(() => {});
+    candleFlame.play().catch(() => {});
     document.getElementById('globalLogo').classList.remove('list-fadein');
     document.body.classList.add('candle-transition', 'candle-active');
     detailContent.classList.add('candle-transition', 'candle-active');
@@ -916,10 +978,12 @@ function closeCandle() {
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
     const candleBaseVideo = document.getElementById('candleBaseVideo');
+    const candleFlame = document.getElementById('candleFlame');
     document.body.classList.remove('candle-active');
     detailContent.classList.remove('candle-active');
     candleLayer.style.opacity = '0';
     candleBaseVideo.pause();
+    candleFlame.pause();
     
     document.getElementById('globalLogo').style.opacity = '1';
     document.getElementById('shareBtn').style.opacity = '1';
@@ -931,6 +995,7 @@ function closeCandle() {
     
     setTimeout(() => {
         if (candleBaseVideo.readyState >= 1) candleBaseVideo.currentTime = 0;
+        if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
         detailContent.classList.remove('candle-transition');
         document.body.classList.remove('candle-transition');
     }, CANDLE_ICON_TRANSITION_MS);
