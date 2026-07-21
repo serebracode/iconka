@@ -310,7 +310,7 @@
         }
 
         #detailContent.candle-active #iconImage {
-            transform: scale(1.10);
+            transform: scale(var(--candle-icon-scale, 1.10));
             filter: brightness(0.76) contrast(1.18) blur(1px);
         }
 
@@ -902,6 +902,7 @@ function resetDetailScreenUI() {
     detailContent.style.removeProperty('--icon-section-padding-top');
     detailContent.style.removeProperty('--icon-section-padding-bottom');
     detailContent.style.removeProperty('--icon-width');
+    detailContent.style.removeProperty('--candle-icon-scale');
     detailContent.style.removeProperty('--title-opacity');
     detailContent.style.removeProperty('--title-offset');
     detailContent.style.removeProperty('--title-height');
@@ -1159,7 +1160,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-scale', (0.98 + flickerSlow * 0.05).toFixed(4));
     detailScreen.style.setProperty('--glow-offset-x', `${((flickerFast - 0.5) * 4).toFixed(2)}px`);
     detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
-    detailScreen.style.setProperty('--flicker-shade-opacity', (0.97 + shadeProgress * 0.03).toFixed(4));
+    detailScreen.style.setProperty('--flicker-shade-opacity', (0.96 + shadeProgress * 0.04).toFixed(4));
 }
 
 function stopCandleAtmosphereAnimation() {
@@ -1206,6 +1207,10 @@ function showCandle() {
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
     const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
+    const iconScale = iconBounds.width > 0
+        ? Math.max(1, window.innerWidth / iconBounds.width)
+        : 1.10;
+    detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
     detailScreen.style.setProperty('--icon-center-x', `${iconBounds.left + iconBounds.width * 0.5}px`);
     detailScreen.style.setProperty('--icon-center-y', `${iconBounds.top + iconBounds.height * 0.5}px`);
     positionCandleAssets();
