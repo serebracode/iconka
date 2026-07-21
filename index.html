@@ -307,6 +307,7 @@
         body.candle-transition #middleHaze,
         body.candle-transition #flameBackGlow,
         body.candle-transition #foregroundVeil,
+        body.candle-transition #foregroundEdgeShade,
         body.candle-transition #shareBtn,
         body.candle-transition #candleBtn,
         body.candle-transition #infoBtn {
@@ -408,7 +409,8 @@
 
         #candleFlickerShade,
         #middleHaze,
-        #foregroundVeil {
+        #foregroundVeil,
+        #foregroundEdgeShade {
             position: absolute;
             inset: 0;
             opacity: 0;
@@ -516,6 +518,39 @@
 
         #detailScreen.scene-active #foregroundVeil {
             opacity: var(--foreground-veil-opacity, 1);
+        }
+
+        #foregroundEdgeShade {
+            z-index: 95;
+        }
+
+        #foregroundEdgeShade::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(
+                    to bottom,
+                    transparent 0,
+                    transparent var(--icon-top-shade-start, 0px),
+                    rgba(0, 0, 0, 0.55) var(--icon-top-shade-start, 0px),
+                    rgba(0, 0, 0, 0.26) var(--icon-top-shade-mid, 0px),
+                    transparent var(--icon-top-shade-end, 0px),
+                    transparent 100%
+                ),
+                linear-gradient(
+                    to bottom,
+                    transparent 0,
+                    transparent var(--candle-bottom-shade-start, 100%),
+                    rgba(0, 0, 0, 0.32) var(--candle-bottom-shade-end, 100%),
+                    rgba(0, 0, 0, 0.32) 100%
+                );
+            opacity: var(--flicker-shade-opacity, 0.98);
+            will-change: opacity;
+        }
+
+        #detailScreen.scene-active #foregroundEdgeShade {
+            opacity: 1;
         }
 
         .info-section {
@@ -684,6 +719,7 @@
     </div>
 
     <div id="foregroundVeil" class="foreground-veil" aria-hidden="true"></div>
+    <div id="foregroundEdgeShade" class="foreground-edge-shade" aria-hidden="true"></div>
 
     <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out;">
         <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
@@ -923,6 +959,11 @@ function resetDetailScreenUI() {
         '--flame-y',
         '--icon-center-x',
         '--icon-center-y',
+        '--icon-top-shade-start',
+        '--icon-top-shade-mid',
+        '--icon-top-shade-end',
+        '--candle-bottom-shade-start',
+        '--candle-bottom-shade-end',
         '--icon-light-opacity',
         '--middle-haze-opacity',
         '--back-glow-opacity',
@@ -1109,6 +1150,11 @@ function positionCandleAssets() {
 
     detailScreen.style.setProperty('--flame-x', `${flameX}px`);
     detailScreen.style.setProperty('--flame-y', `${flameY}px`);
+    detailScreen.style.setProperty(
+        '--candle-bottom-shade-start',
+        `${bodyBounds.top + bodyBounds.height * 0.8}px`
+    );
+    detailScreen.style.setProperty('--candle-bottom-shade-end', `${bodyBounds.bottom}px`);
 }
 
 function applyInfoProgress(value) {
@@ -1250,11 +1296,16 @@ function showCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
     const iconScale = iconBounds.width > 0
-        ? Math.max(1, window.innerWidth / iconBounds.width)
+        ? window.innerWidth * 0.9 / iconBounds.width
         : 1.10;
+    const scaledIconTop = iconBounds.top + iconBounds.height * 0.52 * (1 - iconScale);
+    const scaledIconHeight = iconBounds.height * iconScale;
     detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
     detailScreen.style.setProperty('--icon-center-x', `${iconBounds.left + iconBounds.width * 0.5}px`);
     detailScreen.style.setProperty('--icon-center-y', `${iconBounds.top + iconBounds.height * 0.5}px`);
+    detailScreen.style.setProperty('--icon-top-shade-start', `${scaledIconTop}px`);
+    detailScreen.style.setProperty('--icon-top-shade-mid', `${scaledIconTop + scaledIconHeight * 0.075}px`);
+    detailScreen.style.setProperty('--icon-top-shade-end', `${scaledIconTop + scaledIconHeight * 0.15}px`);
     positionCandleAssets();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
