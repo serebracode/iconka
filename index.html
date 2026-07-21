@@ -195,6 +195,7 @@
             position: absolute;
             inset: 0;
             z-index: 10;
+            display: none;
             transform: translateY(8px) scale(0.99);
             filter: blur(24px);
             background: rgba(0, 0, 0, 0.8);
@@ -203,10 +204,28 @@
             transition: opacity 800ms ease;
         }
 
+        #iconBackHalo {
+            position: absolute;
+            inset: -12%;
+            z-index: 15;
+            pointer-events: none;
+            background: radial-gradient(
+                circle at 50% 50%,
+                rgba(183, 120, 42, 0.5) 0%,
+                rgba(183, 120, 42, 0.28) 42%,
+                rgba(183, 120, 42, 0.1) 70%,
+                rgba(183, 120, 42, 0) 100%
+            );
+            opacity: 0;
+            transform-origin: 50% 50%;
+            transition: opacity 1200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+
         #iconLight {
             position: absolute;
             inset: 0;
             z-index: 30;
+            display: none;
             width: 100%;
             height: 100%;
             max-height: 70vh;
@@ -290,8 +309,12 @@
         }
 
         #detailContent.candle-active #iconImage {
-            transform: scale(1.04);
+            transform: scale(1.10);
             filter: brightness(var(--icon-exposure, 0.85)) contrast(1.08) saturate(0.78) sepia(0.08) blur(1px);
+        }
+
+        #detailContent.candle-active #iconBackHalo {
+            opacity: 1;
         }
 
         #detailContent.candle-active #iconShadow {
@@ -581,6 +604,7 @@
         <div class="icon-section">
             <div class="icon-wrapper">
                 <div id="iconShadow" class="icon-shadow" aria-hidden="true"></div>
+                <div id="iconBackHalo" class="icon-back-halo" aria-hidden="true"></div>
                 <img id="iconImage" class="icon-base" alt="Икона">
                 <img id="iconLight" class="icon-light" alt="" aria-hidden="true">
             </div>
