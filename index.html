@@ -19,7 +19,6 @@
 
         body {
             --candle-transition-duration: 3000ms;
-            --candle-icon-transition-duration: 4800ms;
             --candle-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
             background-color: #000000;
@@ -177,19 +176,64 @@
             width: var(--icon-width);
             display: flex;
             justify-content: center;
+            position: relative;
             transition-property: width;
         }
 
         #iconImage {
+            position: relative;
+            z-index: 20;
             width: 100%;
             height: auto;
             max-height: 70vh;
             object-fit: contain;
-            transform-origin: center center;
+            transform-origin: 50% 52%;
             transition-property: transform, filter;
         }
 
-        #detailContent.info-open #iconImage {
+        #iconShadow {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            transform: translateY(8px) scale(0.99);
+            filter: blur(24px);
+            background: rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 800ms ease;
+        }
+
+        #iconLight {
+            position: absolute;
+            inset: 0;
+            z-index: 30;
+            width: 100%;
+            height: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            transform: scale(1.04);
+            transform-origin: 50% 52%;
+            filter: brightness(1.28) contrast(1.04) saturate(0.9) sepia(0.15) blur(0.5px);
+            mix-blend-mode: screen;
+            opacity: 0;
+            pointer-events: none;
+            mask-image: radial-gradient(
+                ellipse 42% 36% at 50% 58%,
+                #000 0%,
+                rgba(0, 0, 0, 0.85) 42%,
+                transparent 100%
+            );
+            -webkit-mask-image: radial-gradient(
+                ellipse 42% 36% at 50% 58%,
+                #000 0%,
+                rgba(0, 0, 0, 0.85) 42%,
+                transparent 100%
+            );
+            transition: opacity 800ms ease;
+        }
+
+        #detailContent.info-open #iconImage,
+        #detailContent.info-open #iconLight {
             max-height: none;
         }
 
@@ -224,7 +268,10 @@
         body.candle-transition #globalLogo,
         body.candle-transition #candleLayer,
         body.candle-transition #candleFlameViewport,
-        body.candle-transition #candleHalo,
+        body.candle-transition #iconShade,
+        body.candle-transition #middleHaze,
+        body.candle-transition #flameBackGlow,
+        body.candle-transition #foregroundVeil,
         body.candle-transition #shareBtn,
         body.candle-transition #candleBtn,
         body.candle-transition #infoBtn {
@@ -239,13 +286,20 @@
         }
 
         #detailContent.candle-transition #iconImage {
-            transition-duration: var(--candle-icon-transition-duration);
-            transition-timing-function: var(--candle-transition-easing);
+            transition: transform 1200ms cubic-bezier(0.22, 0.61, 0.36, 1), filter 800ms ease;
         }
 
         #detailContent.candle-active #iconImage {
-            transform: translate3d(0, var(--candle-icon-shift-y, 0px), 0) scale(var(--candle-icon-scale, 1.25));
-            filter: blur(1px);
+            transform: scale(1.04);
+            filter: brightness(var(--icon-exposure, 0.85)) contrast(1.08) saturate(0.78) sepia(0.08) blur(1px);
+        }
+
+        #detailContent.candle-active #iconShadow {
+            opacity: 0.7;
+        }
+
+        #detailContent.candle-active #iconLight {
+            opacity: var(--icon-light-opacity, 0.11);
         }
 
         body.candle-transition #candleLayer {
@@ -257,7 +311,7 @@
         #candleLayer {
             position: absolute;
             inset: 0;
-            z-index: 20;
+            z-index: 70;
             pointer-events: none;
             opacity: 0;
             transition-property: opacity;
@@ -269,15 +323,15 @@
             top: 59.37vh;
             z-index: 1;
             width: auto;
-            height: 30.15vh;
-            max-height: 30.15vh;
+            height: 45vh;
+            max-height: 45vh;
             display: block;
             transform: translateX(-50%);
         }
 
         #candleFlameViewport {
             position: absolute;
-            z-index: 21;
+            z-index: 80;
             overflow: hidden;
             opacity: 0;
             pointer-events: none;
@@ -295,56 +349,108 @@
             max-width: none;
         }
 
-        #candleHalo {
-            position: fixed;
+        #iconShade,
+        #middleHaze,
+        #foregroundVeil {
+            position: absolute;
             inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 19;
             opacity: 0;
             pointer-events: none;
             transition-property: opacity;
         }
 
-        body.candle-active #candleHalo {
-            opacity: 1;
+        #iconShade {
+            z-index: 40;
+            background:
+                radial-gradient(
+                    ellipse 52% 62% at 50% 53%,
+                    transparent 0%,
+                    rgba(0, 0, 0, 0.08) 38%,
+                    rgba(0, 0, 0, 0.5) 72%,
+                    rgba(0, 0, 0, 0.94) 100%
+                ),
+                linear-gradient(
+                    to bottom,
+                    rgba(0, 0, 0, 0.28) 0%,
+                    transparent 30%,
+                    rgba(0, 0, 0, 0.42) 100%
+                );
         }
 
-        #haloCutout {
-            will-change: opacity;
+        #middleHaze {
+            z-index: 50;
+            background:
+                radial-gradient(
+                    ellipse 26% 34% at 50% 57%,
+                    rgba(255, 155, 70, 0.09),
+                    transparent 72%
+                ),
+                radial-gradient(
+                    ellipse 17% 22% at 47% 62%,
+                    rgba(255, 190, 105, 0.05),
+                    transparent 75%
+                );
+            mix-blend-mode: screen;
+            filter: blur(20px);
         }
 
-        #haloWiggle,
-        #haloFocus {
-            transform-box: fill-box;
-            transform-origin: 50% 100%;
-            will-change: transform;
+        #flameBackGlow {
+            position: absolute;
+            left: var(--flame-x, 50%);
+            top: var(--flame-y, 60%);
+            z-index: 60;
+            width: 22vw;
+            aspect-ratio: 1 / 1.25;
+            transform: translate(
+                calc(-50% + var(--glow-offset-x, 0px)),
+                calc(-50% + var(--glow-offset-y, 0px))
+            ) scale(var(--glow-scale, 1));
+            transform-origin: 50% 50%;
+            background: radial-gradient(
+                ellipse,
+                rgba(255, 185, 95, 0.16) 0%,
+                rgba(255, 125, 45, 0.07) 42%,
+                transparent 76%
+            );
+            filter: blur(18px);
+            mix-blend-mode: screen;
+            opacity: 0;
+            pointer-events: none;
+            will-change: transform, opacity;
+            transition-property: opacity;
         }
 
-        body.candle-active #haloFocus {
-            animation: candleHaloShapeMotion var(--halo-shape-duration, 10s) ease-in-out infinite;
-            animation-delay: var(--halo-shape-delay, 0s);
+        #foregroundVeil {
+            z-index: 90;
+            background:
+                radial-gradient(
+                    ellipse 70% 82% at 50% 52%,
+                    transparent 30%,
+                    rgba(0, 0, 0, 0.16) 62%,
+                    rgba(0, 0, 0, 0.62) 100%
+                ),
+                linear-gradient(
+                    105deg,
+                    rgba(0, 0, 0, 0.16),
+                    transparent 38%,
+                    rgba(0, 0, 0, 0.11)
+                );
         }
 
-        @keyframes candleHaloShapeMotion {
-            /* Морфинг только между вертикальными пропорциями 3:4 и 3:4.5. */
-            0%, 100% { transform: rotate(-0.25deg) scale(1.035, 1.035); } /* 3:4 */
-            12% { transform: rotate(-1deg) scale(0.9758, 1.0978); } /* 3:4.5 */
-            24% { transform: rotate(0.7deg) scale(1.035, 1.035); } /* 3:4 */
-            36% { transform: rotate(-0.9deg) scale(0.9758, 1.0978); } /* 3:4.5 */
-            48% { transform: rotate(1deg) scale(1.035, 1.035); } /* 3:4 */
-            60% { transform: rotate(-0.6deg) scale(0.9758, 1.0978); } /* 3:4.5 */
-            73% { transform: rotate(0.9deg) scale(1.035, 1.035); } /* 3:4 */
-            84% { transform: rotate(-1deg) scale(0.9758, 1.0978); } /* 3:4.5 */
-            93% { transform: rotate(0.5deg) scale(1.035, 1.035); } /* 3:4 */
+        #detailScreen.scene-active #iconShade {
+            opacity: var(--icon-shade-opacity, 0.99);
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            body.candle-active #haloCutout,
-            body.candle-active #haloWiggle,
-            body.candle-active #haloFocus {
-                animation: none;
-            }
+        #detailScreen.scene-active #middleHaze {
+            opacity: var(--middle-haze-opacity, 0.025);
+        }
+
+        #detailScreen.scene-active #flameBackGlow {
+            opacity: var(--back-glow-opacity, 0.12);
+        }
+
+        #detailScreen.scene-active #foregroundVeil {
+            opacity: var(--foreground-veil-opacity, 1);
         }
 
         .info-section {
@@ -467,14 +573,16 @@
 </div>
 
 <!-- ЭКРАН ИКОНЫ -->
-<div id="detailScreen" class="screen" style="position: absolute; overflow: hidden;">
-    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000;"></div>
+<div id="detailScreen" class="screen scene" style="position: absolute; overflow: hidden; isolation: isolate; background: #020201;">
+    <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
 
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
         <div class="icon-section">
             <div class="icon-wrapper">
-                <img id="iconImage" alt="Икона">
+                <div id="iconShadow" class="icon-shadow" aria-hidden="true"></div>
+                <img id="iconImage" class="icon-base" alt="Икона">
+                <img id="iconLight" class="icon-light" alt="" aria-hidden="true">
             </div>
             <div class="icon-title">
                 <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
@@ -491,34 +599,22 @@
         </div>
     </div>
     
-    <!-- ДИНАМИЧЕСКОЕ ЗАТЕМНЕНИЕ: световой вырез связывает верхний ореол с пламенем -->
-    <svg id="candleHalo" aria-hidden="true" preserveAspectRatio="none">
-        <defs>
-            <filter id="haloBlur" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="28"/>
-            </filter>
-            <mask id="haloMask" maskUnits="userSpaceOnUse" mask-type="luminance">
-                <rect id="haloMaskBase" fill="#FFFFFF"/>
-                <g id="haloCutout" fill="#000000" filter="url(#haloBlur)">
-                    <path id="haloCone"/>
-                    <g id="haloWiggle">
-                        <ellipse id="haloFocus"/>
-                    </g>
-                </g>
-            </mask>
-        </defs>
-        <rect id="haloShade" fill="#000000" mask="url(#haloMask)"/>
-    </svg>
+    <!-- РАЗДЕЛЁННЫЕ СЛОИ СВЕТА И ТЕМНОТЫ -->
+    <div id="iconShade" class="icon-shade" aria-hidden="true"></div>
+    <div id="middleHaze" class="middle-haze" aria-hidden="true"></div>
+    <div id="flameBackGlow" class="flame-back-glow" aria-hidden="true"></div>
 
     <!-- СЛОЙ СВЕЧИ -->
     <div id="candleLayer">
-        <img id="candleBody" src="./video/crdl.png" alt="Свеча">
+        <img id="candleBody" src="./video/candle-body.png" alt="Свеча">
     </div>
     <div id="candleFlameViewport" aria-hidden="true">
         <video id="candleFlame" muted playsinline loop preload="auto">
             <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
         </video>
     </div>
+
+    <div id="foregroundVeil" class="foreground-veil" aria-hidden="true"></div>
 
     <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out;">
         <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
@@ -700,6 +796,7 @@ function selectIcon(id) {
     
     // Заполняем данные
     document.getElementById('iconImage').src = selectedIcon.image;
+    document.getElementById('iconLight').src = selectedIcon.image;
     document.getElementById('iconTitleText').textContent = selectedIcon.title;
     document.getElementById('iconDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
     
@@ -741,12 +838,28 @@ function selectIcon(id) {
 }
 
 function resetDetailScreenUI() {
+    window.clearTimeout(candleTransitionTimer);
+    candleTransitionTimer = null;
+    stopCandleAtmosphereAnimation();
+    const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
     detailContent.classList.remove('info-open');
     detailContent.classList.remove('is-settling');
     detailContent.classList.remove('is-dragging');
     detailContent.classList.remove('candle-active');
     detailContent.classList.remove('candle-transition');
+    detailScreen.classList.remove('scene-active');
+    [
+        '--flame-x',
+        '--flame-y',
+        '--icon-light-opacity',
+        '--middle-haze-opacity',
+        '--back-glow-opacity',
+        '--glow-scale',
+        '--glow-offset-x',
+        '--glow-offset-y',
+        '--icon-shade-opacity'
+    ].forEach(property => detailScreen.style.removeProperty(property));
     document.body.classList.remove('candle-active', 'candle-transition');
     detailContent.style.removeProperty('--info-progress');
     detailContent.style.removeProperty('--icon-section-height');
@@ -759,8 +872,6 @@ function resetDetailScreenUI() {
     detailContent.style.removeProperty('--title-margin');
     detailContent.style.removeProperty('--info-opacity');
     detailContent.style.removeProperty('--info-offset');
-    detailContent.style.removeProperty('--candle-icon-scale');
-    detailContent.style.removeProperty('--candle-icon-shift-y');
     detailContent.style.removeProperty('overflow');
     detailContent.scrollTop = 0;
     
@@ -872,13 +983,12 @@ tg?.BackButton?.onClick(goBack);
 let candleVisible = false;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
+let candleTransitionTimer = null;
 let candleWakeLock = null;
 let candleWakeLockPending = false;
-let candleHaloAnimationFrame = null;
-let candleHaloAnimationStart = 0;
-const CANDLE_HALO_WIGGLE_FREQUENCY = 5;
-const CANDLE_HALO_WIGGLE_AMPLITUDE = 3;
-const CANDLE_ICON_TRANSITION_MS = 4800;
+let candleAtmosphereAnimationFrame = null;
+let candleAtmosphereAnimationStart = 0;
+const CANDLE_SCENE_TRANSITION_MS = 3000;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
 const CANDLE_FLAME_X = 540;
@@ -887,19 +997,14 @@ const CANDLE_FLAME_CROP_LEFT = 475;
 const CANDLE_FLAME_CROP_TOP = 1010;
 const CANDLE_FLAME_CROP_WIDTH = 135;
 const CANDLE_FLAME_CROP_HEIGHT = 150;
-// 1.2 × 1.4: огонь на 40% крупнее предыдущей версии.
 const CANDLE_FLAME_SCALE = 1.68;
 const CANDLE_FLAME_OFFSET_X = 5;
-const CANDLE_BODY_SCALE = 0.67;
-const CANDLE_BODY_HEIGHT_VIEWPORT = 0.45 * CANDLE_BODY_SCALE;
+const CANDLE_BODY_HEIGHT_VIEWPORT = 0.45;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
-const CANDLE_WICK_TIP_Y = 14 / 560;
-const CANDLE_ICON_CENTER_VIEWPORT_Y = 0.45;
-const CANDLE_ICON_OPTICAL_Y = 0.375;
-const CANDLE_HALO_SHIFT_VIEWPORT_Y = 0.1;
-const CANDLE_HALO_LOWER_OFFSET_VIEWPORT_Y = 0.15;
+const CANDLE_WICK_TIP_Y = 0;
 
 function positionCandleAssets() {
+    const detailScreen = document.getElementById('detailScreen');
     const body = document.getElementById('candleBody');
     const flameViewport = document.getElementById('candleFlameViewport');
     const flame = document.getElementById('candleFlame');
@@ -924,60 +1029,8 @@ function positionCandleAssets() {
     flame.style.left = `${-CANDLE_FLAME_CROP_LEFT * flameScale}px`;
     flame.style.top = `${-CANDLE_FLAME_CROP_TOP * flameScale}px`;
 
-    return { x: flameX, y: flameY };
-}
-
-function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, flameAnchor) {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    const focusX = iconBounds.left + iconBounds.width * 0.5;
-    let focusY = iconBounds.top + iconBounds.height * 0.5
-        + iconBounds.height * (CANDLE_ICON_OPTICAL_Y - 0.5) * candleScale
-        + iconShiftY
-        + height * CANDLE_HALO_SHIFT_VIEWPORT_Y;
-    const flameX = flameAnchor.x;
-    const flameY = flameAnchor.y;
-    const scaledIconWidth = iconBounds.width * candleScale;
-    // Базовая форма — вертикальный овал 3:4.
-    const radiusX = Math.min(scaledIconWidth * 0.42, width * 0.46, height * 0.1875);
-    const radiusY = radiusX * 4 / 3;
-    // Нижняя точка овала остаётся выше пламени и служит неподвижной
-    // точкой опоры для изменения пропорций и наклона.
-    focusY = Math.min(focusY, flameY - radiusY - height * 0.03);
-    // Сдвигаем весь ореол вместе с нижней точкой опоры на 15% вьюпорта.
-    focusY += height * CANDLE_HALO_LOWER_OFFSET_VIEWPORT_Y;
-    const haloAnchorY = focusY + radiusY;
-    const flameNeck = Math.max(12, width * 0.025);
-    const connectorTopY = haloAnchorY - radiusY * 0.12;
-    const connectorHalfWidth = Math.max(flameNeck * 2, radiusX * 0.22);
-    const connectorDistance = Math.max(1, flameY - connectorTopY);
-    const connectorControlY = flameY - connectorDistance * 0.34;
-
-    const halo = document.getElementById('candleHalo');
-    halo.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    document.getElementById('haloMaskBase').setAttribute('width', width);
-    document.getElementById('haloMaskBase').setAttribute('height', height);
-    document.getElementById('haloShade').setAttribute('width', width);
-    document.getElementById('haloShade').setAttribute('height', height);
-
-    document.getElementById('haloFocus').setAttribute('cx', focusX);
-    document.getElementById('haloFocus').setAttribute('cy', focusY);
-    document.getElementById('haloFocus').setAttribute('rx', radiusX);
-    document.getElementById('haloFocus').setAttribute('ry', radiusY);
-
-    document.getElementById('haloCone').setAttribute('d', [
-        `M ${flameX} ${flameY}`,
-        `C ${flameX - flameNeck * 1.3} ${connectorControlY}, ${focusX - connectorHalfWidth} ${connectorTopY}, ${focusX - connectorHalfWidth} ${connectorTopY}`,
-        `Q ${focusX} ${haloAnchorY}, ${focusX + connectorHalfWidth} ${connectorTopY}`,
-        `C ${focusX + connectorHalfWidth} ${connectorTopY}, ${flameX + flameNeck * 1.3} ${connectorControlY}, ${flameX} ${flameY} Z`
-    ].join(' '));
-
-    // Каждый вход начинается с другой фазы и немного другого темпа,
-    // поэтому смена пропорций и наклона не выглядит как повторяющийся цикл.
-    const morphDuration = 8 + Math.random() * 4;
-    halo.style.setProperty('--halo-shape-duration', `${morphDuration.toFixed(2)}s`);
-    halo.style.setProperty('--halo-shape-delay', `${(-Math.random() * morphDuration).toFixed(2)}s`);
+    detailScreen.style.setProperty('--flame-x', `${flameX}px`);
+    detailScreen.style.setProperty('--flame-y', `${flameY}px`);
 }
 
 function applyInfoProgress(value) {
@@ -1039,42 +1092,59 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-function stopCandleHaloAnimation() {
-    if (candleHaloAnimationFrame !== null) {
-        cancelAnimationFrame(candleHaloAnimationFrame);
-        candleHaloAnimationFrame = null;
-    }
-    document.getElementById('haloWiggle').style.removeProperty('transform');
-    document.getElementById('haloCutout').style.removeProperty('opacity');
+function clampUnit(value) {
+    return Math.max(0, Math.min(1, value));
 }
 
-function startCandleHaloAnimation() {
-    stopCandleHaloAnimation();
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+function candleFlickerSignal(time, speed) {
+    const phase = time * speed * Math.PI * 2;
+    const wave = Math.sin(phase) * 0.62
+        + Math.sin(phase * 2.17 + 1.1) * 0.25
+        + Math.sin(phase * 0.43 + 2.4) * 0.13;
+    return clampUnit(0.5 + wave * 0.5);
+}
 
-    const haloWiggle = document.getElementById('haloWiggle');
-    const haloCutout = document.getElementById('haloCutout');
-    candleHaloAnimationStart = performance.now();
+function applyCandleAtmosphereFrame(time) {
+    const detailScreen = document.getElementById('detailScreen');
+    const flickerSlow = candleFlickerSignal(time, 0.55);
+    const flickerFast = candleFlickerSignal(time, 5);
 
-    function animateHalo(now) {
+    detailScreen.style.setProperty('--icon-light-opacity', (0.09 + flickerSlow * 0.06).toFixed(4));
+    detailScreen.style.setProperty('--middle-haze-opacity', (0.018 + flickerSlow * 0.027).toFixed(4));
+    detailScreen.style.setProperty('--back-glow-opacity', (0.09 + flickerFast * 0.08).toFixed(4));
+    detailScreen.style.setProperty('--glow-scale', (0.98 + flickerSlow * 0.05).toFixed(4));
+    detailScreen.style.setProperty('--glow-offset-x', `${((flickerFast - 0.5) * 4).toFixed(2)}px`);
+    detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
+    detailScreen.style.setProperty('--icon-shade-opacity', (0.99 + (flickerSlow - 0.5) * 0.02).toFixed(4));
+}
+
+function stopCandleAtmosphereAnimation() {
+    if (candleAtmosphereAnimationFrame !== null) {
+        cancelAnimationFrame(candleAtmosphereAnimationFrame);
+        candleAtmosphereAnimationFrame = null;
+    }
+}
+
+function startCandleAtmosphereAnimation() {
+    stopCandleAtmosphereAnimation();
+    candleAtmosphereAnimationStart = performance.now();
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        applyCandleAtmosphereFrame(0);
+        return;
+    }
+
+    function animateAtmosphere(now) {
         if (!candleVisible) {
-            candleHaloAnimationFrame = null;
+            candleAtmosphereAnimationFrame = null;
             return;
         }
 
-        const time = (now - candleHaloAnimationStart) / 1000;
-        const phase = time * CANDLE_HALO_WIGGLE_FREQUENCY * Math.PI * 2;
-        // Две несинхронные волны дают плавное неповторяющееся колыхание.
-        const noise = Math.sin(phase) * Math.sin(phase * 2.3);
-        const wigglePercent = noise * CANDLE_HALO_WIGGLE_AMPLITUDE;
-        const scale = (100 + wigglePercent) / 100;
-
-        haloWiggle.style.transform = `scale(${scale.toFixed(4)})`;
-        haloCutout.style.opacity = (1 - Math.abs(wigglePercent) / 100).toFixed(4);
-        candleHaloAnimationFrame = requestAnimationFrame(animateHalo);
+        applyCandleAtmosphereFrame((now - candleAtmosphereAnimationStart) / 1000);
+        candleAtmosphereAnimationFrame = requestAnimationFrame(animateAtmosphere);
     }
 
-    candleHaloAnimationFrame = requestAnimationFrame(animateHalo);
+    candleAtmosphereAnimationFrame = requestAnimationFrame(animateAtmosphere);
 }
 
 function showCandle() {
@@ -1087,23 +1157,25 @@ function showCandle() {
     candleVisible = true;
     acquireCandleWakeLock();
 
+    const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
-    const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
-    const candleScale = iconBounds.width > 0 ? window.innerWidth / iconBounds.width : 1.25;
-    const currentIconCenterY = iconBounds.top + iconBounds.height * 0.5;
-    const iconShiftY = window.innerHeight * CANDLE_ICON_CENTER_VIEWPORT_Y - currentIconCenterY;
-    detailContent.style.setProperty('--candle-icon-scale', candleScale.toFixed(4));
-    detailContent.style.setProperty('--candle-icon-shift-y', `${iconShiftY.toFixed(2)}px`);
-    const flameAnchor = positionCandleAssets();
-    updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, flameAnchor);
-    startCandleHaloAnimation();
+    positionCandleAssets();
+    startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     candleFlame.play().catch(() => {});
     document.getElementById('globalLogo').classList.remove('list-fadein');
     document.body.classList.add('candle-transition', 'candle-active');
+    detailScreen.classList.add('scene-active');
     detailContent.classList.add('candle-transition', 'candle-active');
+    window.clearTimeout(candleTransitionTimer);
+    candleTransitionTimer = window.setTimeout(() => {
+        if (!candleVisible) return;
+        document.body.classList.remove('candle-transition');
+        detailContent.classList.remove('candle-transition');
+        candleTransitionTimer = null;
+    }, CANDLE_SCENE_TRANSITION_MS);
     document.getElementById('candleLayer').style.opacity = '1';
     document.getElementById('globalLogo').style.opacity = '0';
     document.getElementById('shareBtn').style.opacity = '0';
@@ -1117,13 +1189,18 @@ function showCandle() {
 function closeCandle() {
     if (!candleVisible) return;
     candleVisible = false;
-    stopCandleHaloAnimation();
+    stopCandleAtmosphereAnimation();
     releaseCandleWakeLock();
 
+    const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
+    window.clearTimeout(candleTransitionTimer);
+    document.body.classList.add('candle-transition');
+    detailContent.classList.add('candle-transition');
     document.body.classList.remove('candle-active');
+    detailScreen.classList.remove('scene-active');
     detailContent.classList.remove('candle-active');
     candleLayer.style.opacity = '0';
     candleFlame.pause();
@@ -1136,11 +1213,12 @@ function closeCandle() {
     document.getElementById('candleBtn').style.pointerEvents = 'auto';
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     
-    setTimeout(() => {
+    candleTransitionTimer = setTimeout(() => {
         if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
         detailContent.classList.remove('candle-transition');
         document.body.classList.remove('candle-transition');
-    }, CANDLE_ICON_TRANSITION_MS);
+        candleTransitionTimer = null;
+    }, CANDLE_SCENE_TRANSITION_MS);
 }
 
 function setInfoPanel(open, animate = true) {
