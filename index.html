@@ -188,6 +188,7 @@
             max-height: 70vh;
             object-fit: contain;
             transform-origin: 50% 52%;
+            filter: brightness(1) contrast(1) blur(0.3px);
             transition-property: transform, filter;
         }
 
@@ -327,11 +328,11 @@
 
         #detailContent.candle-active #iconImage {
             transform: scale(var(--candle-icon-scale, 1.10));
-            filter: brightness(0.76) contrast(1.15) blur(1px);
+            filter: brightness(0.90) contrast(1.25) blur(0.3px);
         }
 
         #detailContent.candle-active #iconOchreFilter {
-            opacity: 0.5;
+            opacity: 0.18;
             transform: scale(var(--candle-icon-scale, 1.10));
         }
 
@@ -429,16 +430,16 @@
             background:
                 radial-gradient(
                     ellipse 49.4% 58.9% at var(--flame-x, 50%) var(--flame-y, 60%),
-                    transparent 0%,
-                    rgba(0, 0, 0, 0.08) 38%,
-                    rgba(0, 0, 0, 0.5) 72%,
-                    rgba(0, 0, 0, 0.94) 100%
+                    rgba(0, 0, 0, 0.05) 0%,
+                    rgba(0, 0, 0, 0.1) 38%,
+                    rgba(0, 0, 0, 0.47) 67%,
+                    rgba(0, 0, 0, 0.87) 100%
                 ),
                 linear-gradient(
                     to bottom,
-                    rgba(0, 0, 0, 0.28) 0%,
+                    rgba(0, 0, 0, 0.18) 0%,
                     transparent 30%,
-                    rgba(0, 0, 0, 0.42) 100%
+                    rgba(0, 0, 0, 0.28) 100%
                 );
             opacity: var(--flicker-shade-opacity, 0.985);
             will-change: opacity;
@@ -1113,7 +1114,7 @@ const CANDLE_FLAME_CROP_LEFT = 475;
 const CANDLE_FLAME_CROP_TOP = 1010;
 const CANDLE_FLAME_CROP_WIDTH = 135;
 const CANDLE_FLAME_CROP_HEIGHT = 150;
-const CANDLE_FLAME_SCALE = 1.932;
+const CANDLE_FLAME_SCALE = 2.01894;
 const CANDLE_FLAME_OFFSET_X = 4;
 const CANDLE_SHADE_BASE_VALUE = 100;
 const CANDLE_SHADE_FREQUENCY = 2.5;
@@ -1122,7 +1123,7 @@ const CANDLE_FLAME_SAMPLE_X = 540;
 const CANDLE_FLAME_SAMPLE_Y = 1049;
 const CANDLE_FLAME_SAMPLE_ALPHA_LOW = 7;
 const CANDLE_FLAME_SAMPLE_ALPHA_HIGH = 232;
-const CANDLE_SHADE_OPACITY_RANGE = 0.024;
+const CANDLE_SHADE_OPACITY_RANGE = 0.0264;
 const CANDLE_BODY_HEIGHT_VIEWPORT = 0.4275;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
 const CANDLE_WICK_TIP_Y = 0;
