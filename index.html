@@ -1101,6 +1101,9 @@ let candleWakeLock = null;
 let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
 let candleAtmosphereAnimationStart = 0;
+let candleFlameVideoFrameHandle = null;
+let candleFlameSampleContext = null;
+let candleFlameSampleActive = false;
 const CANDLE_SCENE_TRANSITION_MS = 3000;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
@@ -1115,6 +1118,11 @@ const CANDLE_FLAME_OFFSET_X = 4;
 const CANDLE_SHADE_BASE_VALUE = 100;
 const CANDLE_SHADE_FREQUENCY = 2.5;
 const CANDLE_SHADE_AMPLITUDE = 1.5;
+const CANDLE_FLAME_SAMPLE_X = 540;
+const CANDLE_FLAME_SAMPLE_Y = 1049;
+const CANDLE_FLAME_SAMPLE_ALPHA_LOW = 7;
+const CANDLE_FLAME_SAMPLE_ALPHA_HIGH = 232;
+const CANDLE_SHADE_OPACITY_RANGE = 0.02;
 const CANDLE_BODY_HEIGHT_VIEWPORT = 0.4275;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
 const CANDLE_WICK_TIP_Y = 0;
@@ -1228,16 +1236,86 @@ function candleFlickerSignal(time, speed) {
     return clampUnit(0.5 + wave * 0.5);
 }
 
-function applyCandleAtmosphereFrame(time) {
-    const detailScreen = document.getElementById('detailScreen');
-    const flickerSlow = candleFlickerSignal(time, 0.55);
-    const flickerFast = candleFlickerSignal(time, 5);
+function applyFallbackShadeFlicker(time) {
     const shadeNoise = Math.sin(time * CANDLE_SHADE_FREQUENCY)
         * Math.sin(time * CANDLE_SHADE_FREQUENCY * 2.3);
     const shadeValue = CANDLE_SHADE_BASE_VALUE + shadeNoise * CANDLE_SHADE_AMPLITUDE;
     const shadeProgress = (shadeValue - (CANDLE_SHADE_BASE_VALUE - CANDLE_SHADE_AMPLITUDE))
         / (CANDLE_SHADE_AMPLITUDE * 2);
-    const shadeOpacityRange = CANDLE_SHADE_AMPLITUDE * (0.04 / 3);
+    document.getElementById('detailScreen').style.setProperty(
+        '--flicker-shade-opacity',
+        (1 - CANDLE_SHADE_OPACITY_RANGE + shadeProgress * CANDLE_SHADE_OPACITY_RANGE).toFixed(4)
+    );
+}
+
+function sampleFlameShadeSignal() {
+    const candleFlame = document.getElementById('candleFlame');
+    if (candleFlame.readyState < 2 || !candleFlame.videoWidth || !candleFlame.videoHeight) {
+        return false;
+    }
+
+    try {
+        if (!candleFlameSampleContext) {
+            const sampleCanvas = document.createElement('canvas');
+            sampleCanvas.width = 1;
+            sampleCanvas.height = 1;
+            candleFlameSampleContext = sampleCanvas.getContext('2d', { willReadFrequently: true });
+        }
+        if (!candleFlameSampleContext) return false;
+
+        const sampleX = CANDLE_FLAME_SAMPLE_X * candleFlame.videoWidth / CANDLE_VIDEO_WIDTH;
+        const sampleY = CANDLE_FLAME_SAMPLE_Y * candleFlame.videoHeight / CANDLE_VIDEO_HEIGHT;
+        candleFlameSampleContext.clearRect(0, 0, 1, 1);
+        candleFlameSampleContext.drawImage(candleFlame, sampleX, sampleY, 1, 1, 0, 0, 1, 1);
+        const [red, green, blue, alpha] = candleFlameSampleContext.getImageData(0, 0, 1, 1).data;
+        const sampleValue = alpha < 254 ? alpha : Math.max(red, green, blue);
+        const flameIntensity = clampUnit(
+            (sampleValue - CANDLE_FLAME_SAMPLE_ALPHA_LOW)
+            / (CANDLE_FLAME_SAMPLE_ALPHA_HIGH - CANDLE_FLAME_SAMPLE_ALPHA_LOW)
+        );
+        const shadeOpacity = 1 - flameIntensity * CANDLE_SHADE_OPACITY_RANGE;
+        document.getElementById('detailScreen').style.setProperty(
+            '--flicker-shade-opacity',
+            shadeOpacity.toFixed(4)
+        );
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+function stopFlameSynchronizedShade() {
+    const candleFlame = document.getElementById('candleFlame');
+    if (candleFlameVideoFrameHandle !== null
+        && typeof candleFlame.cancelVideoFrameCallback === 'function') {
+        candleFlame.cancelVideoFrameCallback(candleFlameVideoFrameHandle);
+    }
+    candleFlameVideoFrameHandle = null;
+    candleFlameSampleActive = false;
+}
+
+function startFlameSynchronizedShade() {
+    stopFlameSynchronizedShade();
+    const candleFlame = document.getElementById('candleFlame');
+    if (typeof candleFlame.requestVideoFrameCallback !== 'function') return;
+
+    function samplePresentedFrame() {
+        if (!candleVisible) {
+            candleFlameVideoFrameHandle = null;
+            return;
+        }
+        candleFlameSampleActive = sampleFlameShadeSignal();
+        candleFlameVideoFrameHandle = candleFlame.requestVideoFrameCallback(samplePresentedFrame);
+    }
+
+    candleFlameVideoFrameHandle = candleFlame.requestVideoFrameCallback(samplePresentedFrame);
+}
+
+function applyCandleAtmosphereFrame(time) {
+    const detailScreen = document.getElementById('detailScreen');
+    const flickerSlow = candleFlickerSignal(time, 0.55);
+    const flickerFast = candleFlickerSignal(time, 5);
+    const candleFlame = document.getElementById('candleFlame');
 
     detailScreen.style.setProperty('--icon-light-opacity', (0.09 + flickerSlow * 0.06).toFixed(4));
     detailScreen.style.setProperty('--middle-haze-opacity', (0.018 + flickerSlow * 0.027).toFixed(4));
@@ -1245,13 +1323,15 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-scale', (0.98 + flickerSlow * 0.05).toFixed(4));
     detailScreen.style.setProperty('--glow-offset-x', `${((flickerFast - 0.5) * 4).toFixed(2)}px`);
     detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
-    detailScreen.style.setProperty(
-        '--flicker-shade-opacity',
-        (1 - shadeOpacityRange + shadeProgress * shadeOpacityRange).toFixed(4)
-    );
+
+    if (typeof candleFlame.requestVideoFrameCallback !== 'function') {
+        candleFlameSampleActive = sampleFlameShadeSignal();
+    }
+    if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
 }
 
 function stopCandleAtmosphereAnimation() {
+    stopFlameSynchronizedShade();
     if (candleAtmosphereAnimationFrame !== null) {
         cancelAnimationFrame(candleAtmosphereAnimationFrame);
         candleAtmosphereAnimationFrame = null;
@@ -1310,6 +1390,7 @@ function showCandle() {
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     candleFlame.play().catch(() => {});
+    startFlameSynchronizedShade();
     document.getElementById('globalLogo').classList.remove('list-fadein');
     document.body.classList.add('candle-transition', 'candle-active');
     detailScreen.classList.add('scene-active');
