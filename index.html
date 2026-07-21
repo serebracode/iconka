@@ -313,11 +313,11 @@
         }
 
         body.candle-active #haloCutout {
-            animation: candleHaloFlicker 3.4s ease-in-out infinite;
+            animation: candleHaloFlicker 4.5s ease-in-out infinite;
         }
 
         body.candle-active #haloFocus {
-            animation: candleHaloShapeMotion var(--halo-shape-duration, 7s) ease-in-out infinite;
+            animation: candleHaloShapeMotion var(--halo-shape-duration, 10s) ease-in-out infinite;
             animation-delay: var(--halo-shape-delay, 0s);
         }
 
@@ -341,15 +341,15 @@
 
         @keyframes candleHaloShapeMotion {
             /* Все состояния на 10% меньше предыдущей версии. */
-            0%, 100% { transform: rotate(-0.5deg) scale(1.035, 1.035); } /* 3:4 */
-            12% { transform: rotate(-2deg) scale(0.9257, 1.1572); } /* 3:5 */
-            24% { transform: rotate(1.4deg) scale(0.8451, 1.2676); } /* 2:4 */
-            36% { transform: rotate(-1.8deg) scale(0.9257, 1.1572); } /* 3:5 */
-            48% { transform: rotate(2deg) scale(1.035, 1.035); } /* 3:4 */
-            60% { transform: rotate(-1.2deg) scale(0.8451, 1.2676); } /* 2:4 */
-            73% { transform: rotate(1.8deg) scale(0.9257, 1.1572); } /* 3:5 */
-            84% { transform: rotate(-2deg) scale(1.035, 1.035); } /* 3:4 */
-            93% { transform: rotate(1deg) scale(0.9257, 1.1572); } /* 3:5 */
+            0%, 100% { transform: rotate(-0.25deg) scale(1.035, 1.035); } /* 3:4 */
+            12% { transform: rotate(-1deg) scale(0.9257, 1.1572); } /* 3:5 */
+            24% { transform: rotate(0.7deg) scale(0.8451, 1.2676); } /* 2:4 */
+            36% { transform: rotate(-0.9deg) scale(0.9257, 1.1572); } /* 3:5 */
+            48% { transform: rotate(1deg) scale(1.035, 1.035); } /* 3:4 */
+            60% { transform: rotate(-0.6deg) scale(0.8451, 1.2676); } /* 2:4 */
+            73% { transform: rotate(0.9deg) scale(0.9257, 1.1572); } /* 3:5 */
+            84% { transform: rotate(-1deg) scale(1.035, 1.035); } /* 3:4 */
+            93% { transform: rotate(0.5deg) scale(0.9257, 1.1572); } /* 3:5 */
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -975,7 +975,7 @@ function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, flameAnch
 
     // Каждый вход начинается с другой фазы и немного другого темпа,
     // поэтому смена пропорций и наклона не выглядит как повторяющийся цикл.
-    const morphDuration = 5.5 + Math.random() * 3.5;
+    const morphDuration = 8 + Math.random() * 4;
     halo.style.setProperty('--halo-shape-duration', `${morphDuration.toFixed(2)}s`);
     halo.style.setProperty('--halo-shape-delay', `${(-Math.random() * morphDuration).toFixed(2)}s`);
 }
