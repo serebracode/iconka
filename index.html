@@ -288,7 +288,7 @@
         body.candle-transition #globalLogo,
         body.candle-transition #candleLayer,
         body.candle-transition #candleFlameViewport,
-        body.candle-transition #iconShade,
+        body.candle-transition #candleFlickerShade,
         body.candle-transition #middleHaze,
         body.candle-transition #flameBackGlow,
         body.candle-transition #foregroundVeil,
@@ -311,7 +311,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: scale(1.10);
-            filter: brightness(0.82) contrast(1.12) blur(1px);
+            filter: brightness(0.76) contrast(1.18) blur(1px);
         }
 
         #detailScreen.scene-active #iconBackHalo {
@@ -373,7 +373,7 @@
             max-width: none;
         }
 
-        #iconShade,
+        #candleFlickerShade,
         #middleHaze,
         #foregroundVeil {
             position: absolute;
@@ -383,8 +383,14 @@
             transition-property: opacity;
         }
 
-        #iconShade {
+        #candleFlickerShade {
             z-index: 40;
+        }
+
+        #candleFlickerShade::before {
+            content: '';
+            position: absolute;
+            inset: 0;
             background:
                 radial-gradient(
                     ellipse 52% 62% at 50% 53%,
@@ -399,6 +405,8 @@
                     transparent 30%,
                     rgba(0, 0, 0, 0.42) 100%
                 );
+            opacity: var(--flicker-shade-opacity, 0.985);
+            will-change: opacity;
         }
 
         #middleHaze {
@@ -461,8 +469,8 @@
                 );
         }
 
-        #detailScreen.scene-active #iconShade {
-            opacity: var(--icon-shade-opacity, 0.99);
+        #detailScreen.scene-active #candleFlickerShade {
+            opacity: 1;
         }
 
         #detailScreen.scene-active #middleHaze {
@@ -626,7 +634,7 @@
     <div id="iconBackHalo" class="icon-back-halo" aria-hidden="true"></div>
     
     <!-- РАЗДЕЛЁННЫЕ СЛОИ СВЕТА И ТЕМНОТЫ -->
-    <div id="iconShade" class="icon-shade" aria-hidden="true"></div>
+    <div id="candleFlickerShade" class="candle-flicker-shade" aria-hidden="true"></div>
     <div id="middleHaze" class="middle-haze" aria-hidden="true"></div>
     <div id="flameBackGlow" class="flame-back-glow" aria-hidden="true"></div>
 
@@ -886,7 +894,7 @@ function resetDetailScreenUI() {
         '--glow-scale',
         '--glow-offset-x',
         '--glow-offset-y',
-        '--icon-shade-opacity'
+        '--flicker-shade-opacity'
     ].forEach(property => detailScreen.style.removeProperty(property));
     document.body.classList.remove('candle-active', 'candle-transition');
     detailContent.style.removeProperty('--info-progress');
@@ -1026,7 +1034,10 @@ const CANDLE_FLAME_CROP_TOP = 1010;
 const CANDLE_FLAME_CROP_WIDTH = 135;
 const CANDLE_FLAME_CROP_HEIGHT = 150;
 const CANDLE_FLAME_SCALE = 1.68;
-const CANDLE_FLAME_OFFSET_X = 5;
+const CANDLE_FLAME_OFFSET_X = 4;
+const CANDLE_SHADE_BASE_VALUE = 100;
+const CANDLE_SHADE_FREQUENCY = 5;
+const CANDLE_SHADE_AMPLITUDE = 3;
 const CANDLE_BODY_HEIGHT_VIEWPORT = 0.45;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
 const CANDLE_WICK_TIP_Y = 0;
@@ -1044,7 +1055,7 @@ function positionCandleAssets() {
     const flameWidth = CANDLE_VIDEO_WIDTH * flameScale;
     const flameHeight = CANDLE_VIDEO_HEIGHT * flameScale;
     const wickTipY = bodyBounds.top + bodyBounds.height * CANDLE_WICK_TIP_Y;
-    const wickOverlap = 10;
+    const wickOverlap = 11;
     const flameX = window.innerWidth * 0.5 + CANDLE_FLAME_OFFSET_X;
     const flameY = wickTipY + wickOverlap;
 
@@ -1136,6 +1147,11 @@ function applyCandleAtmosphereFrame(time) {
     const detailScreen = document.getElementById('detailScreen');
     const flickerSlow = candleFlickerSignal(time, 0.55);
     const flickerFast = candleFlickerSignal(time, 5);
+    const shadeNoise = Math.sin(time * CANDLE_SHADE_FREQUENCY)
+        * Math.sin(time * CANDLE_SHADE_FREQUENCY * 2.3);
+    const shadeValue = CANDLE_SHADE_BASE_VALUE + shadeNoise * CANDLE_SHADE_AMPLITUDE;
+    const shadeProgress = (shadeValue - (CANDLE_SHADE_BASE_VALUE - CANDLE_SHADE_AMPLITUDE))
+        / (CANDLE_SHADE_AMPLITUDE * 2);
 
     detailScreen.style.setProperty('--icon-light-opacity', (0.09 + flickerSlow * 0.06).toFixed(4));
     detailScreen.style.setProperty('--middle-haze-opacity', (0.018 + flickerSlow * 0.027).toFixed(4));
@@ -1143,7 +1159,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-scale', (0.98 + flickerSlow * 0.05).toFixed(4));
     detailScreen.style.setProperty('--glow-offset-x', `${((flickerFast - 0.5) * 4).toFixed(2)}px`);
     detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
-    detailScreen.style.setProperty('--icon-shade-opacity', (0.99 + (flickerSlow - 0.5) * 0.02).toFixed(4));
+    detailScreen.style.setProperty('--flicker-shade-opacity', (0.97 + shadeProgress * 0.03).toFixed(4));
 }
 
 function stopCandleAtmosphereAnimation() {
