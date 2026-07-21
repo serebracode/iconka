@@ -323,19 +323,19 @@
 
         @keyframes candleHaloFlicker {
             0%, 100% {
-                opacity: 0.96;
-            }
-            22% {
-                opacity: 0.78;
-            }
-            47% {
                 opacity: 1;
             }
+            22% {
+                opacity: 0.94;
+            }
+            47% {
+                opacity: 0.99;
+            }
             71% {
-                opacity: 0.83;
+                opacity: 0.9;
             }
             87% {
-                opacity: 0.975;
+                opacity: 0.97;
             }
         }
 
@@ -891,7 +891,8 @@ const CANDLE_FLAME_CROP_LEFT = 475;
 const CANDLE_FLAME_CROP_TOP = 1010;
 const CANDLE_FLAME_CROP_WIDTH = 135;
 const CANDLE_FLAME_CROP_HEIGHT = 150;
-const CANDLE_FLAME_SCALE = 1.4;
+// 1.2 × 1.4: огонь на 40% крупнее предыдущей версии.
+const CANDLE_FLAME_SCALE = 1.68;
 const CANDLE_BODY_SCALE = 0.67;
 const CANDLE_BODY_HEIGHT_VIEWPORT = 0.45 * CANDLE_BODY_SCALE;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
