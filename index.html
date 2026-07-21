@@ -326,7 +326,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: scale(var(--candle-icon-scale, 1.10));
-            filter: brightness(0.76) contrast(1.30) blur(1px);
+            filter: brightness(0.76) contrast(1.15) blur(1px);
         }
 
         #detailContent.candle-active #iconOchreFilter {
@@ -367,8 +367,8 @@
             left: 50%;
             top: 59.37vh;
             width: auto;
-            height: 45vh;
-            max-height: 45vh;
+            height: 42.75vh;
+            max-height: 42.75vh;
             display: block;
             transform: translateX(-50%);
         }
@@ -382,8 +382,8 @@
             pointer-events: none;
             filter: brightness(0);
             opacity: 0.2;
-            mask-image: linear-gradient(to bottom, transparent 35%, rgba(0, 0, 0, 0.35) 65%, #000 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 35%, rgba(0, 0, 0, 0.35) 65%, #000 100%);
+            mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.35) 55%, #000 80%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.35) 55%, #000 80%, #000 100%);
         }
 
         #candleFlameViewport {
@@ -1069,12 +1069,12 @@ const CANDLE_FLAME_CROP_LEFT = 475;
 const CANDLE_FLAME_CROP_TOP = 1010;
 const CANDLE_FLAME_CROP_WIDTH = 135;
 const CANDLE_FLAME_CROP_HEIGHT = 150;
-const CANDLE_FLAME_SCALE = 1.68;
+const CANDLE_FLAME_SCALE = 1.932;
 const CANDLE_FLAME_OFFSET_X = 4;
 const CANDLE_SHADE_BASE_VALUE = 100;
-const CANDLE_SHADE_FREQUENCY = 5;
-const CANDLE_SHADE_AMPLITUDE = 3.3;
-const CANDLE_BODY_HEIGHT_VIEWPORT = 0.45;
+const CANDLE_SHADE_FREQUENCY = 2.5;
+const CANDLE_SHADE_AMPLITUDE = 1.5;
+const CANDLE_BODY_HEIGHT_VIEWPORT = 0.4275;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
 const CANDLE_WICK_TIP_Y = 0;
 
