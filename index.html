@@ -206,11 +206,11 @@
 
         #iconBackHalo {
             position: absolute;
-            inset: -12%;
+            inset: 0;
             z-index: 15;
             pointer-events: none;
             background: radial-gradient(
-                circle at 50% 50%,
+                circle 58vw at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
                 rgba(183, 120, 42, 0.5) 0%,
                 rgba(183, 120, 42, 0.28) 42%,
                 rgba(183, 120, 42, 0.1) 70%,
@@ -310,10 +310,10 @@
 
         #detailContent.candle-active #iconImage {
             transform: scale(1.10);
-            filter: brightness(var(--icon-exposure, 0.85)) contrast(1.08) saturate(0.78) sepia(0.08) blur(1px);
+            filter: blur(1px);
         }
 
-        #detailContent.candle-active #iconBackHalo {
+        #detailScreen.scene-active #iconBackHalo {
             opacity: 1;
         }
 
@@ -604,7 +604,6 @@
         <div class="icon-section">
             <div class="icon-wrapper">
                 <div id="iconShadow" class="icon-shadow" aria-hidden="true"></div>
-                <div id="iconBackHalo" class="icon-back-halo" aria-hidden="true"></div>
                 <img id="iconImage" class="icon-base" alt="Икона">
                 <img id="iconLight" class="icon-light" alt="" aria-hidden="true">
             </div>
@@ -622,6 +621,8 @@
             <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6;"></div>
         </div>
     </div>
+
+    <div id="iconBackHalo" class="icon-back-halo" aria-hidden="true"></div>
     
     <!-- РАЗДЕЛЁННЫЕ СЛОИ СВЕТА И ТЕМНОТЫ -->
     <div id="iconShade" class="icon-shade" aria-hidden="true"></div>
@@ -876,6 +877,8 @@ function resetDetailScreenUI() {
     [
         '--flame-x',
         '--flame-y',
+        '--icon-center-x',
+        '--icon-center-y',
         '--icon-light-opacity',
         '--middle-haze-opacity',
         '--back-glow-opacity',
@@ -1185,6 +1188,9 @@ function showCandle() {
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
+    const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
+    detailScreen.style.setProperty('--icon-center-x', `${iconBounds.left + iconBounds.width * 0.5}px`);
+    detailScreen.style.setProperty('--icon-center-y', `${iconBounds.top + iconBounds.height * 0.5}px`);
     positionCandleAssets();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
