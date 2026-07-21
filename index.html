@@ -188,7 +188,7 @@
             max-height: 70vh;
             object-fit: contain;
             transform-origin: 50% 52%;
-            filter: brightness(1) contrast(1);
+            filter: brightness(1) contrast(1) blur(0px);
             transition-property: transform, filter;
         }
 
@@ -328,7 +328,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: scale(var(--candle-icon-scale, 1.10));
-            filter: brightness(0.90) contrast(1.25);
+            filter: brightness(0.90) contrast(1.25) blur(0.1px);
         }
 
         #detailContent.candle-active #iconOchreFilter {
@@ -402,7 +402,8 @@
             opacity: 1;
         }
 
-        #candleFlame {
+        #candleFlame,
+        #candleFlameDuplicate {
             position: absolute;
             display: block;
             max-width: none;
@@ -717,6 +718,9 @@
         <video id="candleFlame" muted playsinline loop preload="auto">
             <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
         </video>
+        <video id="candleFlameDuplicate" muted playsinline loop preload="auto" aria-hidden="true">
+            <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
+        </video>
     </div>
 
     <div id="foregroundVeil" class="foreground-veil" aria-hidden="true"></div>
@@ -991,8 +995,11 @@ function resetDetailScreenUI() {
     
     document.getElementById('candleLayer').style.opacity = '0';
     const candleFlame = document.getElementById('candleFlame');
+    const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     candleFlame.pause();
+    candleFlameDuplicate.pause();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
+    if (candleFlameDuplicate.readyState >= 1) candleFlameDuplicate.currentTime = 0;
     document.getElementById('shareBtn').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('infoBtn').style.opacity = '1';
@@ -1134,6 +1141,7 @@ function positionCandleAssets() {
     const bodyShade = document.getElementById('candleBodyShade');
     const flameViewport = document.getElementById('candleFlameViewport');
     const flame = document.getElementById('candleFlame');
+    const flameDuplicate = document.getElementById('candleFlameDuplicate');
     const bodyHeight = window.innerHeight * CANDLE_BODY_HEIGHT_VIEWPORT;
     body.style.height = `${bodyHeight}px`;
     body.style.top = `${window.innerHeight * CANDLE_WICK_VIEWPORT_Y - bodyHeight * CANDLE_WICK_TIP_Y}px`;
@@ -1152,10 +1160,12 @@ function positionCandleAssets() {
     flameViewport.style.height = `${CANDLE_FLAME_CROP_HEIGHT * flameScale}px`;
     flameViewport.style.left = `${flameX - (CANDLE_FLAME_X - CANDLE_FLAME_CROP_LEFT) * flameScale}px`;
     flameViewport.style.top = `${flameY - (CANDLE_FLAME_BASE_Y - CANDLE_FLAME_CROP_TOP) * flameScale}px`;
-    flame.style.width = `${flameWidth}px`;
-    flame.style.height = `${flameHeight}px`;
-    flame.style.left = `${-CANDLE_FLAME_CROP_LEFT * flameScale}px`;
-    flame.style.top = `${-CANDLE_FLAME_CROP_TOP * flameScale}px`;
+    [flame, flameDuplicate].forEach(flameLayer => {
+        flameLayer.style.width = `${flameWidth}px`;
+        flameLayer.style.height = `${flameHeight}px`;
+        flameLayer.style.left = `${-CANDLE_FLAME_CROP_LEFT * flameScale}px`;
+        flameLayer.style.top = `${-CANDLE_FLAME_CROP_TOP * flameScale}px`;
+    });
 
     detailScreen.style.setProperty('--flame-x', `${flameX}px`);
     detailScreen.style.setProperty('--flame-y', `${flameY}px`);
@@ -1375,6 +1385,7 @@ function showCandle() {
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
+    const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
     const iconScale = iconBounds.width > 0
         ? window.innerWidth * 0.9 / iconBounds.width
@@ -1390,7 +1401,9 @@ function showCandle() {
     positionCandleAssets();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
+    if (candleFlameDuplicate.readyState >= 1) candleFlameDuplicate.currentTime = 0;
     candleFlame.play().catch(() => {});
+    candleFlameDuplicate.play().catch(() => {});
     startFlameSynchronizedShade();
     document.getElementById('globalLogo').classList.remove('list-fadein');
     document.body.classList.add('candle-transition', 'candle-active');
@@ -1423,6 +1436,7 @@ function closeCandle() {
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
+    const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     window.clearTimeout(candleTransitionTimer);
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
@@ -1431,6 +1445,7 @@ function closeCandle() {
     detailContent.classList.remove('candle-active');
     candleLayer.style.opacity = '0';
     candleFlame.pause();
+    candleFlameDuplicate.pause();
     
     document.getElementById('globalLogo').style.opacity = '1';
     document.getElementById('shareBtn').style.opacity = '1';
@@ -1442,6 +1457,7 @@ function closeCandle() {
     
     candleTransitionTimer = setTimeout(() => {
         if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
+        if (candleFlameDuplicate.readyState >= 1) candleFlameDuplicate.currentTime = 0;
         detailContent.classList.remove('candle-transition');
         document.body.classList.remove('candle-transition');
         candleTransitionTimer = null;
