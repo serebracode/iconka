@@ -253,6 +253,32 @@
             transition-timing-function: var(--candle-transition-easing) !important;
         }
 
+        #candleLayer {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            transition-property: opacity;
+        }
+
+        #candleBody {
+            position: absolute;
+            left: 50%;
+            bottom: -4vh;
+            width: auto;
+            height: 45vh;
+            max-height: 45vh;
+            display: block;
+            transform: translateX(-50%);
+        }
+
+        #candleFlame {
+            position: absolute;
+            display: block;
+            max-width: none;
+        }
+
         #candleHalo {
             position: fixed;
             inset: 0;
@@ -490,8 +516,11 @@
     </svg>
 
     <!-- СЛОЙ СВЕЧИ -->
-    <div id="candleLayer" style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; pointer-events: none; opacity: 0; transition: opacity 1.5s ease-in-out;">
-        <img src="./video/3.png" alt="Свеча" style="width: 100%; height: auto; object-fit: contain; display: block;">
+    <div id="candleLayer">
+        <img id="candleBody" src="./video/crdl.png" alt="Свеча">
+        <video id="candleFlame" muted playsinline loop preload="auto" aria-label="Огонь свечи">
+            <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
+        </video>
     </div>
 
     <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out;">
@@ -735,11 +764,13 @@ function resetDetailScreenUI() {
     detailContent.style.removeProperty('--info-offset');
     detailContent.style.removeProperty('--candle-icon-scale');
     detailContent.style.removeProperty('--candle-icon-shift-y');
-    document.getElementById('candleLayer').style.removeProperty('transform');
     detailContent.style.removeProperty('overflow');
     detailContent.scrollTop = 0;
     
     document.getElementById('candleLayer').style.opacity = '0';
+    const candleFlame = document.getElementById('candleFlame');
+    candleFlame.pause();
+    if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     document.getElementById('shareBtn').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('infoBtn').style.opacity = '1';
@@ -846,26 +877,41 @@ let infoPanelVisible = false;
 let infoSettleTimer = null;
 const CANDLE_ICON_TRANSITION_MS = 4800;
 const CANDLE_FLAME_X = 0.5;
-const CANDLE_FLAME_Y = 0.55;
-const CANDLE_FLAME_TOP_Y = 0.485;
+const CANDLE_FLAME_BASE_Y = 1155 / 1920;
+const CANDLE_VIDEO_ASPECT_RATIO = 1920 / 1080;
+const CANDLE_WICK_TIP_Y = 14 / 560;
 const CANDLE_ICON_CENTER_VIEWPORT_Y = 0.45;
 const CANDLE_ICON_OPTICAL_Y = 0.375;
 const CANDLE_HALO_SHIFT_VIEWPORT_Y = 0.1;
-const CANDLE_FLAME_TOP_VIEWPORT_Y = 0.525;
 
-function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShiftY) {
+function positionCandleAssets() {
+    const body = document.getElementById('candleBody');
+    const flame = document.getElementById('candleFlame');
+    const bodyBounds = body.getBoundingClientRect();
+    const flameWidth = window.innerWidth;
+    const flameHeight = flameWidth * CANDLE_VIDEO_ASPECT_RATIO;
+    const wickTipY = bodyBounds.top + bodyBounds.height * CANDLE_WICK_TIP_Y;
+    const wickOverlap = Math.max(10, bodyBounds.height * 0.025);
+
+    flame.style.width = `${flameWidth}px`;
+    flame.style.height = `${flameHeight}px`;
+    flame.style.left = `${window.innerWidth * 0.5 - flameWidth * CANDLE_FLAME_X}px`;
+    flame.style.top = `${wickTipY + wickOverlap - flameHeight * CANDLE_FLAME_BASE_Y}px`;
+
+    return flame.getBoundingClientRect();
+}
+
+function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, flameBounds) {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const candleImage = document.querySelector('#candleLayer img');
-    const candleBounds = candleImage.getBoundingClientRect();
 
     const focusX = iconBounds.left + iconBounds.width * 0.5;
     let focusY = iconBounds.top + iconBounds.height * 0.5
         + iconBounds.height * (CANDLE_ICON_OPTICAL_Y - 0.5) * candleScale
         + iconShiftY
         + height * CANDLE_HALO_SHIFT_VIEWPORT_Y;
-    const flameX = candleBounds.left + candleBounds.width * CANDLE_FLAME_X;
-    const flameY = candleBounds.top + candleBounds.height * CANDLE_FLAME_Y + candleShiftY;
+    const flameX = flameBounds.left + flameBounds.width * CANDLE_FLAME_X;
+    const flameY = flameBounds.top + flameBounds.height * CANDLE_FLAME_BASE_Y;
     focusY = Math.min(focusY, flameY - height * 0.06);
     const scaledIconWidth = iconBounds.width * candleScale;
     // Вертикальный овал 4:3 сохраняет пропорции независимо от формата иконы.
@@ -938,18 +984,16 @@ function showCandle() {
     const detailContent = document.getElementById('detailContent');
     const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
     const candleLayer = document.getElementById('candleLayer');
-    const candleBounds = document.querySelector('#candleLayer img').getBoundingClientRect();
+    const candleFlame = document.getElementById('candleFlame');
     const candleScale = iconBounds.width > 0 ? window.innerWidth / iconBounds.width : 1.25;
     const currentIconCenterY = iconBounds.top + iconBounds.height * 0.5;
-    const currentFlameTopY = candleBounds.top + candleBounds.height * CANDLE_FLAME_TOP_Y;
     const iconShiftY = window.innerHeight * CANDLE_ICON_CENTER_VIEWPORT_Y - currentIconCenterY;
-    const candleShiftY = window.innerHeight * CANDLE_FLAME_TOP_VIEWPORT_Y - currentFlameTopY;
     detailContent.style.setProperty('--candle-icon-scale', candleScale.toFixed(4));
     detailContent.style.setProperty('--candle-icon-shift-y', `${iconShiftY.toFixed(2)}px`);
-    // Свеча позиционируется до появления: она проявляется уже в конечной точке,
-    // а не въезжает в неё из исходного положения.
-    candleLayer.style.transform = `translate3d(0, ${candleShiftY.toFixed(2)}px, 0)`;
-    updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, candleShiftY);
+    const flameBounds = positionCandleAssets();
+    updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, flameBounds);
+    if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
+    candleFlame.play().catch(() => {});
     document.getElementById('globalLogo').classList.remove('list-fadein');
     document.body.classList.add('candle-transition', 'candle-active');
     detailContent.classList.add('candle-transition', 'candle-active');
@@ -968,9 +1012,12 @@ function closeCandle() {
     candleVisible = false;
 
     const detailContent = document.getElementById('detailContent');
+    const candleLayer = document.getElementById('candleLayer');
+    const candleFlame = document.getElementById('candleFlame');
     document.body.classList.remove('candle-active');
     detailContent.classList.remove('candle-active');
-    document.getElementById('candleLayer').style.opacity = '0';
+    candleLayer.style.opacity = '0';
+    candleFlame.pause();
     
     document.getElementById('globalLogo').style.opacity = '1';
     document.getElementById('shareBtn').style.opacity = '1';
@@ -981,7 +1028,7 @@ function closeCandle() {
     document.getElementById('infoBtn').style.pointerEvents = 'auto';
     
     setTimeout(() => {
-        candleLayer.style.removeProperty('transform');
+        if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
         detailContent.classList.remove('candle-transition');
         document.body.classList.remove('candle-transition');
     }, CANDLE_ICON_TRANSITION_MS);
