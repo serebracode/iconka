@@ -307,6 +307,7 @@
         body.candle-transition #middleHaze,
         body.candle-transition #flameBackGlow,
         body.candle-transition #foregroundVeil,
+        body.candle-transition #foregroundEdgeShade,
         body.candle-transition #shareBtn,
         body.candle-transition #candleBtn,
         body.candle-transition #infoBtn {
@@ -326,7 +327,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: scale(var(--candle-icon-scale, 1.10));
-            filter: brightness(0.76) contrast(1.30) blur(1px);
+            filter: brightness(0.76) contrast(1.15) blur(1px);
         }
 
         #detailContent.candle-active #iconOchreFilter {
@@ -367,8 +368,8 @@
             left: 50%;
             top: 59.37vh;
             width: auto;
-            height: 45vh;
-            max-height: 45vh;
+            height: 42.75vh;
+            max-height: 42.75vh;
             display: block;
             transform: translateX(-50%);
         }
@@ -381,9 +382,9 @@
             z-index: 2;
             pointer-events: none;
             filter: brightness(0);
-            opacity: 0.2;
-            mask-image: linear-gradient(to bottom, transparent 35%, rgba(0, 0, 0, 0.35) 65%, #000 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 35%, rgba(0, 0, 0, 0.35) 65%, #000 100%);
+            opacity: 0.5;
+            mask-image: linear-gradient(to bottom, transparent 50%, #000 80%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 50%, #000 80%, #000 100%);
         }
 
         #candleFlameViewport {
@@ -408,7 +409,8 @@
 
         #candleFlickerShade,
         #middleHaze,
-        #foregroundVeil {
+        #foregroundVeil,
+        #foregroundEdgeShade {
             position: absolute;
             inset: 0;
             opacity: 0;
@@ -516,6 +518,39 @@
 
         #detailScreen.scene-active #foregroundVeil {
             opacity: var(--foreground-veil-opacity, 1);
+        }
+
+        #foregroundEdgeShade {
+            z-index: 95;
+        }
+
+        #foregroundEdgeShade::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(
+                    to bottom,
+                    transparent 0,
+                    transparent var(--icon-top-shade-start, 0px),
+                    rgba(0, 0, 0, 0.55) var(--icon-top-shade-start, 0px),
+                    rgba(0, 0, 0, 0.26) var(--icon-top-shade-mid, 0px),
+                    transparent var(--icon-top-shade-end, 0px),
+                    transparent 100%
+                ),
+                linear-gradient(
+                    to bottom,
+                    transparent 0,
+                    transparent var(--candle-bottom-shade-start, 100%),
+                    rgba(0, 0, 0, 0.32) var(--candle-bottom-shade-end, 100%),
+                    rgba(0, 0, 0, 0.32) 100%
+                );
+            opacity: var(--flicker-shade-opacity, 0.98);
+            will-change: opacity;
+        }
+
+        #detailScreen.scene-active #foregroundEdgeShade {
+            opacity: 1;
         }
 
         .info-section {
@@ -684,6 +719,7 @@
     </div>
 
     <div id="foregroundVeil" class="foreground-veil" aria-hidden="true"></div>
+    <div id="foregroundEdgeShade" class="foreground-edge-shade" aria-hidden="true"></div>
 
     <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out;">
         <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
@@ -923,6 +959,11 @@ function resetDetailScreenUI() {
         '--flame-y',
         '--icon-center-x',
         '--icon-center-y',
+        '--icon-top-shade-start',
+        '--icon-top-shade-mid',
+        '--icon-top-shade-end',
+        '--candle-bottom-shade-start',
+        '--candle-bottom-shade-end',
         '--icon-light-opacity',
         '--middle-haze-opacity',
         '--back-glow-opacity',
@@ -1060,6 +1101,9 @@ let candleWakeLock = null;
 let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
 let candleAtmosphereAnimationStart = 0;
+let candleFlameVideoFrameHandle = null;
+let candleFlameSampleContext = null;
+let candleFlameSampleActive = false;
 const CANDLE_SCENE_TRANSITION_MS = 3000;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
@@ -1069,12 +1113,17 @@ const CANDLE_FLAME_CROP_LEFT = 475;
 const CANDLE_FLAME_CROP_TOP = 1010;
 const CANDLE_FLAME_CROP_WIDTH = 135;
 const CANDLE_FLAME_CROP_HEIGHT = 150;
-const CANDLE_FLAME_SCALE = 1.68;
+const CANDLE_FLAME_SCALE = 1.932;
 const CANDLE_FLAME_OFFSET_X = 4;
 const CANDLE_SHADE_BASE_VALUE = 100;
-const CANDLE_SHADE_FREQUENCY = 5;
-const CANDLE_SHADE_AMPLITUDE = 3.3;
-const CANDLE_BODY_HEIGHT_VIEWPORT = 0.45;
+const CANDLE_SHADE_FREQUENCY = 2.5;
+const CANDLE_SHADE_AMPLITUDE = 1.5;
+const CANDLE_FLAME_SAMPLE_X = 540;
+const CANDLE_FLAME_SAMPLE_Y = 1049;
+const CANDLE_FLAME_SAMPLE_ALPHA_LOW = 7;
+const CANDLE_FLAME_SAMPLE_ALPHA_HIGH = 232;
+const CANDLE_SHADE_OPACITY_RANGE = 0.024;
+const CANDLE_BODY_HEIGHT_VIEWPORT = 0.4275;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
 const CANDLE_WICK_TIP_Y = 0;
 
@@ -1109,6 +1158,11 @@ function positionCandleAssets() {
 
     detailScreen.style.setProperty('--flame-x', `${flameX}px`);
     detailScreen.style.setProperty('--flame-y', `${flameY}px`);
+    detailScreen.style.setProperty(
+        '--candle-bottom-shade-start',
+        `${bodyBounds.top + bodyBounds.height * 0.8}px`
+    );
+    detailScreen.style.setProperty('--candle-bottom-shade-end', `${bodyBounds.bottom}px`);
 }
 
 function applyInfoProgress(value) {
@@ -1182,16 +1236,86 @@ function candleFlickerSignal(time, speed) {
     return clampUnit(0.5 + wave * 0.5);
 }
 
-function applyCandleAtmosphereFrame(time) {
-    const detailScreen = document.getElementById('detailScreen');
-    const flickerSlow = candleFlickerSignal(time, 0.55);
-    const flickerFast = candleFlickerSignal(time, 5);
+function applyFallbackShadeFlicker(time) {
     const shadeNoise = Math.sin(time * CANDLE_SHADE_FREQUENCY)
         * Math.sin(time * CANDLE_SHADE_FREQUENCY * 2.3);
     const shadeValue = CANDLE_SHADE_BASE_VALUE + shadeNoise * CANDLE_SHADE_AMPLITUDE;
     const shadeProgress = (shadeValue - (CANDLE_SHADE_BASE_VALUE - CANDLE_SHADE_AMPLITUDE))
         / (CANDLE_SHADE_AMPLITUDE * 2);
-    const shadeOpacityRange = CANDLE_SHADE_AMPLITUDE * (0.04 / 3);
+    document.getElementById('detailScreen').style.setProperty(
+        '--flicker-shade-opacity',
+        (1 - CANDLE_SHADE_OPACITY_RANGE + shadeProgress * CANDLE_SHADE_OPACITY_RANGE).toFixed(4)
+    );
+}
+
+function sampleFlameShadeSignal() {
+    const candleFlame = document.getElementById('candleFlame');
+    if (candleFlame.readyState < 2 || !candleFlame.videoWidth || !candleFlame.videoHeight) {
+        return false;
+    }
+
+    try {
+        if (!candleFlameSampleContext) {
+            const sampleCanvas = document.createElement('canvas');
+            sampleCanvas.width = 1;
+            sampleCanvas.height = 1;
+            candleFlameSampleContext = sampleCanvas.getContext('2d', { willReadFrequently: true });
+        }
+        if (!candleFlameSampleContext) return false;
+
+        const sampleX = CANDLE_FLAME_SAMPLE_X * candleFlame.videoWidth / CANDLE_VIDEO_WIDTH;
+        const sampleY = CANDLE_FLAME_SAMPLE_Y * candleFlame.videoHeight / CANDLE_VIDEO_HEIGHT;
+        candleFlameSampleContext.clearRect(0, 0, 1, 1);
+        candleFlameSampleContext.drawImage(candleFlame, sampleX, sampleY, 1, 1, 0, 0, 1, 1);
+        const [red, green, blue, alpha] = candleFlameSampleContext.getImageData(0, 0, 1, 1).data;
+        const sampleValue = alpha < 254 ? alpha : Math.max(red, green, blue);
+        const flameIntensity = clampUnit(
+            (sampleValue - CANDLE_FLAME_SAMPLE_ALPHA_LOW)
+            / (CANDLE_FLAME_SAMPLE_ALPHA_HIGH - CANDLE_FLAME_SAMPLE_ALPHA_LOW)
+        );
+        const shadeOpacity = 1 - flameIntensity * CANDLE_SHADE_OPACITY_RANGE;
+        document.getElementById('detailScreen').style.setProperty(
+            '--flicker-shade-opacity',
+            shadeOpacity.toFixed(4)
+        );
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+function stopFlameSynchronizedShade() {
+    const candleFlame = document.getElementById('candleFlame');
+    if (candleFlameVideoFrameHandle !== null
+        && typeof candleFlame.cancelVideoFrameCallback === 'function') {
+        candleFlame.cancelVideoFrameCallback(candleFlameVideoFrameHandle);
+    }
+    candleFlameVideoFrameHandle = null;
+    candleFlameSampleActive = false;
+}
+
+function startFlameSynchronizedShade() {
+    stopFlameSynchronizedShade();
+    const candleFlame = document.getElementById('candleFlame');
+    if (typeof candleFlame.requestVideoFrameCallback !== 'function') return;
+
+    function samplePresentedFrame() {
+        if (!candleVisible) {
+            candleFlameVideoFrameHandle = null;
+            return;
+        }
+        candleFlameSampleActive = sampleFlameShadeSignal();
+        candleFlameVideoFrameHandle = candleFlame.requestVideoFrameCallback(samplePresentedFrame);
+    }
+
+    candleFlameVideoFrameHandle = candleFlame.requestVideoFrameCallback(samplePresentedFrame);
+}
+
+function applyCandleAtmosphereFrame(time) {
+    const detailScreen = document.getElementById('detailScreen');
+    const flickerSlow = candleFlickerSignal(time, 0.55);
+    const flickerFast = candleFlickerSignal(time, 5);
+    const candleFlame = document.getElementById('candleFlame');
 
     detailScreen.style.setProperty('--icon-light-opacity', (0.09 + flickerSlow * 0.06).toFixed(4));
     detailScreen.style.setProperty('--middle-haze-opacity', (0.018 + flickerSlow * 0.027).toFixed(4));
@@ -1199,13 +1323,15 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-scale', (0.98 + flickerSlow * 0.05).toFixed(4));
     detailScreen.style.setProperty('--glow-offset-x', `${((flickerFast - 0.5) * 4).toFixed(2)}px`);
     detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
-    detailScreen.style.setProperty(
-        '--flicker-shade-opacity',
-        (1 - shadeOpacityRange + shadeProgress * shadeOpacityRange).toFixed(4)
-    );
+
+    if (typeof candleFlame.requestVideoFrameCallback !== 'function') {
+        candleFlameSampleActive = sampleFlameShadeSignal();
+    }
+    if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
 }
 
 function stopCandleAtmosphereAnimation() {
+    stopFlameSynchronizedShade();
     if (candleAtmosphereAnimationFrame !== null) {
         cancelAnimationFrame(candleAtmosphereAnimationFrame);
         candleAtmosphereAnimationFrame = null;
@@ -1250,15 +1376,21 @@ function showCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
     const iconScale = iconBounds.width > 0
-        ? Math.max(1, window.innerWidth / iconBounds.width)
+        ? window.innerWidth * 0.9 / iconBounds.width
         : 1.10;
+    const scaledIconTop = iconBounds.top + iconBounds.height * 0.52 * (1 - iconScale);
+    const scaledIconHeight = iconBounds.height * iconScale;
     detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
     detailScreen.style.setProperty('--icon-center-x', `${iconBounds.left + iconBounds.width * 0.5}px`);
     detailScreen.style.setProperty('--icon-center-y', `${iconBounds.top + iconBounds.height * 0.5}px`);
+    detailScreen.style.setProperty('--icon-top-shade-start', `${scaledIconTop}px`);
+    detailScreen.style.setProperty('--icon-top-shade-mid', `${scaledIconTop + scaledIconHeight * 0.075}px`);
+    detailScreen.style.setProperty('--icon-top-shade-end', `${scaledIconTop + scaledIconHeight * 0.15}px`);
     positionCandleAssets();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     candleFlame.play().catch(() => {});
+    startFlameSynchronizedShade();
     document.getElementById('globalLogo').classList.remove('list-fadein');
     document.body.classList.add('candle-transition', 'candle-active');
     detailScreen.classList.add('scene-active');
