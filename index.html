@@ -208,6 +208,7 @@
             position: absolute;
             inset: 0;
             z-index: 15;
+            display: none;
             pointer-events: none;
             background: radial-gradient(
                 ellipse 100vw 50vw at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
@@ -310,7 +311,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: scale(1.10);
-            filter: blur(1px);
+            filter: brightness(0.82) contrast(1.12) blur(1px);
         }
 
         #detailScreen.scene-active #iconBackHalo {
@@ -384,7 +385,6 @@
 
         #iconShade {
             z-index: 40;
-            mix-blend-mode: screen;
             background:
                 radial-gradient(
                     ellipse 52% 62% at 50% 53%,
