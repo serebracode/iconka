@@ -223,6 +223,7 @@
 
         body.candle-transition #globalLogo,
         body.candle-transition #candleLayer,
+        body.candle-transition #candleFlameViewport,
         body.candle-transition #candleHalo,
         body.candle-transition #shareBtn,
         body.candle-transition #candleBtn,
@@ -276,15 +277,22 @@
 
         #candleFlameViewport {
             position: absolute;
-            z-index: 2;
+            z-index: 21;
             overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            transition-property: opacity;
+        }
+
+        body.candle-active #candleFlameViewport {
+            opacity: 1;
         }
 
         #candleFlame {
             position: absolute;
             display: block;
             max-width: none;
-            mix-blend-mode: screen;
         }
 
         #candleHalo {
@@ -340,16 +348,16 @@
         }
 
         @keyframes candleHaloShapeMotion {
-            /* Все состояния на 10% меньше предыдущей версии. */
+            /* Морфинг только между вертикальными пропорциями 3:4 и 3:4.5. */
             0%, 100% { transform: rotate(-0.25deg) scale(1.035, 1.035); } /* 3:4 */
-            12% { transform: rotate(-1deg) scale(0.9257, 1.1572); } /* 3:5 */
-            24% { transform: rotate(0.7deg) scale(0.8451, 1.2676); } /* 2:4 */
-            36% { transform: rotate(-0.9deg) scale(0.9257, 1.1572); } /* 3:5 */
+            12% { transform: rotate(-1deg) scale(0.9758, 1.0978); } /* 3:4.5 */
+            24% { transform: rotate(0.7deg) scale(1.035, 1.035); } /* 3:4 */
+            36% { transform: rotate(-0.9deg) scale(0.9758, 1.0978); } /* 3:4.5 */
             48% { transform: rotate(1deg) scale(1.035, 1.035); } /* 3:4 */
-            60% { transform: rotate(-0.6deg) scale(0.8451, 1.2676); } /* 2:4 */
-            73% { transform: rotate(0.9deg) scale(0.9257, 1.1572); } /* 3:5 */
-            84% { transform: rotate(-1deg) scale(1.035, 1.035); } /* 3:4 */
-            93% { transform: rotate(0.5deg) scale(0.9257, 1.1572); } /* 3:5 */
+            60% { transform: rotate(-0.6deg) scale(0.9758, 1.0978); } /* 3:4.5 */
+            73% { transform: rotate(0.9deg) scale(1.035, 1.035); } /* 3:4 */
+            84% { transform: rotate(-1deg) scale(0.9758, 1.0978); } /* 3:4.5 */
+            93% { transform: rotate(0.5deg) scale(1.035, 1.035); } /* 3:4 */
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -523,11 +531,11 @@
     <!-- СЛОЙ СВЕЧИ -->
     <div id="candleLayer">
         <img id="candleBody" src="./video/crdl.png" alt="Свеча">
-        <div id="candleFlameViewport" aria-hidden="true">
-            <video id="candleFlame" muted playsinline loop preload="auto">
-                <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
-            </video>
-        </div>
+    </div>
+    <div id="candleFlameViewport" aria-hidden="true">
+        <video id="candleFlame" muted playsinline loop preload="auto">
+            <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
+        </video>
     </div>
 
     <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out;">
@@ -882,6 +890,8 @@ tg?.BackButton?.onClick(goBack);
 let candleVisible = false;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
+let candleWakeLock = null;
+let candleWakeLockPending = false;
 const CANDLE_ICON_TRANSITION_MS = 4800;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
@@ -893,6 +903,7 @@ const CANDLE_FLAME_CROP_WIDTH = 135;
 const CANDLE_FLAME_CROP_HEIGHT = 150;
 // 1.2 × 1.4: огонь на 40% крупнее предыдущей версии.
 const CANDLE_FLAME_SCALE = 1.68;
+const CANDLE_FLAME_OFFSET_X = 5;
 const CANDLE_BODY_SCALE = 0.67;
 const CANDLE_BODY_HEIGHT_VIEWPORT = 0.45 * CANDLE_BODY_SCALE;
 const CANDLE_WICK_VIEWPORT_Y = 0.60125;
@@ -900,6 +911,7 @@ const CANDLE_WICK_TIP_Y = 14 / 560;
 const CANDLE_ICON_CENTER_VIEWPORT_Y = 0.45;
 const CANDLE_ICON_OPTICAL_Y = 0.375;
 const CANDLE_HALO_SHIFT_VIEWPORT_Y = 0.1;
+const CANDLE_HALO_LOWER_OFFSET_VIEWPORT_Y = 0.15;
 
 function positionCandleAssets() {
     const body = document.getElementById('candleBody');
@@ -914,7 +926,7 @@ function positionCandleAssets() {
     const flameHeight = CANDLE_VIDEO_HEIGHT * flameScale;
     const wickTipY = bodyBounds.top + bodyBounds.height * CANDLE_WICK_TIP_Y;
     const wickOverlap = 10;
-    const flameX = window.innerWidth * 0.5;
+    const flameX = window.innerWidth * 0.5 + CANDLE_FLAME_OFFSET_X;
     const flameY = wickTipY + wickOverlap;
 
     flameViewport.style.width = `${CANDLE_FLAME_CROP_WIDTH * flameScale}px`;
@@ -947,6 +959,8 @@ function updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, flameAnch
     // Нижняя точка овала остаётся выше пламени и служит неподвижной
     // точкой опоры для изменения пропорций и наклона.
     focusY = Math.min(focusY, flameY - radiusY - height * 0.03);
+    // Сдвигаем весь ореол вместе с нижней точкой опоры на 15% вьюпорта.
+    focusY += height * CANDLE_HALO_LOWER_OFFSET_VIEWPORT_Y;
     const haloAnchorY = focusY + radiusY;
     const flameNeck = Math.max(12, width * 0.025);
     const connectorTopY = haloAnchorY - radiusY * 0.12;
@@ -999,6 +1013,46 @@ function applyInfoProgress(value) {
     detailContent.style.setProperty('--info-offset', `${30 * (1 - progress)}px`);
 }
 
+async function acquireCandleWakeLock() {
+    if (!candleVisible
+        || document.visibilityState !== 'visible'
+        || candleWakeLock
+        || candleWakeLockPending
+        || !('wakeLock' in navigator)) return;
+
+    candleWakeLockPending = true;
+    try {
+        const lock = await navigator.wakeLock.request('screen');
+        if (!candleVisible || document.visibilityState !== 'visible') {
+            await lock.release();
+            return;
+        }
+        candleWakeLock = lock;
+        lock.addEventListener('release', () => {
+            if (candleWakeLock === lock) candleWakeLock = null;
+        }, { once: true });
+    } catch (error) {
+        candleWakeLock = null;
+    } finally {
+        candleWakeLockPending = false;
+    }
+}
+
+async function releaseCandleWakeLock() {
+    const lock = candleWakeLock;
+    candleWakeLock = null;
+    if (!lock || lock.released) return;
+    try {
+        await lock.release();
+    } catch (error) {}
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && candleVisible) {
+        acquireCandleWakeLock();
+    }
+});
+
 function showCandle() {
     if (infoPanelVisible) {
         toggleInfo();
@@ -1007,6 +1061,7 @@ function showCandle() {
     }
     
     candleVisible = true;
+    acquireCandleWakeLock();
 
     const detailContent = document.getElementById('detailContent');
     const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
@@ -1037,6 +1092,7 @@ function showCandle() {
 function closeCandle() {
     if (!candleVisible) return;
     candleVisible = false;
+    releaseCandleWakeLock();
 
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
