@@ -314,37 +314,16 @@
             will-change: opacity;
         }
 
+        #haloWiggle,
         #haloFocus {
             transform-box: fill-box;
             transform-origin: 50% 100%;
             will-change: transform;
         }
 
-        body.candle-active #haloCutout {
-            animation: candleHaloFlicker 4.5s ease-in-out infinite;
-        }
-
         body.candle-active #haloFocus {
             animation: candleHaloShapeMotion var(--halo-shape-duration, 10s) ease-in-out infinite;
             animation-delay: var(--halo-shape-delay, 0s);
-        }
-
-        @keyframes candleHaloFlicker {
-            0%, 100% {
-                opacity: 1;
-            }
-            22% {
-                opacity: 0.94;
-            }
-            47% {
-                opacity: 0.99;
-            }
-            71% {
-                opacity: 0.9;
-            }
-            87% {
-                opacity: 0.97;
-            }
         }
 
         @keyframes candleHaloShapeMotion {
@@ -362,6 +341,7 @@
 
         @media (prefers-reduced-motion: reduce) {
             body.candle-active #haloCutout,
+            body.candle-active #haloWiggle,
             body.candle-active #haloFocus {
                 animation: none;
             }
@@ -521,7 +501,9 @@
                 <rect id="haloMaskBase" fill="#FFFFFF"/>
                 <g id="haloCutout" fill="#000000" filter="url(#haloBlur)">
                     <path id="haloCone"/>
-                    <ellipse id="haloFocus"/>
+                    <g id="haloWiggle">
+                        <ellipse id="haloFocus"/>
+                    </g>
                 </g>
             </mask>
         </defs>
@@ -892,6 +874,10 @@ let infoPanelVisible = false;
 let infoSettleTimer = null;
 let candleWakeLock = null;
 let candleWakeLockPending = false;
+let candleHaloAnimationFrame = null;
+let candleHaloAnimationStart = 0;
+const CANDLE_HALO_WIGGLE_FREQUENCY = 5;
+const CANDLE_HALO_WIGGLE_AMPLITUDE = 3;
 const CANDLE_ICON_TRANSITION_MS = 4800;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
@@ -1053,6 +1039,44 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
+function stopCandleHaloAnimation() {
+    if (candleHaloAnimationFrame !== null) {
+        cancelAnimationFrame(candleHaloAnimationFrame);
+        candleHaloAnimationFrame = null;
+    }
+    document.getElementById('haloWiggle').style.removeProperty('transform');
+    document.getElementById('haloCutout').style.removeProperty('opacity');
+}
+
+function startCandleHaloAnimation() {
+    stopCandleHaloAnimation();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const haloWiggle = document.getElementById('haloWiggle');
+    const haloCutout = document.getElementById('haloCutout');
+    candleHaloAnimationStart = performance.now();
+
+    function animateHalo(now) {
+        if (!candleVisible) {
+            candleHaloAnimationFrame = null;
+            return;
+        }
+
+        const time = (now - candleHaloAnimationStart) / 1000;
+        const phase = time * CANDLE_HALO_WIGGLE_FREQUENCY * Math.PI * 2;
+        // Две несинхронные волны дают плавное неповторяющееся колыхание.
+        const noise = Math.sin(phase) * Math.sin(phase * 2.3);
+        const wigglePercent = noise * CANDLE_HALO_WIGGLE_AMPLITUDE;
+        const scale = (100 + wigglePercent) / 100;
+
+        haloWiggle.style.transform = `scale(${scale.toFixed(4)})`;
+        haloCutout.style.opacity = (1 - Math.abs(wigglePercent) / 100).toFixed(4);
+        candleHaloAnimationFrame = requestAnimationFrame(animateHalo);
+    }
+
+    candleHaloAnimationFrame = requestAnimationFrame(animateHalo);
+}
+
 function showCandle() {
     if (infoPanelVisible) {
         toggleInfo();
@@ -1074,6 +1098,7 @@ function showCandle() {
     detailContent.style.setProperty('--candle-icon-shift-y', `${iconShiftY.toFixed(2)}px`);
     const flameAnchor = positionCandleAssets();
     updateCandleHaloGeometry(iconBounds, candleScale, iconShiftY, flameAnchor);
+    startCandleHaloAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     candleFlame.play().catch(() => {});
     document.getElementById('globalLogo').classList.remove('list-fadein');
@@ -1092,6 +1117,7 @@ function showCandle() {
 function closeCandle() {
     if (!candleVisible) return;
     candleVisible = false;
+    stopCandleHaloAnimation();
     releaseCandleWakeLock();
 
     const detailContent = document.getElementById('detailContent');
