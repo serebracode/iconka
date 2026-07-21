@@ -223,7 +223,6 @@
 
         body.candle-transition #globalLogo,
         body.candle-transition #candleLayer,
-        body.candle-transition #candleBaseShade,
         body.candle-transition #candleBaseVideo,
         body.candle-transition #candleFlameViewport,
         body.candle-transition #shareBtn,
@@ -276,26 +275,6 @@
             transform: translateX(-50%);
         }
 
-        #candleBaseShade {
-            position: fixed;
-            inset: 0;
-            z-index: 18;
-            opacity: 0;
-            pointer-events: none;
-            background: radial-gradient(
-                ellipse 42% 32% at 50% 43%,
-                rgba(0, 0, 0, 0) 0%,
-                rgba(0, 0, 0, 0.08) 38%,
-                rgba(0, 0, 0, 0.55) 68%,
-                rgba(0, 0, 0, 1) 100%
-            );
-            transition-property: opacity;
-        }
-
-        body.candle-active #candleBaseShade {
-            opacity: 1;
-        }
-
         #candleBaseVideo {
             position: fixed;
             inset: 0;
@@ -307,7 +286,6 @@
             object-position: center;
             opacity: 0;
             pointer-events: none;
-            mix-blend-mode: screen;
             transition-property: opacity;
         }
 
@@ -479,9 +457,6 @@
         </div>
     </div>
     
-    <!-- РЕЗЕРВНОЕ ЗАТЕМНЕНИЕ: центр прозрачен, края полностью чёрные -->
-    <div id="candleBaseShade" aria-hidden="true"></div>
-
     <!-- ЕДИНЫЙ ВИДЕОСЛОЙ ОРЕОЛА -->
     <video id="candleBaseVideo" muted playsinline loop preload="auto" aria-hidden="true">
         <source src="./video/base_video.webm" type="video/webm; codecs=vp8">
