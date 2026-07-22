@@ -21,7 +21,7 @@
             --candle-transition-duration: 3000ms;
             --candle-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
             --candle-asset-motion-duration: 1715ms;
-            --candle-asset-opacity-duration: 500ms;
+            --candle-asset-opacity-duration: 250ms;
             --candle-asset-start-scale: 1.10;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
             background-color: #000000;
@@ -357,13 +357,19 @@
 
         body.candle-transition #candleLayer,
         body.candle-transition #candleFlameViewport {
-            transition-property: opacity, transform !important;
-            transition-duration:
-                var(--candle-asset-opacity-duration),
-                var(--candle-asset-motion-duration) !important;
-            transition-timing-function:
-                var(--candle-transition-easing),
-                var(--candle-transition-easing) !important;
+            transition-property: opacity !important;
+            transition-duration: var(--candle-asset-opacity-duration) !important;
+            transition-timing-function: ease-out !important;
+        }
+
+        @keyframes candleBodySettle {
+            from { transform: translateX(-50%) scale(var(--candle-asset-start-scale)); }
+            to { transform: translateX(-50%) scale(1); }
+        }
+
+        @keyframes candleFlameSettle {
+            from { transform: scale(var(--candle-asset-start-scale)); }
+            to { transform: scale(1); }
         }
 
         #candleLayer {
@@ -372,9 +378,7 @@
             z-index: 70;
             pointer-events: none;
             opacity: 0;
-            transform: scale(var(--candle-asset-start-scale));
-            transform-origin: var(--flame-x, 50%) var(--flame-y, 60%);
-            transition-property: opacity, transform;
+            transition-property: opacity;
         }
 
         #candleBody,
@@ -387,6 +391,16 @@
             max-height: 42.75vh;
             display: block;
             transform: translateX(-50%);
+            transform-origin: 50% 11px;
+            will-change: transform;
+        }
+
+        body.candle-active #candleBody,
+        body.candle-active #candleBodyShade {
+            animation: candleBodySettle
+                var(--candle-asset-motion-duration)
+                cubic-bezier(0.22, 0.61, 0.36, 1)
+                both;
         }
 
         #candleBody {
@@ -409,18 +423,17 @@
             opacity: 0;
             pointer-events: none;
             mix-blend-mode: screen;
-            transform: scale(var(--candle-asset-start-scale));
             transform-origin: 48.15% 96.67%;
-            transition-property: opacity, transform;
-        }
-
-        body.candle-active #candleLayer,
-        body.candle-active #candleFlameViewport {
-            transform: scale(1);
+            transition-property: opacity;
+            will-change: transform, opacity;
         }
 
         body.candle-active #candleFlameViewport {
             opacity: 1;
+            animation: candleFlameSettle
+                var(--candle-asset-motion-duration)
+                cubic-bezier(0.22, 0.61, 0.36, 1)
+                both;
         }
 
         #candleFlame,
