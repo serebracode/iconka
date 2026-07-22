@@ -21,6 +21,7 @@
             --candle-transition-duration: 3000ms;
             --candle-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
             --candle-asset-motion-duration: 1715ms;
+            --candle-asset-opacity-duration: 500ms;
             --candle-asset-start-scale: 1.10;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
             background-color: #000000;
@@ -358,7 +359,7 @@
         body.candle-transition #candleFlameViewport {
             transition-property: opacity, transform !important;
             transition-duration:
-                var(--candle-transition-duration),
+                var(--candle-asset-opacity-duration),
                 var(--candle-asset-motion-duration) !important;
             transition-timing-function:
                 var(--candle-transition-easing),
@@ -970,8 +971,10 @@ function selectIcon(id) {
 function resetDetailScreenUI() {
     window.clearTimeout(candleTransitionTimer);
     window.clearTimeout(candleBlurTimer);
+    if (candleEntryFrame !== null) cancelAnimationFrame(candleEntryFrame);
     candleTransitionTimer = null;
     candleBlurTimer = null;
+    candleEntryFrame = null;
     stopCandleAtmosphereAnimation();
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
@@ -1129,6 +1132,7 @@ let infoPanelVisible = false;
 let infoSettleTimer = null;
 let candleTransitionTimer = null;
 let candleBlurTimer = null;
+let candleEntryFrame = null;
 let candleWakeLock = null;
 let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
@@ -1434,22 +1438,41 @@ function showCandle() {
     candleFlameDuplicate.play().catch(() => {});
     startFlameSynchronizedShade();
     document.getElementById('globalLogo').classList.remove('list-fadein');
-    document.body.classList.add('candle-transition', 'candle-active');
-    detailScreen.classList.add('scene-active');
-    detailContent.classList.add('candle-transition', 'candle-active');
-    candleBlurTimer = window.setTimeout(() => {
+
+    // Commit the 110% start state before switching to the 100% scene state.
+    // This separate frame prevents mobile WebKit from collapsing both states.
+    if (candleEntryFrame !== null) cancelAnimationFrame(candleEntryFrame);
+    document.body.classList.remove('candle-active');
+    detailScreen.classList.remove('scene-active');
+    detailContent.classList.remove('candle-active');
+    document.body.classList.add('candle-transition');
+    detailContent.classList.add('candle-transition');
+    candleLayer.style.opacity = '0';
+    void candleLayer.offsetWidth;
+
+    candleEntryFrame = requestAnimationFrame(() => {
+        candleEntryFrame = null;
         if (!candleVisible) return;
-        detailContent.classList.add('candle-blur-ready');
-        candleBlurTimer = null;
-    }, CANDLE_ASSET_MOTION_MS);
-    window.clearTimeout(candleTransitionTimer);
-    candleTransitionTimer = window.setTimeout(() => {
-        if (!candleVisible) return;
-        document.body.classList.remove('candle-transition');
-        detailContent.classList.remove('candle-transition');
-        candleTransitionTimer = null;
-    }, CANDLE_SCENE_TRANSITION_MS);
-    document.getElementById('candleLayer').style.opacity = '1';
+
+        document.body.classList.add('candle-active');
+        detailScreen.classList.add('scene-active');
+        detailContent.classList.add('candle-active');
+        candleLayer.style.opacity = '1';
+
+        candleBlurTimer = window.setTimeout(() => {
+            if (!candleVisible) return;
+            detailContent.classList.add('candle-blur-ready');
+            candleBlurTimer = null;
+        }, CANDLE_ASSET_MOTION_MS);
+
+        window.clearTimeout(candleTransitionTimer);
+        candleTransitionTimer = window.setTimeout(() => {
+            if (!candleVisible) return;
+            document.body.classList.remove('candle-transition');
+            detailContent.classList.remove('candle-transition');
+            candleTransitionTimer = null;
+        }, CANDLE_SCENE_TRANSITION_MS);
+    });
     document.getElementById('globalLogo').style.opacity = '0';
     document.getElementById('shareBtn').style.opacity = '0';
     document.getElementById('candleBtn').style.opacity = '0';
@@ -1472,7 +1495,9 @@ function closeCandle() {
     const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     window.clearTimeout(candleTransitionTimer);
     window.clearTimeout(candleBlurTimer);
+    if (candleEntryFrame !== null) cancelAnimationFrame(candleEntryFrame);
     candleBlurTimer = null;
+    candleEntryFrame = null;
     detailContent.classList.remove('candle-blur-ready');
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
