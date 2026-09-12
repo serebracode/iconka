@@ -244,7 +244,7 @@
             transform: translate(0, -8px) scale(1.01);
             transform-origin: 50% 52%;
             filter: blur(7px);
-            background: rgba(0, 0, 0, 0.92);
+            background: rgba(0, 0, 0, 0.98);
             opacity: 0;
             pointer-events: none;
             will-change: transform, opacity;
@@ -730,6 +730,33 @@
             transition: opacity 100ms linear, transform 110ms linear;
         }
 
+    
+        /* Локальное затемнение создаёт разницу между световым центром и краями доски. */
+        #iconEdgeShade {
+            position: absolute;
+            inset: 0;
+            z-index: 26;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(1);
+            transform-origin: 50% 52%;
+            background: radial-gradient(
+                ellipse 52% 48% at 50% 58%,
+                rgba(0, 0, 0, 0) 20%,
+                rgba(0, 0, 0, 0.08) 47%,
+                rgba(0, 0, 0, 0.34) 73%,
+                rgba(0, 0, 0, 0.62) 100%
+            );
+            mix-blend-mode: multiply;
+            transition: transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
+                opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
+        }
+
+        #detailContent.candle-active #iconEdgeShade {
+            opacity: 0.82;
+            transform: scale(var(--candle-icon-scale, 1.10));
+        }
+
     </style>
 </head>
 <body>
@@ -805,6 +832,7 @@
                 <div id="iconShadow" class="icon-shadow" aria-hidden="true"></div>
                 <img id="iconImage" class="icon-base" alt="Икона">
                 <div id="iconOchreFilter" aria-hidden="true"></div>
+                <div id="iconEdgeShade" aria-hidden="true"></div>
                 <img id="iconLight" class="icon-light" alt="" aria-hidden="true">
             </div>
             <div class="icon-title">
@@ -1439,8 +1467,9 @@ function sampleFlameShadeSignal() {
         if (weight > 0.08) {
             const rawX = centerX / weight / (width - 1) - 0.5;
             const rawY = centerY / weight / (height - 1) - 0.5;
-            flameMotionX += (rawX - flameMotionX) * 0.18;
-            flameMotionY += (rawY - flameMotionY) * 0.14;
+            // Быстрый, но не цифровой отклик: у маленького огня движение проекции заметно усилено.
+            flameMotionX += (rawX - flameMotionX) * 0.34;
+            flameMotionY += (rawY - flameMotionY) * 0.28;
         }
         flameVideoIntensity += (flameIntensity - flameVideoIntensity) * 0.16;
         document.getElementById('detailScreen').style.setProperty('--flicker-shade-opacity',
@@ -1498,11 +1527,11 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
     detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
 
-    detailScreen.style.setProperty('--projection-offset-x', (-lightX * 36).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-offset-y', (-14 - lightY * 27).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-opacity', (0.53 + intensity * 0.22).toFixed(4));
-    detailScreen.style.setProperty('--projection-blur', (4.7 + intensity * 2.1).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-scale', (1.105 + intensity * 0.025).toFixed(4));
+    detailScreen.style.setProperty('--projection-offset-x', (-lightX * 62).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-offset-y', (-16 - lightY * 44).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-opacity', (0.72 + intensity * 0.20).toFixed(4));
+    detailScreen.style.setProperty('--projection-blur', (4.9 + intensity * 1.7).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-scale', (1.12 + intensity * 0.03).toFixed(4));
 
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
 }
