@@ -235,35 +235,41 @@
                 opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
 
+        /* Прямоугольная тень от доски иконы на дальней плоскости. */
         #iconShadow {
             position: absolute;
             inset: 0;
             z-index: 10;
-            display: none;
-            transform: translateY(8px) scale(0.99);
-            filter: blur(24px);
-            background: rgba(0, 0, 0, 0.8);
+            display: block;
+            transform: translate(0, -8px) scale(1.01);
+            transform-origin: 50% 52%;
+            filter: blur(9px);
+            background: rgba(0, 0, 0, 0.82);
             opacity: 0;
             pointer-events: none;
-            transition: opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
+            will-change: transform, opacity;
+            transition:
+                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
+                opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
 
+        /* Темнота сохраняется по краям, свет собирается вокруг иконы. */
         #iconBackHalo {
             position: absolute;
             inset: 0;
             z-index: 15;
-            display: none;
+            display: block;
             pointer-events: none;
             background: radial-gradient(
-                ellipse 100vw 50vw at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
-                rgba(183, 120, 42, 0.5) 0%,
-                rgba(183, 120, 42, 0.36) 42%,
-                rgba(183, 120, 42, 0.18) 70%,
-                rgba(183, 120, 42, 0) 100%
+                ellipse 72vw 62vh at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
+                rgba(177, 108, 47, 0.22) 0%,
+                rgba(118, 68, 29, 0.13) 35%,
+                rgba(21, 13, 6, 0.08) 58%,
+                rgba(2, 2, 1, 0) 78%
             );
             opacity: 0;
             transform-origin: 50% 50%;
-            transition: opacity 1200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+            transition: opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
 
         #iconLight {
@@ -372,6 +378,19 @@
 
         #detailContent.candle-active #iconLight {
             opacity: var(--icon-light-opacity, 0.11);
+        }
+
+        #detailContent.candle-active #iconShadow {
+            transform: translate(
+                var(--shadow-offset-x, 0px),
+                var(--shadow-offset-y, -12px)
+            ) scale(var(--candle-shadow-scale, 1.05));
+            opacity: var(--icon-shadow-opacity, 0.70);
+        }
+
+        /* После входной анимации тень следует за огнём без искусственного лага. */
+        #detailContent.candle-active:not(.candle-transition) #iconShadow {
+            transition: opacity 140ms linear;
         }
 
         body.candle-transition #candleLayer {
@@ -972,6 +991,9 @@ function resetDetailScreenUI() {
         '--glow-scale',
         '--glow-offset-x',
         '--glow-offset-y',
+        '--shadow-offset-x',
+        '--shadow-offset-y',
+        '--icon-shadow-opacity',
         '--flicker-shade-opacity'
     ].forEach(property => detailScreen.style.removeProperty(property));
     document.body.classList.remove('candle-active', 'candle-transition');
@@ -981,6 +1003,7 @@ function resetDetailScreenUI() {
     detailContent.style.removeProperty('--icon-section-padding-bottom');
     detailContent.style.removeProperty('--icon-width');
     detailContent.style.removeProperty('--candle-icon-scale');
+    detailContent.style.removeProperty('--candle-shadow-scale');
     detailContent.style.removeProperty('--title-opacity');
     detailContent.style.removeProperty('--title-offset');
     detailContent.style.removeProperty('--title-height');
@@ -1323,14 +1346,19 @@ function applyCandleAtmosphereFrame(time) {
     const detailScreen = document.getElementById('detailScreen');
     const flickerSlow = candleFlickerSignal(time, 0.55);
     const flickerFast = candleFlickerSignal(time, 5);
+    // Один сигнал управляет отблеском и проекцией: тень смещается в противоход.
+    const flameSway = (flickerSlow - 0.5) * 0.72 + (flickerFast - 0.5) * 0.28;
     const candleFlame = document.getElementById('candleFlame');
 
     detailScreen.style.setProperty('--icon-light-opacity', (0.09 + flickerSlow * 0.06).toFixed(4));
     detailScreen.style.setProperty('--middle-haze-opacity', (0.018 + flickerSlow * 0.027).toFixed(4));
     detailScreen.style.setProperty('--back-glow-opacity', (0.09 + flickerFast * 0.08).toFixed(4));
     detailScreen.style.setProperty('--glow-scale', (0.98 + flickerSlow * 0.05).toFixed(4));
-    detailScreen.style.setProperty('--glow-offset-x', `${((flickerFast - 0.5) * 4).toFixed(2)}px`);
+    detailScreen.style.setProperty('--glow-offset-x', `${(flameSway * 7).toFixed(2)}px`);
     detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-offset-x', `${(-flameSway * 16).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-offset-y', `${(-12 - flickerSlow * 4).toFixed(2)}px`);
+    detailScreen.style.setProperty('--icon-shadow-opacity', (0.64 + flickerSlow * 0.10).toFixed(4));
 
     if (typeof candleFlame.requestVideoFrameCallback !== 'function') {
         candleFlameSampleActive = sampleFlameShadeSignal();
@@ -1391,6 +1419,7 @@ function showCandle() {
     const scaledIconTop = iconBounds.top + iconBounds.height * 0.52 * (1 - iconScale);
     const scaledIconHeight = iconBounds.height * iconScale;
     detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
+    detailContent.style.setProperty('--candle-shadow-scale', (iconScale * 1.05).toFixed(4));
     detailScreen.style.setProperty('--icon-center-x', `${iconBounds.left + iconBounds.width * 0.5}px`);
     detailScreen.style.setProperty('--icon-center-y', `${iconBounds.top + iconBounds.height * 0.5}px`);
     detailScreen.style.setProperty('--icon-top-shade-start', `${scaledIconTop}px`);
