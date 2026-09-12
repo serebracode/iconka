@@ -1606,7 +1606,7 @@ function clampIconPan(value, limit) {
 
 iconImageElement.addEventListener('touchstart', (event) => {
     if (event.touches.length !== 1 || candleVisible || infoPanelVisible) return;
-    event.stopPropagation();
+    if (iconZoomed) event.stopPropagation();
     const touch = event.touches[0];
     iconTouchStartX = touch.clientX;
     iconTouchStartY = touch.clientY;
@@ -1618,14 +1618,15 @@ iconImageElement.addEventListener('touchstart', (event) => {
 
 iconImageElement.addEventListener('touchmove', (event) => {
     if (event.touches.length !== 1 || candleVisible || infoPanelVisible) return;
-    event.stopPropagation();
     const touch = event.touches[0];
     const deltaX = touch.clientX - iconTouchStartX;
     const deltaY = touch.clientY - iconTouchStartY;
     iconTouchMoved = iconTouchMoved || Math.hypot(deltaX, deltaY) > 8;
 
+    // Обычный свайп по иконе отдаём экрану описания.
     if (!iconZoomed) return;
 
+    event.stopPropagation();
     event.preventDefault();
     iconPanX = clampIconPan(iconPanStartX + deltaX, iconPanLimitX);
     iconPanY = clampIconPan(iconPanStartY + deltaY, iconPanLimitY);
@@ -1634,8 +1635,10 @@ iconImageElement.addEventListener('touchmove', (event) => {
 
 iconImageElement.addEventListener('touchend', (event) => {
     if (candleVisible || infoPanelVisible) return;
-    event.stopPropagation();
-    event.preventDefault();
+    if (iconZoomed) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
     iconImageElement.classList.remove('zoom-dragging');
     if (iconTouchMoved) return;
 
