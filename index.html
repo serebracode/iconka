@@ -736,24 +736,27 @@
             position: absolute;
             inset: 0;
             z-index: 26;
+            display: block;
             pointer-events: none;
             opacity: 0;
             transform: scale(1);
             transform-origin: 50% 52%;
-            background: radial-gradient(
-                ellipse 52% 48% at 50% 58%,
-                rgba(0, 0, 0, 0) 20%,
-                rgba(0, 0, 0, 0.08) 47%,
-                rgba(0, 0, 0, 0.24) 73%,
-                rgba(0, 0, 0, 0.44) 100%
-            );
-            mix-blend-mode: multiply;
+            /* Обычная альфа-маска: одинаково читается в iOS/Telegram WebView. */
+            background:
+                radial-gradient(
+                    ellipse 50% 46% at 50% 58%,
+                    rgba(0, 0, 0, 0) 18%,
+                    rgba(0, 0, 0, 0.10) 44%,
+                    rgba(0, 0, 0, 0.48) 73%,
+                    rgba(0, 0, 0, 0.78) 100%
+                );
+            box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.38);
             transition: transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
                 opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
 
         #detailContent.candle-active #iconEdgeShade {
-            opacity: 0.56;
+            opacity: 0.74;
             transform: scale(var(--candle-icon-scale, 1.10));
         }
 
