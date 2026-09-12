@@ -254,6 +254,57 @@
         }
 
         /* Темнота сохраняется по краям, свет собирается вокруг иконы. */
+        /* Сцена: дальняя стена, затем пространство до свечи. */
+        #candleRoom {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            overflow: hidden;
+            pointer-events: none;
+            opacity: 0;
+            background:
+                radial-gradient(ellipse 54vw 42vh at var(--icon-center-x, 50%) var(--icon-center-y, 43%),
+                    rgba(164, 92, 34, 0.34) 0%,
+                    rgba(78, 42, 15, 0.24) 42%,
+                    rgba(11, 7, 3, 0) 78%),
+                linear-gradient(to bottom, #050403 0%, #100a05 55%, #060402 100%);
+            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
+        }
+
+        #candleRoom::before {
+            content: '';
+            position: absolute;
+            inset: 5vh 4vw 18vh;
+            border-radius: 3px;
+            background:
+                linear-gradient(105deg, rgba(255, 196, 111, 0.055), transparent 31%, rgba(0, 0, 0, 0.22)),
+                radial-gradient(ellipse 55% 52% at 50% 46%, rgba(132, 75, 27, 0.28), rgba(23, 13, 5, 0.18) 58%, rgba(0, 0, 0, 0.36) 100%);
+            box-shadow:
+                inset 0 0 70px rgba(0, 0, 0, 0.58),
+                inset 0 0 2px rgba(255, 194, 112, 0.14);
+        }
+
+        #candleRoom::after {
+            content: '';
+            position: absolute;
+            left: -24vw;
+            top: 72vh;
+            width: 148vw;
+            height: 52vh;
+            transform: perspective(560px) rotateX(55deg);
+            transform-origin: 50% 0;
+            background:
+                radial-gradient(ellipse 30% 28% at 50% 12%, rgba(229, 145, 57, 0.22), rgba(99, 51, 14, 0.09) 38%, transparent 72%),
+                linear-gradient(to bottom, rgba(40, 23, 9, 0.42), rgba(3, 2, 1, 0.88) 88%);
+            filter: blur(0.35px);
+            opacity: 0.84;
+        }
+
+        #detailScreen.scene-active #candleRoom {
+            opacity: 1;
+        }
+
+        /* Свет на плоскости стены прямо за иконой. */
         #iconBackHalo {
             position: absolute;
             inset: 0;
@@ -261,10 +312,10 @@
             display: block;
             pointer-events: none;
             background: radial-gradient(
-                ellipse 82vw 72vh at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
-                rgba(206, 139, 70, 0.62) 0%,
-                rgba(151, 91, 38, 0.43) 32%,
-                rgba(74, 43, 17, 0.24) 58%,
+                ellipse 58vw 48vh at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
+                rgba(220, 153, 76, 0.33) 0%,
+                rgba(138, 77, 29, 0.20) 37%,
+                rgba(45, 25, 9, 0.08) 62%,
                 rgba(2, 2, 1, 0) 82%
             );
             opacity: 0;
@@ -681,6 +732,7 @@
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen scene" style="position: absolute; overflow: hidden; isolation: isolate; background: #020201;">
     <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
+    <div id="candleRoom" aria-hidden="true"></div>
 
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
