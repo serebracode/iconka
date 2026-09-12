@@ -10,7 +10,6 @@
 | `icons/voskresenie.jpg` | [Greek — Resurrection of Christ, Walters 37751](https://commons.wikimedia.org/wiki/File:Greek_-_Resurrection_of_Christ_-_Walters_37751.jpg) | Public Domain |
 | `icons/neopalimaya.jpg` | [Неопалимая Купина](https://commons.wikimedia.org/wiki/File:%D0%9D%D0%B5%D0%BE%D0%BF%D0%B0%D0%BB%D0%B8%D0%BC%D0%B0%D1%8F_%D0%9A%D1%83%D0%BF%D0%B8%D0%BD%D0%B0_%D0%B8%D0%BA%D0%BE%D0%BD%D0%B0_%D0%91%D0%BE%D0%B6%D0%B8%D0%B5%D0%B9_%D0%9C%D0%B0%D1%82%D0%B5%D1%80%D0%B8.png) | Public Domain |
 | `icons/pantanassa.jpg` | [The Virgin Pantanassa — Andreas Ritzos](https://commons.wikimedia.org/wiki/File:The_Virgin_Pantanassa_Andreas_Ritzos.png) | CC BY-SA 4.0; изображение адаптировано для интерфейса |
-| `icons/sergiy.jpg` | [Sergius of Radonezh vita icon, 17th century](https://commons.wikimedia.org/wiki/File:Sergius_of_Radonezh_vita_icon_(17_c.,_Yaroslavl_museum).jpg) | Public Domain |
 | `icons/georgiy.jpg` | [Novgorod George](https://commons.wikimedia.org/wiki/File:Novgorod_George.jpg) | Public Domain |
 | `icons/mihail.jpg` | [Saint Michael, Yaroslavl, 13th century](https://commons.wikimedia.org/wiki/File:Saint_Michael_(Yaroslavl,_13th_c.,_GTG).jpg) | Public Domain |
 | `icons/andrey.jpg` | [Saint Andrew — Walters Art Museum](https://commons.wikimedia.org/wiki/File:Greek_-_Saint_Andrew_-_Walters_37559.jpg) | Public Domain |

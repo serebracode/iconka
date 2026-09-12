@@ -190,6 +190,21 @@
             transform-origin: 50% 52%;
             filter: brightness(1) contrast(1) blur(0px);
             transition-property: transform, filter;
+            transition-duration: 180ms, 800ms;
+            transition-timing-function: ease-out, ease;
+            touch-action: none;
+            cursor: zoom-in;
+        }
+
+        #iconImage.zoomed {
+            z-index: 35;
+            cursor: grab;
+            will-change: transform;
+        }
+
+        #iconImage.zoom-dragging {
+            cursor: grabbing;
+            transition-duration: 0ms, 800ms;
         }
 
         #iconOchreFilter {
@@ -918,6 +933,7 @@ function selectIcon(id) {
 }
 
 function resetDetailScreenUI() {
+    resetIconZoom();
     window.clearTimeout(candleTransitionTimer);
     candleTransitionTimer = null;
     stopCandleAtmosphereAnimation();
@@ -1348,6 +1364,7 @@ function showCandle() {
         return;
     }
     
+    resetIconZoom();
     candleVisible = true;
     acquireCandleWakeLock();
 
@@ -1436,6 +1453,7 @@ function closeCandle() {
 
 function setInfoPanel(open, animate = true) {
     if (candleVisible) return;
+    if (open) resetIconZoom();
     
     const detailContent = document.getElementById('detailContent');
     const infoBtn = document.getElementById('infoBtn');
@@ -1478,6 +1496,119 @@ function setInfoPanel(open, animate = true) {
 function toggleInfo() {
     setInfoPanel(!infoPanelVisible);
 }
+
+// Увеличение иконы: двойной тап — x2, перетаскивание — просмотр деталей.
+const iconImageElement = document.getElementById('iconImage');
+let iconZoomed = false;
+let iconPanX = 0;
+let iconPanY = 0;
+let iconPanLimitX = 0;
+let iconPanLimitY = 0;
+let iconTouchStartX = 0;
+let iconTouchStartY = 0;
+let iconPanStartX = 0;
+let iconPanStartY = 0;
+let iconTouchMoved = false;
+let lastIconTapAt = 0;
+let lastIconTapX = 0;
+let lastIconTapY = 0;
+
+function applyIconZoomTransform() {
+    if (!iconZoomed) {
+        iconImageElement.style.removeProperty('transform');
+        return;
+    }
+    iconImageElement.style.transform = `translate3d(${iconPanX}px, ${iconPanY}px, 0) scale(2)`;
+}
+
+function resetIconZoom() {
+    iconZoomed = false;
+    iconPanX = 0;
+    iconPanY = 0;
+    iconImageElement.classList.remove('zoomed', 'zoom-dragging');
+    iconImageElement.style.removeProperty('transform');
+}
+
+function toggleIconZoom() {
+    if (candleVisible || infoPanelVisible) return;
+
+    if (iconZoomed) {
+        resetIconZoom();
+        return;
+    }
+
+    const bounds = iconImageElement.getBoundingClientRect();
+    iconPanLimitX = bounds.width / 2;
+    iconPanLimitY = bounds.height / 2;
+    iconPanX = 0;
+    iconPanY = 0;
+    iconZoomed = true;
+    iconImageElement.classList.add('zoomed');
+    applyIconZoomTransform();
+}
+
+function clampIconPan(value, limit) {
+    return Math.max(-limit, Math.min(limit, value));
+}
+
+iconImageElement.addEventListener('touchstart', (event) => {
+    if (event.touches.length !== 1 || candleVisible || infoPanelVisible) return;
+    event.stopPropagation();
+    const touch = event.touches[0];
+    iconTouchStartX = touch.clientX;
+    iconTouchStartY = touch.clientY;
+    iconPanStartX = iconPanX;
+    iconPanStartY = iconPanY;
+    iconTouchMoved = false;
+    if (iconZoomed) iconImageElement.classList.add('zoom-dragging');
+}, { passive: false });
+
+iconImageElement.addEventListener('touchmove', (event) => {
+    if (event.touches.length !== 1 || candleVisible || infoPanelVisible) return;
+    event.stopPropagation();
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - iconTouchStartX;
+    const deltaY = touch.clientY - iconTouchStartY;
+    iconTouchMoved = iconTouchMoved || Math.hypot(deltaX, deltaY) > 8;
+
+    if (!iconZoomed) return;
+
+    event.preventDefault();
+    iconPanX = clampIconPan(iconPanStartX + deltaX, iconPanLimitX);
+    iconPanY = clampIconPan(iconPanStartY + deltaY, iconPanLimitY);
+    applyIconZoomTransform();
+}, { passive: false });
+
+iconImageElement.addEventListener('touchend', (event) => {
+    if (candleVisible || infoPanelVisible) return;
+    event.stopPropagation();
+    event.preventDefault();
+    iconImageElement.classList.remove('zoom-dragging');
+    if (iconTouchMoved) return;
+
+    const touch = event.changedTouches[0];
+    const now = Date.now();
+    const isDoubleTap = now - lastIconTapAt < 320
+        && Math.hypot(touch.clientX - lastIconTapX, touch.clientY - lastIconTapY) < 24;
+
+    if (isDoubleTap) {
+        lastIconTapAt = 0;
+        toggleIconZoom();
+    } else {
+        lastIconTapAt = now;
+        lastIconTapX = touch.clientX;
+        lastIconTapY = touch.clientY;
+    }
+}, { passive: false });
+
+iconImageElement.addEventListener('touchcancel', () => {
+    iconImageElement.classList.remove('zoom-dragging');
+}, { passive: true });
+
+iconImageElement.addEventListener('dblclick', (event) => {
+    event.preventDefault();
+    toggleIconZoom();
+});
 
 // Свайп
 (function() {
