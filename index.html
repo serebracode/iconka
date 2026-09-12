@@ -243,7 +243,7 @@
             display: block;
             transform: translate(0, -8px) scale(1.01);
             transform-origin: 50% 52%;
-            filter: blur(9px);
+            filter: blur(18px);
             background: rgba(0, 0, 0, 0.82);
             opacity: 0;
             pointer-events: none;
@@ -364,7 +364,7 @@
 
         #detailContent.candle-active #iconImage {
             transform: scale(var(--candle-icon-scale, 1.10));
-            filter: brightness(0.90) contrast(1.25);
+            filter: brightness(0.90) contrast(1.25) blur(0.25px);
         }
 
         #detailContent.candle-active #iconOchreFilter {
@@ -384,7 +384,7 @@
             transform: translate(
                 var(--shadow-offset-x, 0px),
                 var(--shadow-offset-y, -12px)
-            ) scale(var(--candle-shadow-scale, 1.05));
+            ) scale(var(--candle-shadow-scale, 1.18));
             opacity: var(--icon-shadow-opacity, 0.70);
         }
 
@@ -1356,8 +1356,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-scale', (0.98 + flickerSlow * 0.05).toFixed(4));
     detailScreen.style.setProperty('--glow-offset-x', `${(flameSway * 7).toFixed(2)}px`);
     detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
-    detailScreen.style.setProperty('--shadow-offset-x', `${(-flameSway * 16).toFixed(2)}px`);
-    detailScreen.style.setProperty('--shadow-offset-y', `${(-12 - flickerSlow * 4).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-offset-x', `${(-flameSway * 38).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-offset-y', `${(-14 - flickerSlow * 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--icon-shadow-opacity', (0.80 + flickerSlow * 0.12).toFixed(4));
 
     if (typeof candleFlame.requestVideoFrameCallback !== 'function') {
@@ -1419,7 +1419,7 @@ function showCandle() {
     const scaledIconTop = iconBounds.top + iconBounds.height * 0.52 * (1 - iconScale);
     const scaledIconHeight = iconBounds.height * iconScale;
     detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
-    detailContent.style.setProperty('--candle-shadow-scale', (iconScale * 1.05).toFixed(4));
+    detailContent.style.setProperty('--candle-shadow-scale', (iconScale * 1.18).toFixed(4));
     detailScreen.style.setProperty('--icon-center-x', `${iconBounds.left + iconBounds.width * 0.5}px`);
     detailScreen.style.setProperty('--icon-center-y', `${iconBounds.top + iconBounds.height * 0.5}px`);
     detailScreen.style.setProperty('--icon-top-shade-start', `${scaledIconTop}px`);
