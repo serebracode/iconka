@@ -1300,7 +1300,7 @@ const CANDLE_FLAME_SAMPLE_ALPHA_LOW = 7;
 const CANDLE_FLAME_SAMPLE_ALPHA_HIGH = 232;
 const CANDLE_SHADE_OPACITY_RANGE = 0.0264;
 const CANDLE_BODY_HEIGHT_VIEWPORT = 0.4275;
-const CANDLE_WICK_VIEWPORT_Y = 0.60125;
+const CANDLE_WICK_VIEWPORT_Y = 0.62625;
 const CANDLE_WICK_TIP_Y = 0;
 
 function positionCandleAssets() {
@@ -1461,15 +1461,17 @@ function sampleFlameShadeSignal() {
         for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) {
             const offset = (y * width + x) * 4;
             const luminance = Math.max(pixels[offset], pixels[offset + 1], pixels[offset + 2]) / 255;
-            const value = (pixels[offset + 3] / 255) * luminance;
+            // Кончик огня подвижнее основания: он сильнее влияет на направление света.
+            const tipWeight = 0.30 + (1 - y / (height - 1)) * 0.70;
+            const value = (pixels[offset + 3] / 255) * luminance * tipWeight;
             weight += value; centerX += x * value; centerY += y * value;
         }
         if (weight > 0.08) {
             const rawX = centerX / weight / (width - 1) - 0.5;
             const rawY = centerY / weight / (height - 1) - 0.5;
             // Быстрый, но не цифровой отклик: у маленького огня движение проекции заметно усилено.
-            flameMotionX += (rawX - flameMotionX) * 0.34;
-            flameMotionY += (rawY - flameMotionY) * 0.28;
+            flameMotionX += (rawX - flameMotionX) * 0.55;
+            flameMotionY += (rawY - flameMotionY) * 0.42;
         }
         flameVideoIntensity += (flameIntensity - flameVideoIntensity) * 0.16;
         document.getElementById('detailScreen').style.setProperty('--flicker-shade-opacity',
@@ -1527,8 +1529,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
     detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
 
-    detailScreen.style.setProperty('--projection-offset-x', (-lightX * 62).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-offset-y', (-16 - lightY * 44).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-offset-x', (-lightX * 94).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-offset-y', (-18 - lightY * 60).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-opacity', (0.72 + intensity * 0.20).toFixed(4));
     detailScreen.style.setProperty('--projection-blur', (4.9 + intensity * 1.7).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-scale', (1.12 + intensity * 0.03).toFixed(4));
