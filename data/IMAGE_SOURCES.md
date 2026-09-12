@@ -26,3 +26,13 @@
 | `icons/vsekh_skorbyashih_radost.jpg` | [Богоматерь «Всех скорбящих радость»](https://www.icon-art.info/masterpiece.php?mst_id=4983) | Алексей Иванович Квашнин; Государственная Третьяковская галерея |
 
 Для `pantanassa.jpg` необходимо сохранять указание автора, ссылку на источник и лицензию CC BY-SA 4.0 при дальнейшем распространении файла или его производных.
+
+## Ранее добавленные файлы
+
+| Локальный файл | Произведение / источник | Лицензия |
+| --- | --- | --- |
+| `vladimirskaya.jpg` | [Theotokos of Vladimir](https://commons.wikimedia.org/wiki/File:Theotokos_of_Vladimir.jpg) · Wikivorker | CC0 |
+| `troica_rublev.jpg` | [«Троица» Андрея Рублёва](https://commons.wikimedia.org/wiki/File:Andrey_Rublev_-_%D0%A1%D0%B2._%D0%A2%D1%80%D0%BE%D0%B8%D1%86%D0%B0_-_Google_Art_Project.jpg) · Google Art Project | Public Domain |
+| `spas_nerukotvorny.jpg` | [«Спас Нерукотворный»](https://commons.wikimedia.org/wiki/File:%D0%A1%D0%BF%D0%B0%D1%81_%D0%9D%D0%B5%D1%80%D1%83%D0%BA%D0%BE%D1%82%D0%B2%D0%BE%D1%80%D0%BD%D1%8B%D0%B9_-_Google_Art_Project.jpg) · Google Art Project | Public Domain |
+| `spas_vsedergitel.jpg` | [Синайский Пантократор](https://commons.wikimedia.org/wiki/File:Spas_vsederzhitel_sinay.jpg) | Public Domain |
+| `yaroslavskaya_oranta.jpg` | [«Великая Панагия» / Ярославская Оранта](https://commons.wikimedia.org/wiki/File:Oranta.jpg) · Государственная Третьяковская галерея | Public Domain |
