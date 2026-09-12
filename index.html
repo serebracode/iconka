@@ -243,8 +243,8 @@
             display: block;
             transform: translate(0, -8px) scale(1.01);
             transform-origin: 50% 52%;
-            filter: blur(18px);
-            background: rgba(0, 0, 0, 0.82);
+            filter: blur(7px);
+            background: rgba(0, 0, 0, 0.92);
             opacity: 0;
             pointer-events: none;
             will-change: transform, opacity;
@@ -1357,8 +1357,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', `${(flameSway * 7).toFixed(2)}px`);
     detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-offset-x', `${(-flameSway * 38).toFixed(2)}px`);
-    detailScreen.style.setProperty('--shadow-offset-y', `${(-14 - flickerSlow * 8).toFixed(2)}px`);
-    detailScreen.style.setProperty('--icon-shadow-opacity', (0.80 + flickerSlow * 0.12).toFixed(4));
+    detailScreen.style.setProperty('--shadow-offset-y', `${(-16 - (flickerSlow - 0.5) * 30 - flameSway * 14).toFixed(2)}px`);
+    detailScreen.style.setProperty('--icon-shadow-opacity', (0.86 + flickerSlow * 0.12).toFixed(4));
 
     if (typeof candleFlame.requestVideoFrameCallback !== 'function') {
         candleFlameSampleActive = sampleFlameShadeSignal();
