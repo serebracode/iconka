@@ -625,12 +625,9 @@
         
         <div style="margin-top: auto; padding-top: 48px; text-align: center;">
             <div style="color: #8E8E93; font-size: 16px; line-height: 1.6;">
-                <div>Поддержка и развитие проекта</div>
+                <div>Автор проекта:</div>
+                <a href="https://t.me/deniserebryakov" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px;">Денис Серебряков</a>
                 <div>© 2026</div>
-                <a href="https://t.me/deniserebryakov" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">Автор: Денис Серебряков</a>
-            </div>
-            <div style="color: #8E8E93; font-size: 13px; line-height: 1.45; margin-top: 20px;">
-                <a href="https://github.com/serebracode/iconka/blob/main/data/IMAGE_SOURCES.md" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">Изображения — Wikimedia Commons.<br>Права, авторы, источники и лицензии</a>
             </div>
         </div>
     </div>
@@ -881,6 +878,15 @@ function selectIcon(id) {
     document.getElementById('infoTitleText').textContent = selectedIcon.title;
     document.getElementById('infoDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
     
+    const imageAttribution = selectedIcon.image_source
+        ? `<div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <a href="${selectedIcon.image_source}" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #8E8E93; font-size: 14px; line-height: 1.5; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px;">Изображение: Wikimedia Commons</a>
+                <p style="margin: 6px 0 0; font-size: 13px; color: #8E8E93; line-height: 1.5;">${selectedIcon.image_credit}</p>
+            </div>`
+        : `<div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <p style="margin: 0; font-size: 14px; color: #8E8E93; line-height: 1.5;">${selectedIcon.rights || 'Изображение предоставлено для некоммерческого использования.'}</p>
+            </div>`;
+
     const infoContent = `
         ${selectedIcon.description_full ? `<p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">${selectedIcon.description_full}</p>` : ''}
         <div style="margin: 12px 0;"><strong>Автор:</strong> <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span></div>
@@ -888,11 +894,7 @@ function selectIcon(id) {
         <div style="margin: 12px 0;"><strong>Размер:</strong> <span style="margin-left: 8px;">${selectedIcon.size || 'Неизвестно'}</span></div>
         <div style="margin: 12px 0;"><strong>Техника:</strong> <span style="margin-left: 8px;">${selectedIcon.technique || 'Неизвестно'}</span></div>
         <div style="margin: 12px 0;"><strong>Местонахождение:</strong> <span style="margin-left: 8px;">${selectedIcon.location || 'Неизвестно'}</span></div>
-        <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-            <p style="margin: 0; font-size: 14px; color: #8E8E93; line-height: 1.5; padding-bottom: 20px;">
-                ${selectedIcon.rights || 'Изображение предоставлено для некоммерческого использования.'}
-            </p>
-        </div>
+        ${imageAttribution}
     `;
     document.getElementById('infoContentText').innerHTML = infoContent;
     
