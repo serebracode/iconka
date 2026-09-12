@@ -207,6 +207,16 @@
             transition-duration: 0ms, 800ms;
         }
 
+        /* При увеличении остаётся только нативная навигация Telegram. */
+        body.icon-zoomed #globalLogo,
+        body.icon-zoomed #shareBtn,
+        body.icon-zoomed #candleBtn,
+        body.icon-zoomed #infoBtn,
+        body.icon-zoomed .icon-title {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
         #iconOchreFilter {
             position: absolute;
             inset: 0;
@@ -1525,6 +1535,7 @@ function resetIconZoom() {
     iconZoomed = false;
     iconPanX = 0;
     iconPanY = 0;
+    document.body.classList.remove('icon-zoomed');
     iconImageElement.classList.remove('zoomed', 'zoom-dragging');
     iconImageElement.style.removeProperty('transform');
 }
@@ -1543,6 +1554,7 @@ function toggleIconZoom() {
     iconPanX = 0;
     iconPanY = 0;
     iconZoomed = true;
+    document.body.classList.add('icon-zoomed');
     iconImageElement.classList.add('zoomed');
     applyIconZoomTransform();
 }
