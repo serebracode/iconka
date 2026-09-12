@@ -614,6 +614,7 @@
 
 <!-- ЭКРАН О ПРОЕКТЕ -->
 <div id="aboutScreen" class="screen" style="overflow-y: auto;">
+    <button onclick="closeAboutScreen()" aria-label="Вернуться к каталогу" style="position: fixed; z-index: 2; top: calc(var(--tg-safe-area-inset-top, 0px) + 16px); left: 16px; min-width: 44px; height: 44px; padding: 0 14px; background: rgba(44, 44, 46, 0.94); border: none; border-radius: 22px; color: #FFFFFF; font-size: 16px; font-family: inherit; cursor: pointer;">←&nbsp; Назад</button>
     <div style="display: flex; flex-direction: column; align-items: center; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 43px + 50px); padding-left: 24px; padding-right: 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 48px); min-height: 100vh;">
         <img src="./id/iconka_icon.svg" alt="Iconka" style="width: 107px; height: 107px; border-radius: 24px; margin-bottom: 27px;">
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 183px; height: 27px;">
@@ -823,44 +824,50 @@ if (tg) {
 // ЛОГИКА
 // ============================================
 
-function showListScreen() {
-    const loadingScreen = document.getElementById('loadingScreen');
+function activateListScreen() {
     const listScreen = document.getElementById('listScreen');
     const globalLogo = document.getElementById('globalLogo');
     const listHeader = document.getElementById('listHeader');
     const iconsList = document.getElementById('iconsList');
-    
-    loadingScreen.classList.add('loading-fadeout');
+
     renderIconsList();
-    
+
+    // Сброс состояния перед показом
+    globalLogo.classList.remove('list-fadein');
+    listHeader.classList.remove('list-fadein');
+    iconsList.classList.remove('list-fadein');
+    globalLogo.style.opacity = '0';
+    listHeader.style.opacity = '0';
+    iconsList.style.opacity = '0';
+
+    listScreen.classList.add('active');
+    globalLogo.style.display = 'block';
+
+    // Запуск анимаций
+    requestAnimationFrame(() => {
+        globalLogo.classList.add('list-fadein');
+        listHeader.classList.add('list-fadein');
+        iconsList.classList.add('list-fadein');
+    });
+
+    tg?.BackButton?.show();
+}
+
+function showListScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+
+    loadingScreen.classList.add('loading-fadeout');
+
     setTimeout(() => {
         loadingScreen.classList.remove('active');
         loadingScreen.classList.remove('loading-fadeout');
         loadingScreen.style.display = 'none';
-        
+
         document.getElementById('loadingIcon').style.opacity = '1';
         document.getElementById('loadingLogotype').style.opacity = '1';
         document.getElementById('aboutBtn').style.opacity = '1';
-        
-        // Сброс состояния перед показом
-        globalLogo.classList.remove('list-fadein');
-        listHeader.classList.remove('list-fadein');
-        iconsList.classList.remove('list-fadein');
-        globalLogo.style.opacity = '0';
-        listHeader.style.opacity = '0';
-        iconsList.style.opacity = '0';
-        
-        listScreen.classList.add('active');
-        globalLogo.style.display = 'block';
-        
-        // Запуск анимаций
-        requestAnimationFrame(() => {
-            globalLogo.classList.add('list-fadein');
-            listHeader.classList.add('list-fadein');
-            iconsList.classList.add('list-fadein');
-        });
-        
-        tg?.BackButton?.show();
+
+        activateListScreen();
     }, 300);
 }
 
@@ -1615,16 +1622,13 @@ function showAboutScreen() {
 }
 
 function closeAboutScreen() {
-    const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
-    
+
     aboutScreen.classList.add('loading-fadeout');
     setTimeout(() => {
         aboutScreen.classList.remove('active');
         aboutScreen.classList.remove('loading-fadeout');
-        loadingScreen.style.display = 'flex';
-        loadingScreen.classList.add('active');
-        tg?.BackButton?.hide();
+        activateListScreen();
     }, 300);
 }
 
