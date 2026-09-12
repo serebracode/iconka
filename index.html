@@ -261,11 +261,11 @@
             display: block;
             pointer-events: none;
             background: radial-gradient(
-                ellipse 72vw 62vh at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
-                rgba(177, 108, 47, 0.22) 0%,
-                rgba(118, 68, 29, 0.13) 35%,
-                rgba(21, 13, 6, 0.08) 58%,
-                rgba(2, 2, 1, 0) 78%
+                ellipse 82vw 72vh at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
+                rgba(206, 139, 70, 0.62) 0%,
+                rgba(151, 91, 38, 0.43) 32%,
+                rgba(74, 43, 17, 0.24) 58%,
+                rgba(2, 2, 1, 0) 82%
             );
             opacity: 0;
             transform-origin: 50% 50%;
@@ -1358,7 +1358,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-y', `${((flickerSlow - 0.5) * 2).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-offset-x', `${(-flameSway * 16).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-offset-y', `${(-12 - flickerSlow * 4).toFixed(2)}px`);
-    detailScreen.style.setProperty('--icon-shadow-opacity', (0.64 + flickerSlow * 0.10).toFixed(4));
+    detailScreen.style.setProperty('--icon-shadow-opacity', (0.80 + flickerSlow * 0.12).toFixed(4));
 
     if (typeof candleFlame.requestVideoFrameCallback !== 'function') {
         candleFlameSampleActive = sampleFlameShadeSignal();
