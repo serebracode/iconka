@@ -614,7 +614,6 @@
 
 <!-- ЭКРАН О ПРОЕКТЕ -->
 <div id="aboutScreen" class="screen" style="overflow-y: auto;">
-    <button onclick="closeAboutScreen()" aria-label="Вернуться к каталогу" style="position: fixed; z-index: 2; top: calc(var(--tg-safe-area-inset-top, 0px) + 16px); left: 16px; min-width: 44px; height: 44px; padding: 0 14px; background: rgba(44, 44, 46, 0.94); border: none; border-radius: 22px; color: #FFFFFF; font-size: 16px; font-family: inherit; cursor: pointer;">←&nbsp; Назад</button>
     <div style="display: flex; flex-direction: column; align-items: center; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 43px + 50px); padding-left: 24px; padding-right: 24px; padding-bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 48px); min-height: 100vh;">
         <img src="./id/iconka_icon.svg" alt="Iconka" style="width: 107px; height: 107px; border-radius: 24px; margin-bottom: 27px;">
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 183px; height: 27px;">
@@ -624,52 +623,9 @@
             <p style="color: #FFFFFF; font-size: 16px; line-height: 1.5; margin: 0;">Проект «Иконка» это не история про фанатизм или крайности — это спокойный просветительский проект, созданный с уважением к культурному наследию христиан. Его цель — вернуть слову «иконка» исходный смысл, вместо того чтобы называть им всё подряд. Здесь собраны подлинные образцы иконописи, к которым можно обратиться без суеты и лишних интерпретаций.</p>
         </div>
         
-        <div style="width: 100%; max-width: 400px; margin-top: 48px;">
-            <h2 style="color: #FFFFFF; font-size: 20px; font-weight: 600; margin: 0 0 24px 0; text-align: center;">Поддержите развитие проекта!</h2>
-            
-            <div style="padding-left: 20px; margin-bottom: 24px;">
-                <div style="display: flex; position: relative;">
-                    <div style="position: relative; margin-right: 20px;">
-                        <div style="width: 16px; height: 16px; background-color: #D4A017; border-radius: 50%; position: relative; z-index: 2;"></div>
-                        <div style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); width: 3px; height: calc(100% + 24px); background-color: #D4A017;"></div>
-                    </div>
-                    <div style="padding-bottom: 32px;">
-                        <div style="color: #D4A017; font-size: 18px; font-weight: 600; margin-bottom: 6px;">Запуск проекта</div>
-                        <div style="color: #FFFFFF; font-size: 16px; line-height: 1.4;">Набор базовых функций</div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; position: relative;">
-                    <div style="position: relative; margin-right: 20px;">
-                        <div style="width: 16px; height: 16px; background-color: #8E8E93; border-radius: 50%; position: relative; z-index: 2;"></div>
-                        <div style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); width: 3px; height: calc(100% + 24px); background-color: #8E8E93;"></div>
-                    </div>
-                    <div style="padding-bottom: 32px;">
-                        <div style="color: #8E8E93; font-size: 18px; font-weight: 600; margin-bottom: 6px;">Расширение галереи</div>
-                        <div style="color: #8E8E93; font-size: 16px; line-height: 1.4;">Подбор икон, написание текстов</div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; position: relative;">
-                    <div style="position: relative; margin-right: 20px;">
-                        <div style="width: 16px; height: 16px; background-color: #8E8E93; border-radius: 50%; position: relative; z-index: 2;"></div>
-                    </div>
-                    <div>
-                        <div style="color: #8E8E93; font-size: 18px; font-weight: 600; margin-bottom: 6px;">Расширение функций</div>
-                        <div style="color: #8E8E93; font-size: 16px; line-height: 1.4;">Календарь и т.п.</div>
-                    </div>
-                </div>
-            </div>
-            
-            <button onclick="donate(25)" style="width: 100%; padding: 16px; background-color: #2C2C2E; border: none; border-radius: 12px; color: #F3C200; font-size: 17px; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <span>25★</span>
-            </button>
-        </div>
-        
         <div style="margin-top: auto; padding-top: 48px; text-align: center;">
             <div style="color: #8E8E93; font-size: 16px; line-height: 1.6;">
-                <div>© Иконка, 2025</div>
-                <div>Проект Serebracode</div>
+                <div>Автор: Денис Серебряков</div>
             </div>
         </div>
     </div>
@@ -1630,12 +1586,6 @@ function closeAboutScreen() {
         aboutScreen.classList.remove('loading-fadeout');
         activateListScreen();
     }, 300);
-}
-
-function donate(amount) {
-    if (tg?.showAlert) {
-        tg.showAlert(`Спасибо за желание поддержать проект! Оплата ${amount}★ будет доступна в следующих версиях.`);
-    }
 }
 
 document.getElementById('detailContent').addEventListener('click', (e) => {
