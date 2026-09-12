@@ -910,7 +910,7 @@ function selectIcon(id) {
     
     const imageAttribution = selectedIcon.image_source
         ? `<div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                <a href="${selectedIcon.image_source}" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #8E8E93; font-size: 14px; line-height: 1.5; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px;">Изображение: Wikimedia Commons</a>
+                <a href="${selectedIcon.image_source}" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #8E8E93; font-size: 14px; line-height: 1.5; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px;">${selectedIcon.image_source_label || 'Изображение: Wikimedia Commons'}</a>
                 <p style="margin: 6px 0 0; font-size: 13px; color: #8E8E93; line-height: 1.5;">${selectedIcon.image_credit}</p>
             </div>`
         : `<div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
@@ -922,7 +922,7 @@ function selectIcon(id) {
         <div style="margin: 12px 0;"><strong>Автор:</strong> <span style="margin-left: 8px;">${(selectedIcon.author_full || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span></div>
         <div style="margin: 12px 0;"><strong>Датировка:</strong> <span style="margin-left: 8px;">${(selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно')}</span></div>
         <div style="margin: 12px 0;"><strong>Размер:</strong> <span style="margin-left: 8px;">${selectedIcon.size || 'Неизвестно'}</span></div>
-        <div style="margin: 12px 0;"><strong>Техника:</strong> <span style="margin-left: 8px;">${selectedIcon.technique || 'Неизвестно'}</span></div>
+        <div style="margin: 12px 0;"><strong>Техника:</strong> <span style="margin-left: 8px;">${selectedIcon.material || selectedIcon.technique || 'Неизвестно'}</span></div>
         <div style="margin: 12px 0;"><strong>Местонахождение:</strong> <span style="margin-left: 8px;">${selectedIcon.location || 'Неизвестно'}</span></div>
         ${imageAttribution}
     `;
