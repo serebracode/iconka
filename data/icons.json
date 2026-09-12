@@ -3,6 +3,7 @@
     {
       "id": 1,
       "title": "Владимирская Богоматерь",
+      "title_short": "Владимирская",
       "image": "./icons/vladimirskaya.jpg",
       "author_full": "Неизвестно",
       "date": "Около 1131 года",
@@ -15,6 +16,7 @@
     {
       "id": 2,
       "title": "Троица Андрея Рублёва",
+      "title_short": "Троица",
       "image": "./icons/troica_rublev.jpg",
       "author_full": "Андрей Рублёв",
       "date": "1411–1427",
@@ -27,6 +29,7 @@
     {
       "id": 3,
       "title": "Казанская Богоматерь",
+      "title_short": "Казанская",
       "image": "./icons/kazanskaya.jpg",
       "author_full": "Неизвестно",
       "date": "Середина XIX века",
@@ -39,6 +42,7 @@
     {
       "id": 4,
       "title": "Иверская Богоматерь",
+      "title_short": "Иверская",
       "image": "./icons/iverskaya.jpg",
       "author_full": "Неизвестно",
       "date": "Неизвестно",
@@ -51,6 +55,7 @@
     {
       "id": 5,
       "title": "Грузинская Богоматерь",
+      "title_short": "Грузинская",
       "image": "./icons/gruzinskaya.jpg",
       "author_full": "Неизвестно (Новгородская школа)",
       "date": "1530-е годы",
@@ -63,6 +68,7 @@
     {
       "id": 6,
       "title": "Знамение. Новгородская Богородица",
+      "title_short": "Знамение",
       "image": "./icons/znameniye.jpg",
       "author_full": "Неизвестно",
       "date": "Ранний список образца XI века",
@@ -75,6 +81,7 @@
     {
       "id": 7,
       "title": "Воскресение Христово (Сошествие во ад)",
+      "title_short": "Воскресение Христово",
       "image": "./icons/voskresenie.jpg",
       "author_full": "Неизвестно",
       "date": "Неизвестно",
@@ -87,6 +94,7 @@
     {
       "id": 8,
       "title": "Спас Нерукотворный",
+      "title_short": "Спас Нерукотворный",
       "image": "./icons/spas_nerukotvorny.jpg",
       "author_full": "Неизвестно",
       "date": "Около 1191 года",
@@ -99,6 +107,7 @@
     {
       "id": 9,
       "title": "Спас Вседержитель (Пантократор)",
+      "title_short": "Спас Вседержитель",
       "image": "./icons/spas_vsedergitel.jpg",
       "author_full": "Неизвестно",
       "date": "VI век",
@@ -111,6 +120,7 @@
     {
       "id": 10,
       "title": "Богоматерь Одигитрия",
+      "title_short": "Одигитрия",
       "image": "./icons/odigitria.jpg",
       "author_full": "Неизвестно",
       "date": "Неизвестно",
@@ -124,6 +134,7 @@
     {
       "id": 11,
       "title": "Богоматерь Умиление (Елеуса)",
+      "title_short": "Умиление",
       "image": "./icons/eleusa.jpg",
       "author_full": "Неизвестно",
       "date": "X–XI века",
@@ -137,6 +148,7 @@
     {
       "id": 12,
       "title": "Богоматерь Неопалимая Купина",
+      "title_short": "Неопалимая Купина",
       "image": "./icons/neopalimaya.jpg",
       "author_full": "Неизвестно",
       "date": "Неизвестно",
@@ -150,6 +162,7 @@
     {
       "id": 13,
       "title": "Богоматерь Всецарица (Пантанасса)",
+      "title_short": "Всецарица",
       "image": "./icons/pantanassa.jpg",
       "author_full": "Андреас Рицос",
       "date": "До 1492 года",
@@ -163,6 +176,7 @@
     {
       "id": 14,
       "title": "Святой Николай Чудотворец",
+      "title_short": "Николай Чудотворец",
       "image": "./icons/nikolay.jpg",
       "author_full": "Неизвестно",
       "date": "XII век",
@@ -176,6 +190,7 @@
     {
       "id": 15,
       "title": "Сергий Радонежский",
+      "title_short": "Сергий Радонежский",
       "image": "./icons/sergiy.jpg",
       "author_full": "Неизвестно",
       "date": "Начало XVI века",
@@ -189,6 +204,7 @@
     {
       "id": 16,
       "title": "Георгий Победоносец",
+      "title_short": "Георгий Победоносец",
       "image": "./icons/georgiy.jpg",
       "author_full": "Неизвестно",
       "date": "XII век",
@@ -202,6 +218,7 @@
     {
       "id": 17,
       "title": "Архангел Михаил",
+      "title_short": "Архангел Михаил",
       "image": "./icons/mihail.jpg",
       "author_full": "Неизвестно",
       "date": "XIII век",
@@ -215,6 +232,7 @@
     {
       "id": 18,
       "title": "Андрей Первозванный",
+      "title_short": "Андрей Первозванный",
       "image": "./icons/andrey.jpg",
       "author_full": "Неизвестно",
       "date": "XIV век",
@@ -228,6 +246,7 @@
     {
       "id": 19,
       "title": "Богоматерь Всех скорбящих. Радость",
+      "title_short": "Всех скорбящих Радость",
       "image": "./icons/vsekh_skorbyashih_radost.jpg",
       "author_full": "Неизвестно",
       "date": "1688 год (первый известный список)",
@@ -241,6 +260,7 @@
     {
       "id": 20,
       "title": "Ярославская Оранта (Богородица Знамение)",
+      "title_short": "Ярославская Оранта",
       "image": "./icons/yaroslavskaya_oranta.jpg",
       "author_full": "Неизвестно",
       "date": "XIII век",
