@@ -624,15 +624,15 @@
     
         /* ========== CANDLE DEPTH REBUILD ========== */
         #detailScreen.scene-active {
-            background: #160d06 !important;
+            background: #090503 !important;
         }
 
         #detailScreen.scene-active .scene-background {
             background:
-                radial-gradient(ellipse 76vw 68vh at var(--icon-center-x, 50%) var(--icon-center-y, 48%),
-                    rgba(194, 112, 44, 0.64) 0%, rgba(112, 57, 18, 0.43) 38%,
-                    rgba(45, 22, 7, 0.28) 64%, rgba(8, 4, 1, 0) 88%),
-                linear-gradient(to bottom, #140c06 0%, #2c170a 51%, #090502 100%) !important;
+                radial-gradient(ellipse 70vw 66vh at var(--flame-x, 50%) var(--flame-y, 60%),
+                    rgba(157, 83, 27, 0.38) 0%, rgba(77, 37, 11, 0.24) 39%,
+                    rgba(28, 13, 4, 0.14) 62%, rgba(5, 2, 1, 0) 84%),
+                linear-gradient(to bottom, #0a0603 0%, #160b05 53%, #050301 100%) !important;
         }
 
         #iconProjection {
@@ -698,11 +698,16 @@
 
         #foregroundVeil {
             z-index: 31;
-            background: radial-gradient(ellipse 72% 80% at 50% 50%, transparent 47%,
-                rgba(0, 0, 0, 0.12) 76%, rgba(0, 0, 0, 0.36) 100%);
+            background: radial-gradient(
+                ellipse 78% 86% at var(--flame-x, 50%) var(--flame-y, 60%),
+                rgba(0, 0, 0, 0) 0%,
+                rgba(0, 0, 0, 0.08) 32%,
+                rgba(0, 0, 0, 0.34) 62%,
+                rgba(0, 0, 0, 0.74) 100%
+            );
         }
 
-        #detailScreen.scene-active #foregroundVeil { opacity: var(--foreground-veil-opacity, 0.34); }
+        #detailScreen.scene-active #foregroundVeil { opacity: var(--foreground-veil-opacity, 0.72); }
         #detailScreen.scene-active #foregroundEdgeShade { opacity: 0; }
 
     
