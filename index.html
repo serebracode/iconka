@@ -696,13 +696,13 @@
                 rgba(0, 0, 0, 0.12) 76%, rgba(0, 0, 0, 0.36) 100%);
         }
 
-        #detailScreen.scene-active #foregroundVeil { opacity: var(--foreground-veil-opacity, 0.62); }
+        #detailScreen.scene-active #foregroundVeil { opacity: var(--foreground-veil-opacity, 0.34); }
         #detailScreen.scene-active #foregroundEdgeShade { opacity: 0; }
 
     
         /* Свет возвращается на саму икону: тёмная база + подвижный тёплый отблеск. */
         #detailContent.candle-active #iconImage {
-            filter: brightness(0.78) contrast(1.22) blur(0.25px);
+            filter: brightness(0.87) contrast(1.18) blur(0.25px);
         }
 
         #detailContent.candle-active #iconOchreFilter {
@@ -744,8 +744,8 @@
                 ellipse 52% 48% at 50% 58%,
                 rgba(0, 0, 0, 0) 20%,
                 rgba(0, 0, 0, 0.08) 47%,
-                rgba(0, 0, 0, 0.34) 73%,
-                rgba(0, 0, 0, 0.62) 100%
+                rgba(0, 0, 0, 0.24) 73%,
+                rgba(0, 0, 0, 0.44) 100%
             );
             mix-blend-mode: multiply;
             transition: transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
@@ -753,7 +753,7 @@
         }
 
         #detailContent.candle-active #iconEdgeShade {
-            opacity: 0.82;
+            opacity: 0.56;
             transform: scale(var(--candle-icon-scale, 1.10));
         }
 
@@ -1537,7 +1537,7 @@ function applyCandleAtmosphereFrame(time) {
     const lightX = candleFlameSampleActive ? flameMotionX : ((fallbackSlow - 0.5) * 0.72 + (fallbackFast - 0.5) * 0.28);
     const lightY = candleFlameSampleActive ? flameMotionY : ((fallbackFast - 0.5) * 0.38 + (fallbackSlow - 0.5) * 0.62);
 
-    detailScreen.style.setProperty('--icon-light-opacity', (0.14 + intensity * 0.15).toFixed(4));
+    detailScreen.style.setProperty('--icon-light-opacity', (0.16 + intensity * 0.16).toFixed(4));
     detailScreen.style.setProperty('--icon-light-offset-x', (lightX * 8).toFixed(2) + 'px');
     detailScreen.style.setProperty('--icon-light-offset-y', (lightY * 5).toFixed(2) + 'px');
     detailScreen.style.setProperty('--middle-haze-opacity', (0.028 + intensity * 0.042).toFixed(4));
