@@ -757,6 +757,23 @@
             transform: scale(var(--candle-icon-scale, 1.10));
         }
 
+    
+        /* Свеча остаётся точкой фокуса; остальные планы — едва мягче. */
+        #detailContent.candle-active {
+            filter: blur(0.32px);
+        }
+
+        #detailScreen.scene-active .scene-background {
+            filter: blur(0.42px);
+            transform: scale(1.004);
+        }
+
+        #detailScreen.scene-active #iconProjection {
+            filter: blur(calc(var(--projection-blur, 5px) + 0.32px));
+        }
+
+        /* Слой свечи и видео пламени намеренно не входят в этот набор. */
+
     </style>
 </head>
 <body>
