@@ -1,6 +1,8 @@
-# Изображения из Wikimedia Commons
+# Источники изображений
 
-Ниже зафиксированы источники файлов, добавленных для заполнения каталога. Локальные изображения подготовлены для интерфейса: приведены к JPEG и для каждого создано квадратное превью в `icons/preview/`.
+Ниже зафиксированы источники файлов, добавленных для заполнения каталога и позднее сверенных с конкретными произведениями. Локальные изображения подготовлены для интерфейса: приведены к JPEG и для каждого создано квадратное превью в `icons/preview/`.
+
+## Wikimedia Commons
 
 | Файл в проекте | Источник | Лицензия |
 | --- | --- | --- |
@@ -13,5 +15,14 @@
 | `icons/georgiy.jpg` | [Novgorod George](https://commons.wikimedia.org/wiki/File:Novgorod_George.jpg) | Public Domain |
 | `icons/mihail.jpg` | [Saint Michael, Yaroslavl, 13th century](https://commons.wikimedia.org/wiki/File:Saint_Michael_(Yaroslavl,_13th_c.,_GTG).jpg) | Public Domain |
 | `icons/andrey.jpg` | [Saint Andrew — Walters Art Museum](https://commons.wikimedia.org/wiki/File:Greek_-_Saint_Andrew_-_Walters_37559.jpg) | Public Domain |
+
+## Другие подтверждённые записи
+
+| Файл в проекте | Запись произведения | Кредит |
+| --- | --- | --- |
+| `icons/gruzinskaya.jpg` | [Богоматерь Одигитрия (в типе «Грузинской»)](https://www.icon-art.info/masterpiece.php?mst_id=6233) | Неизвестный мастер; Новгородская мастерская митрополита Макария |
+| `icons/eleusa.jpg` | [Богоматерь Умиление](https://collectiononline.kreml.ru/entity/OBJECT/9679) | Музеи Московского Кремля |
+| `icons/nikolay.jpg` | [Никола Новодевичий](https://www.pravmir.ru/nikola-novodevichij-mudrost-svyatosti-chitaem-ikony/) | Государственная Третьяковская галерея |
+| `icons/vsekh_skorbyashih_radost.jpg` | [Богоматерь «Всех скорбящих радость»](https://www.icon-art.info/masterpiece.php?mst_id=4983) | Алексей Иванович Квашнин; Государственная Третьяковская галерея |
 
 Для `pantanassa.jpg` необходимо сохранять указание автора, ссылку на источник и лицензию CC BY-SA 4.0 при дальнейшем распространении файла или его производных.
