@@ -408,6 +408,7 @@
 
         #detailScreen.scene-active #iconBackHalo {
             opacity: 1;
+            visibility: visible;
         }
 
         #detailContent.candle-active #iconLight {
@@ -704,8 +705,8 @@
         #iconBackHalo {
             z-index: 6;
             background: radial-gradient(ellipse 61vw 51vh at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
-                rgba(224, 151, 70, 0.34) 0%, rgba(131, 70, 24, 0.18) 42%,
-                rgba(22, 12, 4, 0.05) 65%, transparent 84%);
+                rgba(224, 151, 70, 0.46) 0%, rgba(131, 70, 24, 0.26) 42%,
+                rgba(22, 12, 4, 0.08) 65%, transparent 84%);
             mix-blend-mode: screen;
         }
 
@@ -733,8 +734,8 @@
         }
 
         #foregroundVeil {
-            /* Затемняет пространство сцены, оставаясь между проекцией и иконой. */
-            z-index: 9;
+            /* Veil лежит под проекцией: фон темнеет, но силуэт тени не теряется. */
+            z-index: 7;
             background: radial-gradient(
                 ellipse 78% 86% at var(--flame-x, 50%) calc(var(--flame-y, 60%) - 5vh),
                 rgba(0, 0, 0, 0) 0%,
