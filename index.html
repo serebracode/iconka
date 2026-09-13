@@ -728,7 +728,8 @@
         }
 
         #foregroundVeil {
-            z-index: 31;
+            /* Затемняет пространство сцены, но не закрывает саму икону. */
+            z-index: 7;
             background: radial-gradient(
                 ellipse 78% 86% at var(--flame-x, 50%) calc(var(--flame-y, 60%) - 5vh),
                 rgba(0, 0, 0, 0) 0%,
@@ -748,7 +749,7 @@
             z-index: 32;
             opacity: 1;
             visibility: visible;
-            filter: blur(0.3px) brightness(0.87) contrast(1.18);
+            filter: blur(0.3px) brightness(0.98) contrast(1.12);
         }
 
         #detailContent.candle-active #iconOchreFilter {
