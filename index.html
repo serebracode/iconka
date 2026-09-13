@@ -687,7 +687,7 @@
             inset: 0;
             pointer-events: none;
             background:
-                linear-gradient(to bottom, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.07) 18%, transparent 36%),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.14) 20%, transparent 42%),
                 radial-gradient(ellipse 76vw 68vh at var(--icon-center-x, 50%) var(--icon-center-y, 48%),
                     rgba(211, 128, 55, 0.68) 0%, rgba(132, 70, 25, 0.47) 38%,
                     rgba(57, 29, 10, 0.31) 64%, rgba(11, 6, 2, 0) 88%),
@@ -766,6 +766,13 @@
         #detailScreen.scene-active #iconProjection {
             transform: translate(var(--projection-offset-x, 0px), var(--projection-offset-y, 0px));
             opacity: var(--projection-opacity, 0.86);
+        }
+
+        /* На входе тень начинает проявляться только со второй половины анимации. */
+        body.candle-transition.candle-active #iconProjection {
+            transition:
+                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
+                opacity 1500ms var(--candle-transition-easing) 1500ms;
         }
 
         body:not(.candle-transition) #iconProjection {
