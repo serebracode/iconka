@@ -288,7 +288,7 @@
             transform: scale(1.04);
             transform-origin: 50% 52%;
             background: radial-gradient(
-                ellipse 120% 102% at 50% 58%,
+                ellipse 48% 40.8% at 50% 58%,
                 rgba(255, 205, 133, 0.62) 0%,
                 rgba(235, 137, 54, 0.22) 46%,
                 transparent 76%
@@ -716,18 +716,9 @@
         #iconLight {
             transform: translate(var(--icon-light-offset-x, 0px), var(--icon-light-offset-y, 0px)) scale(1.055);
             filter: brightness(1.48) contrast(1.08) saturate(0.95) sepia(0.20);
-            mask-image: radial-gradient(
-                ellipse 147% 126% at 50% 59%,
-                #000 0%,
-                rgba(0, 0, 0, 0.88) 44%,
-                transparent 100%
-            );
-            -webkit-mask-image: radial-gradient(
-                ellipse 147% 126% at 50% 59%,
-                #000 0%,
-                rgba(0, 0, 0, 0.88) 44%,
-                transparent 100%
-            );
+            /* Слой совпадает с размером иконы; границы света задаёт сам градиент. */
+            mask-image: none;
+            -webkit-mask-image: none;
         }
 
         body:not(.candle-transition) #iconLight {
