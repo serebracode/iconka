@@ -1410,6 +1410,9 @@ let candleFlameSampleActive = false;
 let flameMotionX = 0;
 let flameMotionY = 0;
 let flameVideoIntensity = 0;
+let iconLightMotionX = 0;
+let iconLightMotionY = 0;
+let iconLightIntensity = 0.5;
 const CANDLE_SCENE_TRANSITION_MS = 3000;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
@@ -1652,13 +1655,18 @@ function applyCandleAtmosphereFrame(time) {
     const lightX = candleFlameSampleActive ? flameMotionX : ((fallbackSlow - 0.5) * 0.72 + (fallbackFast - 0.5) * 0.28);
     const lightY = candleFlameSampleActive ? flameMotionY : ((fallbackFast - 0.5) * 0.38 + (fallbackSlow - 0.5) * 0.62);
 
-    detailScreen.style.setProperty('--icon-light-opacity', (0.18 + intensity * 0.22).toFixed(4));
-    detailScreen.style.setProperty('--icon-edge-shade-opacity', (0.72 - intensity * 0.14).toFixed(4));
+    /* Отдельное инерционное сглаживание убирает скачки световой маски между кадрами видео. */
+    iconLightMotionX += (lightX - iconLightMotionX) * 0.075;
+    iconLightMotionY += (lightY - iconLightMotionY) * 0.065;
+    iconLightIntensity += (intensity - iconLightIntensity) * 0.055;
+
+    detailScreen.style.setProperty('--icon-light-opacity', (0.18 + iconLightIntensity * 0.22).toFixed(4));
+    detailScreen.style.setProperty('--icon-edge-shade-opacity', (0.72 - iconLightIntensity * 0.14).toFixed(4));
     /* Свет идёт за пламенем; ход немного спокойнее тени. */
-    const lightCenterX = settlingCandleScene ? 50 : 50 + lightX * 12;
-    const lightCenterY = settlingCandleScene ? 59 : 59 + lightY * 10;
-    const lightSizeX = 49 + intensity * 11;
-    const lightSizeY = 45 + intensity * 10;
+    const lightCenterX = settlingCandleScene ? 50 : 50 + iconLightMotionX * 12;
+    const lightCenterY = settlingCandleScene ? 59 : 59 + iconLightMotionY * 10;
+    const lightSizeX = 49 + iconLightIntensity * 11;
+    const lightSizeY = 45 + iconLightIntensity * 10;
     detailScreen.style.setProperty('--icon-light-center-x', lightCenterX.toFixed(2) + '%');
     detailScreen.style.setProperty('--icon-light-center-y', lightCenterY.toFixed(2) + '%');
     detailScreen.style.setProperty('--icon-light-size-x', lightSizeX.toFixed(2) + '%');
@@ -1669,7 +1677,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
     detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
 
-    /* Тень идёт в противоходе и проходит до 9% габарита иконы по обеим осям. */
+    /* Тень идёт в противоходе и проходит до 7% габарита иконы по обеим осям. */
     const projectionTravelX = parseFloat(detailScreen.dataset.projectionTravelX || '0');
     const projectionTravelY = parseFloat(detailScreen.dataset.projectionTravelY || '0');
     const projectionBaseY = parseFloat(detailScreen.dataset.projectionBaseY || '0');
@@ -1695,6 +1703,9 @@ function stopCandleAtmosphereAnimation() {
 function startCandleAtmosphereAnimation() {
     stopCandleAtmosphereAnimation();
     candleAtmosphereAnimationStart = performance.now();
+    iconLightMotionX = 0;
+    iconLightMotionY = 0;
+    iconLightIntensity = 0.5;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         applyCandleAtmosphereFrame(0);
@@ -1760,9 +1771,9 @@ function showCandle() {
     detailScreen.style.setProperty('--projection-shape-top', projectionPaddingY + 'px');
     detailScreen.style.setProperty('--projection-shape-width', projectionWidth + 'px');
     detailScreen.style.setProperty('--projection-shape-height', projectionHeight + 'px');
-    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±9%. */
-    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.18);
-    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.18);
+    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±7%. */
+    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.14);
+    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.14);
     /* Без постоянного подъёма: нижний край тени остаётся виден под иконой. */
     detailScreen.dataset.projectionBaseY = '0';
     positionCandleAssets();
