@@ -229,7 +229,8 @@
         #iconOchreFilter {
             position: absolute;
             inset: 0;
-            z-index: 25;
+            /* Тёплый цвет остаётся поверх световой копии и не вымывается. */
+            z-index: 35;
             pointer-events: none;
             background: rgb(183, 120, 42);
             mix-blend-mode: color;
