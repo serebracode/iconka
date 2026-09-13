@@ -709,18 +709,24 @@
             width: var(--projection-width, 0px);
             height: var(--projection-height, 0px);
             pointer-events: none;
-            background: rgb(0, 0, 0);
-            filter: blur(var(--projection-blur, 6px));
             opacity: 0;
             transform: translate(0, 0);
             transform-origin: 50% 52%;
-            /* Верх шире низа: источник света расположен ниже иконы. */
-            clip-path: polygon(0 0, 100% 0, 95.5% 100%, 4.5% 100%);
+            filter: blur(var(--projection-blur, 4px));
             will-change: transform, opacity, filter;
             transition:
                 transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
                 opacity var(--candle-transition-duration) var(--candle-transition-easing),
-                filter 180ms ease-out;
+                filter 160ms ease-out;
+        }
+
+        #iconProjection::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgb(0, 0, 0);
+            /* Верх шире низа: источник света расположен ниже иконы. */
+            clip-path: polygon(0 0, 100% 0, 95.5% 100%, 4.5% 100%);
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -1628,7 +1634,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--projection-offset-x', (-lightX * projectionTravelX).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-offset-y', (projectionBaseY - lightY * projectionTravelY).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-opacity', (0.84 + intensity * 0.10).toFixed(4));
-    detailScreen.style.setProperty('--projection-blur', (5.5 + intensity * 1.5).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-blur', (3.5 + intensity * 1.0).toFixed(2) + 'px');
 
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
 }
@@ -1703,8 +1709,8 @@ function showCandle() {
     /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±9%. */
     detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.18);
     detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.18);
-    /* Постоянно уводим проекцию вверх на 12% её высоты. */
-    detailScreen.dataset.projectionBaseY = String(-projectionHeight * 0.12);
+    /* Проекция остаётся выше иконы, но опущена на 5% относительно прошлого положения. */
+    detailScreen.dataset.projectionBaseY = String(-projectionHeight * 0.07);
     positionCandleAssets();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
