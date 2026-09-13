@@ -754,13 +754,20 @@
         }
 
         #iconProjection .projection-shape {
-            left: var(--projection-shape-left, 0px);
-            top: var(--projection-shape-top, 0px);
-            width: var(--projection-shape-width, 100%);
-            height: var(--projection-shape-height, 100%);
+            inset: 0;
             background: rgb(0, 0, 0);
-            /* Верх шире низа: источник света расположен ниже иконы. */
-            clip-path: polygon(0 0, 100% 0, 97.73% 100%, 2.27% 100%);
+            /* Верх и низ получают один сигнал огня, но двигаются с разной амплитудой. */
+            clip-path: polygon(
+                calc(var(--projection-top-left, 0px) + var(--projection-top-offset-x, 0px))
+                    calc(var(--projection-top-y, 0px) + var(--projection-top-offset-y, 0px)),
+                calc(var(--projection-top-right, 100%) + var(--projection-top-offset-x, 0px))
+                    calc(var(--projection-top-y, 0px) + var(--projection-top-offset-y, 0px)),
+                calc(var(--projection-bottom-right, 100%) + var(--projection-bottom-offset-x, 0px))
+                    calc(var(--projection-bottom-y, 100%) + var(--projection-bottom-offset-y, 0px)),
+                calc(var(--projection-bottom-left, 0px) + var(--projection-bottom-offset-x, 0px))
+                    calc(var(--projection-bottom-y, 100%) + var(--projection-bottom-offset-y, 0px))
+            );
+            will-change: clip-path;
         }
 
         #iconProjection .projection-band-top {
@@ -1298,6 +1305,16 @@ function resetDetailScreenUI() {
         '--projection-shape-top',
         '--projection-shape-width',
         '--projection-shape-height',
+        '--projection-top-left',
+        '--projection-top-right',
+        '--projection-top-y',
+        '--projection-bottom-left',
+        '--projection-bottom-right',
+        '--projection-bottom-y',
+        '--projection-top-offset-x',
+        '--projection-top-offset-y',
+        '--projection-bottom-offset-x',
+        '--projection-bottom-offset-y',
         '--projection-offset-x',
         '--projection-offset-y',
         '--projection-opacity-top',
@@ -1716,15 +1733,17 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
     detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
 
-    /* Тень реагирует медленнее света и сохраняет движение в противоходе. */
+    /* Обе границы тени реагируют на один сигнал, но нижняя почти неподвижна. */
     shadowMotionX += (lightX - shadowMotionX) * 0.12;
     shadowMotionY += (lightY - shadowMotionY) * 0.10;
-    /* Амплитуда ограничена 5% габарита иконы по обеим осям. */
-    const projectionTravelX = parseFloat(detailScreen.dataset.projectionTravelX || '0');
-    const projectionTravelY = parseFloat(detailScreen.dataset.projectionTravelY || '0');
-    const projectionBaseY = parseFloat(detailScreen.dataset.projectionBaseY || '0');
-    detailScreen.style.setProperty('--projection-offset-x', (-shadowMotionX * projectionTravelX).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-offset-y', (projectionBaseY - shadowMotionY * projectionTravelY).toFixed(2) + 'px');
+    const projectionTopTravelX = parseFloat(detailScreen.dataset.projectionTopTravelX || '0');
+    const projectionTopTravelY = parseFloat(detailScreen.dataset.projectionTopTravelY || '0');
+    const projectionBottomTravelX = parseFloat(detailScreen.dataset.projectionBottomTravelX || '0');
+    const projectionBottomTravelY = parseFloat(detailScreen.dataset.projectionBottomTravelY || '0');
+    detailScreen.style.setProperty('--projection-top-offset-x', (-shadowMotionX * projectionTopTravelX).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-top-offset-y', (-shadowMotionY * projectionTopTravelY).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-bottom-offset-x', (-shadowMotionX * projectionBottomTravelX).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-bottom-offset-y', (-shadowMotionY * projectionBottomTravelY).toFixed(2) + 'px');
     const projectionOpacity = 0.84 + intensity * 0.10;
     detailScreen.style.setProperty('--projection-opacity-bottom', projectionOpacity.toFixed(4));
     detailScreen.style.setProperty('--projection-opacity-middle', (projectionOpacity * 0.90).toFixed(4));
@@ -1821,11 +1840,18 @@ function showCandle() {
     detailScreen.style.setProperty('--projection-shape-top', projectionPaddingY + 'px');
     detailScreen.style.setProperty('--projection-shape-width', projectionWidth + 'px');
     detailScreen.style.setProperty('--projection-shape-height', projectionHeight + 'px');
-    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±5%. */
-    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.10);
-    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.10);
-    /* Без постоянного подъёма: нижний край тени остаётся виден под иконой. */
-    detailScreen.dataset.projectionBaseY = '0';
+    /* Координаты исходной трапеции внутри увеличенного технического холста. */
+    detailScreen.style.setProperty('--projection-top-left', projectionPaddingX + 'px');
+    detailScreen.style.setProperty('--projection-top-right', (projectionPaddingX + projectionWidth) + 'px');
+    detailScreen.style.setProperty('--projection-top-y', projectionPaddingY + 'px');
+    detailScreen.style.setProperty('--projection-bottom-left', (projectionPaddingX + projectionWidth * 0.0227) + 'px');
+    detailScreen.style.setProperty('--projection-bottom-right', (projectionPaddingX + projectionWidth * 0.9773) + 'px');
+    detailScreen.style.setProperty('--projection-bottom-y', (projectionPaddingY + projectionHeight) + 'px');
+    /* Верхняя грань ходит до ±5%, нижняя — только до ±1%. */
+    detailScreen.dataset.projectionTopTravelX = String(projectionWidth * 0.10);
+    detailScreen.dataset.projectionTopTravelY = String(projectionHeight * 0.10);
+    detailScreen.dataset.projectionBottomTravelX = String(projectionWidth * 0.02);
+    detailScreen.dataset.projectionBottomTravelY = String(projectionHeight * 0.02);
     positionCandleAssets();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
