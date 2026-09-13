@@ -372,6 +372,13 @@
                 filter var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
 
+        /* Световая копия едет строго вместе с исходной иконой. */
+        #detailContent.candle-transition #iconLight {
+            transition:
+                opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
+                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
+        }
+
         /* На входе свет появляется вместе со сценой, на выходе гаснет первым. */
         #detailContent.candle-closing #iconLight {
             opacity: 0 !important;
