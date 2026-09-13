@@ -687,6 +687,7 @@
             inset: 0;
             pointer-events: none;
             background:
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.07) 18%, transparent 36%),
                 radial-gradient(ellipse 76vw 68vh at var(--icon-center-x, 50%) var(--icon-center-y, 48%),
                     rgba(211, 128, 55, 0.68) 0%, rgba(132, 70, 25, 0.47) 38%,
                     rgba(57, 29, 10, 0.31) 64%, rgba(11, 6, 2, 0) 88%),
@@ -1654,10 +1655,10 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--icon-light-opacity', (0.18 + intensity * 0.22).toFixed(4));
     detailScreen.style.setProperty('--icon-edge-shade-opacity', (0.72 - intensity * 0.14).toFixed(4));
     /* Свет идёт за пламенем; ход немного спокойнее тени. */
-    const lightCenterX = settlingCandleScene ? 50 : 50 + lightX * 18;
-    const lightCenterY = settlingCandleScene ? 59 : 59 + lightY * 14;
-    const lightSizeX = 43 + intensity * 10;
-    const lightSizeY = 39 + intensity * 9;
+    const lightCenterX = settlingCandleScene ? 50 : 50 + lightX * 12;
+    const lightCenterY = settlingCandleScene ? 59 : 59 + lightY * 10;
+    const lightSizeX = 49 + intensity * 11;
+    const lightSizeY = 45 + intensity * 10;
     detailScreen.style.setProperty('--icon-light-center-x', lightCenterX.toFixed(2) + '%');
     detailScreen.style.setProperty('--icon-light-center-y', lightCenterY.toFixed(2) + '%');
     detailScreen.style.setProperty('--icon-light-size-x', lightSizeX.toFixed(2) + '%');
