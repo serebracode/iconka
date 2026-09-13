@@ -26,8 +26,8 @@
         body {
             --candle-transition-duration: 3000ms;
             --candle-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
-            --candle-icon-transition-duration: 1715ms;
-            --candle-icon-transition-easing: cubic-bezier(0.22, 0.61, 0.36, 1);
+            --candle-icon-transition-duration: 3000ms;
+            --candle-icon-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
             background-color: #000000;
             color: #FFFFFF;
@@ -654,15 +654,26 @@
     
         /* ========== CANDLE DEPTH REBUILD ========== */
         #detailScreen.scene-active {
-            background: #160d06 !important;
+            background: #020201 !important;
         }
 
-        #detailScreen.scene-active .scene-background {
+        .scene-background::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
             background:
                 radial-gradient(ellipse 76vw 68vh at var(--icon-center-x, 50%) var(--icon-center-y, 48%),
                     rgba(211, 128, 55, 0.68) 0%, rgba(132, 70, 25, 0.47) 38%,
                     rgba(57, 29, 10, 0.31) 64%, rgba(11, 6, 2, 0) 88%),
-                linear-gradient(to bottom, #1a1009 0%, #35200f 51%, #100804 100%) !important;
+                linear-gradient(to bottom, #1a1009 0%, #35200f 51%, #100804 100%);
+            opacity: 0;
+            will-change: opacity;
+            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
+        }
+
+        #detailScreen.scene-active .scene-background::after {
+            opacity: 1;
         }
 
         /* Подвижная тень иконы остаётся на дальней плоскости — под базовой живописью. */
@@ -674,19 +685,21 @@
             width: var(--projection-width, 0px);
             height: var(--projection-height, 0px);
             pointer-events: none;
-            background: rgba(0, 0, 0, 0.94);
+            background: rgb(0, 0, 0);
             filter: blur(var(--projection-blur, 6px));
             opacity: 0;
             transform: translate(0, 0);
             transform-origin: 50% 52%;
             will-change: transform, opacity, filter;
-            transition: transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
-                opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing), filter 180ms ease-out;
+            transition:
+                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
+                opacity var(--candle-transition-duration) var(--candle-transition-easing),
+                filter 180ms ease-out;
         }
 
         #detailScreen.scene-active #iconProjection {
             transform: translate(var(--projection-offset-x, 0px), var(--projection-offset-y, 0px));
-            opacity: var(--projection-opacity, 0.58);
+            opacity: var(--projection-opacity, 0.86);
         }
 
         body:not(.candle-transition) #iconProjection {
@@ -1567,7 +1580,7 @@ function applyCandleAtmosphereFrame(time) {
     const projectionTravelY = parseFloat(detailScreen.dataset.projectionTravelY || '0');
     detailScreen.style.setProperty('--projection-offset-x', (-lightX * projectionTravelX).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-offset-y', (-lightY * projectionTravelY).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-opacity', (0.52 + intensity * 0.16).toFixed(4));
+    detailScreen.style.setProperty('--projection-opacity', (0.84 + intensity * 0.10).toFixed(4));
     detailScreen.style.setProperty('--projection-blur', (5.5 + intensity * 1.5).toFixed(2) + 'px');
 
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
