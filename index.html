@@ -363,6 +363,12 @@
             transition-timing-function: var(--candle-transition-easing);
         }
 
+        /* Название и дата не участвуют в свечной сцене. */
+        #detailContent.candle-transition .icon-title {
+            opacity: 0 !important;
+            visibility: hidden;
+        }
+
         #detailContent.candle-transition #iconImage {
             transition:
                 transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
@@ -492,7 +498,7 @@
                     rgba(0, 0, 0, 0.05) 0%,
                     rgba(0, 0, 0, 0.1) 38%,
                     rgba(0, 0, 0, 0.47) 67%,
-                    rgba(0, 0, 0, 0.83) 100%
+                    rgba(0, 0, 0, 0.87) 100%
                 ),
                 linear-gradient(
                     to bottom,
@@ -554,7 +560,7 @@
                     ellipse 70% 82% at 50% 52%,
                     transparent 30%,
                     rgba(0, 0, 0, 0.16) 62%,
-                    rgba(0, 0, 0, 0.57) 100%
+                    rgba(0, 0, 0, 0.62) 100%
                 ),
                 linear-gradient(
                     105deg,
