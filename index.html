@@ -378,6 +378,11 @@
             transition: opacity 100ms linear;
         }
 
+        #detailContent.candle-transition.candle-light-ready #iconLight {
+            opacity: var(--icon-light-opacity, 0.11) !important;
+            transition: opacity 280ms ease-out;
+        }
+
         #detailContent.candle-active #iconImage {
             transform: scale(var(--candle-icon-scale, 1.10));
             filter: brightness(0.90) contrast(1.25) blur(0.25px);
@@ -1146,6 +1151,8 @@ function resetDetailScreenUI() {
     resetIconZoom();
     window.clearTimeout(candleTransitionTimer);
     candleTransitionTimer = null;
+    window.clearTimeout(candleLightTimer);
+    candleLightTimer = null;
     stopCandleAtmosphereAnimation();
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
@@ -1305,6 +1312,7 @@ let candleVisible = false;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
 let candleTransitionTimer = null;
+let candleLightTimer = null;
 let candleWakeLock = null;
 let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
@@ -1656,6 +1664,12 @@ function showCandle() {
     // иногда схлопывает переход filter и показывает его только в финале.
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
+    detailContent.classList.remove('candle-light-ready');
+    window.clearTimeout(candleLightTimer);
+    candleLightTimer = window.setTimeout(() => {
+        if (candleVisible) detailContent.classList.add('candle-light-ready');
+        candleLightTimer = null;
+    }, CANDLE_SCENE_TRANSITION_MS * 0.5);
 
     requestAnimationFrame(() => {
         if (!candleVisible) return;
@@ -1693,6 +1707,9 @@ function closeCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     window.clearTimeout(candleTransitionTimer);
+    window.clearTimeout(candleLightTimer);
+    candleLightTimer = null;
+    detailContent.classList.remove('candle-light-ready');
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
     document.body.classList.remove('candle-active');
