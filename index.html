@@ -372,15 +372,10 @@
                 filter var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
 
-        /* Копия загорается только после входа и гаснет до обратного движения. */
-        #detailContent.candle-transition #iconLight {
+        /* На входе свет появляется вместе со сценой, на выходе гаснет первым. */
+        #detailContent.candle-closing #iconLight {
             opacity: 0 !important;
             transition: opacity 100ms linear;
-        }
-
-        #detailContent.candle-transition.candle-light-ready #iconLight {
-            opacity: var(--icon-light-opacity, 0.11) !important;
-            transition: opacity 280ms ease-out;
         }
 
         #detailContent.candle-active #iconImage {
@@ -1151,8 +1146,6 @@ function resetDetailScreenUI() {
     resetIconZoom();
     window.clearTimeout(candleTransitionTimer);
     candleTransitionTimer = null;
-    window.clearTimeout(candleLightTimer);
-    candleLightTimer = null;
     stopCandleAtmosphereAnimation();
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
@@ -1161,6 +1154,7 @@ function resetDetailScreenUI() {
     detailContent.classList.remove('is-dragging');
     detailContent.classList.remove('candle-active');
     detailContent.classList.remove('candle-transition');
+    detailContent.classList.remove('candle-closing');
     detailScreen.classList.remove('scene-active');
     [
         '--flame-x',
@@ -1312,7 +1306,6 @@ let candleVisible = false;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
 let candleTransitionTimer = null;
-let candleLightTimer = null;
 let candleWakeLock = null;
 let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
@@ -1664,12 +1657,7 @@ function showCandle() {
     // иногда схлопывает переход filter и показывает его только в финале.
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
-    detailContent.classList.remove('candle-light-ready');
-    window.clearTimeout(candleLightTimer);
-    candleLightTimer = window.setTimeout(() => {
-        if (candleVisible) detailContent.classList.add('candle-light-ready');
-        candleLightTimer = null;
-    }, CANDLE_SCENE_TRANSITION_MS * 0.5);
+    detailContent.classList.remove('candle-closing');
 
     requestAnimationFrame(() => {
         if (!candleVisible) return;
@@ -1707,9 +1695,7 @@ function closeCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     window.clearTimeout(candleTransitionTimer);
-    window.clearTimeout(candleLightTimer);
-    candleLightTimer = null;
-    detailContent.classList.remove('candle-light-ready');
+    detailContent.classList.add('candle-closing');
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
     document.body.classList.remove('candle-active');
@@ -1731,6 +1717,7 @@ function closeCandle() {
         if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
         if (candleFlameDuplicate.readyState >= 1) candleFlameDuplicate.currentTime = 0;
         detailContent.classList.remove('candle-transition');
+        detailContent.classList.remove('candle-closing');
         document.body.classList.remove('candle-transition');
         candleTransitionTimer = null;
     }, CANDLE_SCENE_TRANSITION_MS);
