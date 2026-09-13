@@ -1621,7 +1621,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
     detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
 
-    /* Тень идёт в противоходе и проходит до 13% габарита иконы по обеим осям. */
+    /* Тень идёт в противоходе и проходит до 9% габарита иконы по обеим осям. */
     const projectionTravelX = parseFloat(detailScreen.dataset.projectionTravelX || '0');
     const projectionTravelY = parseFloat(detailScreen.dataset.projectionTravelY || '0');
     const projectionBaseY = parseFloat(detailScreen.dataset.projectionBaseY || '0');
@@ -1700,9 +1700,9 @@ function showCandle() {
     detailScreen.style.setProperty('--projection-top', (scaledIconTop - scaledIconHeight * 0.05) + 'px');
     detailScreen.style.setProperty('--projection-width', projectionWidth + 'px');
     detailScreen.style.setProperty('--projection-height', projectionHeight + 'px');
-    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±13%. */
-    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.26);
-    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.26);
+    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±9%. */
+    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.18);
+    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.18);
     /* Постоянно уводим проекцию вверх на 12% её высоты. */
     detailScreen.dataset.projectionBaseY = String(-projectionHeight * 0.12);
     positionCandleAssets();
