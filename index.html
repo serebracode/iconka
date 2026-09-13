@@ -712,21 +712,45 @@
             opacity: 0;
             transform: translate(0, 0);
             transform-origin: 50% 52%;
-            filter: blur(var(--projection-blur, 4px));
-            will-change: transform, opacity, filter;
+            will-change: transform, opacity;
             transition:
                 transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
-                opacity var(--candle-transition-duration) var(--candle-transition-easing),
-                filter 160ms ease-out;
+                opacity var(--candle-transition-duration) var(--candle-transition-easing);
         }
 
-        #iconProjection::before {
-            content: '';
+        #iconProjection .projection-band,
+        #iconProjection .projection-shape {
             position: absolute;
             inset: 0;
+        }
+
+        #iconProjection .projection-band {
+            will-change: filter;
+            transition: filter 160ms ease-out;
+        }
+
+        #iconProjection .projection-shape {
             background: rgb(0, 0, 0);
             /* Верх шире низа: источник света расположен ниже иконы. */
             clip-path: polygon(0 0, 100% 0, 97.3% 100%, 2.7% 100%);
+        }
+
+        #iconProjection .projection-band-top {
+            filter: blur(var(--projection-blur-top, 6px));
+            mask-image: linear-gradient(to bottom, #000 0%, #000 24%, transparent 52%);
+            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 24%, transparent 52%);
+        }
+
+        #iconProjection .projection-band-middle {
+            filter: blur(var(--projection-blur-middle, 5px));
+            mask-image: linear-gradient(to bottom, transparent 18%, #000 43%, #000 57%, transparent 82%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 18%, #000 43%, #000 57%, transparent 82%);
+        }
+
+        #iconProjection .projection-band-bottom {
+            filter: blur(var(--projection-blur-bottom, 4px));
+            mask-image: linear-gradient(to bottom, transparent 48%, #000 76%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 48%, #000 76%, #000 100%);
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -735,7 +759,7 @@
         }
 
         body:not(.candle-transition) #iconProjection {
-            transition: opacity 120ms linear, filter 160ms ease-out;
+            transition: opacity 120ms linear;
         }
 
         #detailContent.candle-active #iconShadow { display: none; }
@@ -897,7 +921,11 @@
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen scene" style="position: absolute; overflow: hidden; isolation: isolate; background: #020201;">
     <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
-    <div id="iconProjection" aria-hidden="true"></div>
+    <div id="iconProjection" aria-hidden="true">
+        <div class="projection-band projection-band-top"><div class="projection-shape"></div></div>
+        <div class="projection-band projection-band-middle"><div class="projection-shape"></div></div>
+        <div class="projection-band projection-band-bottom"><div class="projection-shape"></div></div>
+    </div>
 
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
@@ -1226,7 +1254,9 @@ function resetDetailScreenUI() {
         '--projection-offset-x',
         '--projection-offset-y',
         '--projection-opacity',
-        '--projection-blur'
+        '--projection-blur-bottom',
+        '--projection-blur-middle',
+        '--projection-blur-top'
     ].forEach(property => detailScreen.style.removeProperty(property));
     document.body.classList.remove('candle-active', 'candle-transition');
     detailContent.style.removeProperty('--info-progress');
@@ -1634,7 +1664,10 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--projection-offset-x', (-lightX * projectionTravelX).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-offset-y', (projectionBaseY - lightY * projectionTravelY).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-opacity', (0.84 + intensity * 0.10).toFixed(4));
-    detailScreen.style.setProperty('--projection-blur', (3.5 + intensity * 1.0).toFixed(2) + 'px');
+    const projectionBlur = 3.5 + intensity * 1.0;
+    detailScreen.style.setProperty('--projection-blur-bottom', projectionBlur.toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-blur-middle', (projectionBlur * 1.25).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-blur-top', (projectionBlur * 1.50).toFixed(2) + 'px');
 
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
 }
