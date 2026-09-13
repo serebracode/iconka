@@ -707,7 +707,7 @@
             inset: 0;
             pointer-events: none;
             background:
-                linear-gradient(to bottom, rgba(0, 0, 0, 0.38) 0%, rgba(0, 0, 0, 0.17) 20%, transparent 42%),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.40) 0%, rgba(0, 0, 0, 0.17) 20%, transparent 42%),
                 radial-gradient(ellipse 76vw 68vh at var(--icon-center-x, 50%) var(--icon-center-y, 48%),
                     rgba(211, 128, 55, 0.68) 0%, rgba(132, 70, 25, 0.47) 38%,
                     rgba(57, 29, 10, 0.31) 64%, rgba(11, 6, 2, 0) 88%),
@@ -772,7 +772,7 @@
 
         #iconProjection .projection-band-top {
             filter: blur(var(--projection-blur-top, 6px));
-            opacity: var(--projection-opacity-top, 0.72);
+            opacity: var(--projection-opacity-top, 0.68);
             mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 35%, transparent 60%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 35%, transparent 60%);
         }
@@ -1740,14 +1740,17 @@ function applyCandleAtmosphereFrame(time) {
     const projectionTopTravelY = parseFloat(detailScreen.dataset.projectionTopTravelY || '0');
     const projectionBottomTravelX = parseFloat(detailScreen.dataset.projectionBottomTravelX || '0');
     const projectionBottomTravelY = parseFloat(detailScreen.dataset.projectionBottomTravelY || '0');
+    /* Вертикальный ход верха усилен движением и интенсивностью самого пламени. */
+    const shadowTopYSignal = Math.max(-0.5, Math.min(0.5,
+        shadowMotionY * 1.6 + (intensity - 0.5) * 0.12));
     detailScreen.style.setProperty('--projection-top-offset-x', (-shadowMotionX * projectionTopTravelX).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-top-offset-y', (-shadowMotionY * projectionTopTravelY).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-top-offset-y', (-shadowTopYSignal * projectionTopTravelY).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-bottom-offset-x', (-shadowMotionX * projectionBottomTravelX).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-bottom-offset-y', (-shadowMotionY * projectionBottomTravelY).toFixed(2) + 'px');
     const projectionOpacity = 0.84 + intensity * 0.10;
     detailScreen.style.setProperty('--projection-opacity-bottom', projectionOpacity.toFixed(4));
     detailScreen.style.setProperty('--projection-opacity-middle', (projectionOpacity * 0.90).toFixed(4));
-    detailScreen.style.setProperty('--projection-opacity-top', (projectionOpacity * 0.80).toFixed(4));
+    detailScreen.style.setProperty('--projection-opacity-top', (projectionOpacity * 0.75).toFixed(4));
     const projectionBlur = 3.5 + intensity * 1.0;
     detailScreen.style.setProperty('--projection-blur-bottom', projectionBlur.toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-blur-middle', (projectionBlur * 1.25).toFixed(2) + 'px');
