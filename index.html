@@ -947,9 +947,9 @@
             z-index: 4;
             background: radial-gradient(
                 ellipse 72% 58% at var(--flame-x, 50%) calc(var(--flame-y, 62%) - 8vh),
-                rgba(172, 75, 19, 0.075) 0%,
-                rgba(116, 43, 8, 0.035) 38%,
-                rgba(63, 20, 3, 0.015) 64%,
+                rgba(172, 75, 19, 0.11) 0%,
+                rgba(116, 43, 8, 0.052) 38%,
+                rgba(63, 20, 3, 0.022) 64%,
                 transparent 86%
             );
             transform: scale(var(--ambient-scale, 1));
@@ -985,25 +985,18 @@
             will-change: transform;
         }
 
-        #iconProjection .projection-band-top {
-            opacity: 0.24;
-            filter: blur(50px);
-            mask-image: linear-gradient(to bottom, #000 0%, #000 46%, transparent 72%);
-            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 46%, transparent 72%);
-        }
-
-        #iconProjection .projection-band-middle {
-            opacity: 0.28;
-            filter: blur(43px);
-            mask-image: linear-gradient(to bottom, transparent 24%, #000 46%, #000 72%, transparent 91%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 24%, #000 46%, #000 72%, transparent 91%);
-        }
+        #iconProjection .projection-band-top,
+        #iconProjection .projection-band-middle { display: none; }
 
         #iconProjection .projection-band-bottom {
-            opacity: 0.34;
-            filter: blur(36px);
-            mask-image: linear-gradient(to bottom, transparent 50%, #000 70%, #000 82%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 50%, #000 70%, #000 82%, transparent 100%);
+            opacity: 1;
+            filter: blur(22px);
+            mask-image: none;
+            -webkit-mask-image: none;
+        }
+
+        #iconProjection .projection-band-bottom .projection-shape {
+            background: rgba(0, 0, 0, 0.96);
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -1023,17 +1016,17 @@
             z-index: 24;
             background:
                 linear-gradient(to bottom,
-                    rgba(0, 0, 0, 0.32) 0%,
-                    rgba(0, 0, 0, 0.19) 27%,
-                    rgba(0, 0, 0, 0.05) 55%,
+                    rgba(0, 0, 0, 0.38) 0%,
+                    rgba(0, 0, 0, 0.23) 27%,
+                    rgba(0, 0, 0, 0.07) 55%,
                     rgba(0, 0, 0, 0.02) 75%,
                     rgba(0, 0, 0, 0.08) 100%),
                 radial-gradient(
                     ellipse 72% 68% at 50% 63%,
                     transparent 14%,
                     rgba(0, 0, 0, 0.05) 38%,
-                    rgba(0, 0, 0, 0.22) 68%,
-                    rgba(0, 0, 0, 0.54) 100%);
+                    rgba(0, 0, 0, 0.27) 68%,
+                    rgba(0, 0, 0, 0.64) 100%);
             will-change: opacity, background;
         }
 
@@ -1053,10 +1046,10 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             background: radial-gradient(ellipse at center,
-                rgba(255, 209, 132, 0.22) 0%,
-                rgba(238, 145, 62, 0.135) 28%,
-                rgba(190, 83, 21, 0.060) 52%,
-                rgba(116, 42, 8, 0.020) 70%,
+                rgba(255, 218, 148, 0.30) 0%,
+                rgba(242, 154, 70, 0.18) 28%,
+                rgba(194, 87, 23, 0.078) 52%,
+                rgba(116, 42, 8, 0.026) 70%,
                 transparent 100%);
             filter: blur(12px);
             mix-blend-mode: screen;
@@ -1825,10 +1818,10 @@ function updateCandleEffectGeometry() {
     detailScreen.dataset.iconEffectWidth = iconRect.width.toFixed(4);
     detailScreen.dataset.iconEffectHeight = iconRect.height.toFixed(4);
 
-    const shadowWidth = iconRect.width * 1.16;
-    const shadowHeight = iconRect.height * 1.12;
-    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.08).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.06 + 14).toFixed(2)}px`);
+    const shadowWidth = iconRect.width * 1.10;
+    const shadowHeight = iconRect.height * 1.10;
+    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.05).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.05 + 12).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
 
@@ -2021,20 +2014,20 @@ function applyCandleAtmosphereFrame(time) {
     if (typeof candleFlame.requestVideoFrameCallback !== 'function') candleFlameSampleActive = sampleFlameShadeSignal();
 
     const intensity = candleFlameSampleActive ? clampUnit(fallbackSlow * 0.28 + flameVideoIntensity * 0.72) : fallbackSlow;
-    const sampledX = candleFlameSampleActive ? flameMotionX * 3.2 : (fallbackSlow - 0.5);
-    const sampledY = candleFlameSampleActive ? flameMotionY * 3.0 : (fallbackFast - 0.5);
-    /* Низкочастотный дрейф гарантирует живое движение даже при слабом сигнале видео. */
-    const organicX = Math.sin(time * 1.31) * 0.22 + Math.sin(time * 2.17 + 1.4) * 0.10;
-    const organicY = Math.sin(time * 1.07 + 0.8) * 0.20 + Math.sin(time * 1.83 + 2.1) * 0.09;
-    const lightX = Math.max(-0.5, Math.min(0.5, sampledX + organicX));
-    const lightY = Math.max(-0.5, Math.min(0.5, sampledY + organicY));
+    const sampledX = candleFlameSampleActive ? flameMotionX * 1.8 : (fallbackSlow - 0.5);
+    const sampledY = candleFlameSampleActive ? flameMotionY * 1.8 : (fallbackFast - 0.5);
+    /* Старый расчёт огня остаётся основой; широкий дрейф не даёт сигналу схлопнуться. */
+    const organicX = Math.sin(time * 1.31) * 0.38 + Math.sin(time * 2.17 + 1.4) * 0.16;
+    const organicY = Math.sin(time * 1.07 + 0.8) * 0.34 + Math.sin(time * 1.83 + 2.1) * 0.14;
+    const lightX = Math.max(-0.5, Math.min(0.5, sampledX * 0.55 + organicX));
+    const lightY = Math.max(-0.5, Math.min(0.5, sampledY * 0.55 + organicY));
 
     updateCandleEffectGeometry();
 
     /* Инерция света сглаживает дискретное движение огня в видео. */
-    iconLightMotionX += (lightX - iconLightMotionX) * 0.055;
-    iconLightMotionY += (lightY - iconLightMotionY) * 0.045;
-    iconLightIntensity += (intensity - iconLightIntensity) * 0.045;
+    iconLightMotionX += (lightX - iconLightMotionX) * 0.12;
+    iconLightMotionY += (lightY - iconLightMotionY) * 0.10;
+    iconLightIntensity += (intensity - iconLightIntensity) * 0.06;
     const baseLightX = parseFloat(detailScreen.dataset.iconLightBaseX || '50');
     const baseLightY = parseFloat(detailScreen.dataset.iconLightBaseY || '108');
     const iconEffectWidth = parseFloat(detailScreen.dataset.iconEffectWidth || '0');
@@ -2054,17 +2047,14 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--surface-light-opacity', '1');
 
     /* Тень идёт на противоходе, но заметно спокойнее самого пламени. */
-    shadowMotionX += (lightX - shadowMotionX) * 0.07;
-    shadowMotionY += (lightY - shadowMotionY) * 0.06;
-    const topShadow = document.querySelector('#iconProjection .projection-band-top .projection-shape');
-    const middleShadow = document.querySelector('#iconProjection .projection-band-middle .projection-shape');
-    const bottomShadow = document.querySelector('#iconProjection .projection-band-bottom .projection-shape');
-    if (topShadow) topShadow.style.transform = `translate3d(${(-shadowMotionX * 24).toFixed(2)}px, ${(-shadowMotionY * 16).toFixed(2)}px, 0)`;
-    if (middleShadow) middleShadow.style.transform = `translate3d(${(-shadowMotionX * 11).toFixed(2)}px, ${(-shadowMotionY * 7).toFixed(2)}px, 0)`;
-    if (bottomShadow) bottomShadow.style.transform = `translate3d(${(-shadowMotionX * 3).toFixed(2)}px, ${(-shadowMotionY * 2).toFixed(2)}px, 0)`;
-    detailScreen.style.setProperty('--shadow-shift-x', '0px');
-    detailScreen.style.setProperty('--shadow-shift-y', '0px');
-    detailScreen.style.setProperty('--shadow-opacity', (0.62 + intensity * 0.06).toFixed(4));
+    shadowMotionX += (lightX - shadowMotionX) * 0.14;
+    shadowMotionY += (lightY - shadowMotionY) * 0.12;
+    const iconProjection = document.getElementById('iconProjection');
+    if (iconProjection) {
+        /* Коэффициенты прежней читаемой проекции: противоход 94px / 60px. */
+        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 94).toFixed(2)}px, ${(-18 - shadowMotionY * 60).toFixed(2)}px, 0)`;
+    }
+    detailScreen.style.setProperty('--shadow-opacity', (0.78 + intensity * 0.12).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
     const ambientWave = Math.sin((time / 5.1) * Math.PI * 2);
