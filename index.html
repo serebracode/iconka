@@ -715,7 +715,7 @@
             transform: translate(0, 0);
             transform-origin: 50% 52%;
             /* Верх шире низа: источник света расположен ниже иконы. */
-            clip-path: polygon(0 0, 100% 0, 93.2% 100%, 6.8% 100%);
+            clip-path: polygon(0 0, 100% 0, 95.5% 100%, 4.5% 100%);
             will-change: transform, opacity, filter;
             transition:
                 transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
@@ -1621,7 +1621,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
     detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
 
-    /* Тень идёт в противоходе и проходит до 11% габарита иконы по обеим осям. */
+    /* Тень идёт в противоходе и проходит до 13% габарита иконы по обеим осям. */
     const projectionTravelX = parseFloat(detailScreen.dataset.projectionTravelX || '0');
     const projectionTravelY = parseFloat(detailScreen.dataset.projectionTravelY || '0');
     const projectionBaseY = parseFloat(detailScreen.dataset.projectionBaseY || '0');
@@ -1700,9 +1700,9 @@ function showCandle() {
     detailScreen.style.setProperty('--projection-top', (scaledIconTop - scaledIconHeight * 0.05) + 'px');
     detailScreen.style.setProperty('--projection-width', projectionWidth + 'px');
     detailScreen.style.setProperty('--projection-height', projectionHeight + 'px');
-    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±11%. */
-    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.22);
-    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.22);
+    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±13%. */
+    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.26);
+    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.26);
     /* Постоянно уводим проекцию вверх на 12% её высоты. */
     detailScreen.dataset.projectionBaseY = String(-projectionHeight * 0.12);
     positionCandleAssets();
