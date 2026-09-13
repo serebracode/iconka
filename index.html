@@ -919,15 +919,15 @@
         }
 
         #detailScreen.scene-active {
-            background: #080604 !important;
+            background: #0b0806 !important;
         }
 
         .scene-background {
-            background: #080604 !important;
+            background: #0b0806 !important;
         }
 
         .scene-background::after {
-            background: linear-gradient(to bottom, #090807 0%, #080604 50%, #060403 100%);
+            background: linear-gradient(to bottom, #0d0b09 0%, #0b0806 50%, #070403 100%);
         }
 
         #sceneAmbient,
@@ -947,9 +947,9 @@
             z-index: 4;
             background: radial-gradient(
                 ellipse 72% 58% at var(--flame-x, 50%) calc(var(--flame-y, 62%) - 8vh),
-                rgba(172, 75, 19, 0.11) 0%,
-                rgba(116, 43, 8, 0.052) 38%,
-                rgba(63, 20, 3, 0.022) 64%,
+                rgba(172, 75, 19, 0.16) 0%,
+                rgba(116, 43, 8, 0.078) 38%,
+                rgba(63, 20, 3, 0.034) 64%,
                 transparent 86%
             );
             transform: scale(var(--ambient-scale, 1));
@@ -990,13 +990,20 @@
 
         #iconProjection .projection-band-bottom {
             opacity: 1;
-            filter: blur(22px);
+            filter: blur(32px);
             mask-image: none;
             -webkit-mask-image: none;
         }
 
         #iconProjection .projection-band-bottom .projection-shape {
-            background: rgba(0, 0, 0, 0.96);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.98));
+            animation: projection-shadow-live 3.7s ease-in-out infinite alternate;
+        }
+
+        @keyframes projection-shadow-live {
+            0% { transform: translate3d(-5px, -3px, 0) scaleY(1.015); }
+            48% { transform: translate3d(3px, 2px, 0) scaleY(0.99); }
+            100% { transform: translate3d(6px, -5px, 0) scaleY(1.025); }
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -1041,17 +1048,17 @@
             position: absolute;
             left: 50%;
             top: 100%;
-            width: 110%;
-            height: 78%;
+            width: 145%;
+            height: 104%;
             border-radius: 50%;
             transform: translate(-50%, -50%);
             background: radial-gradient(ellipse at center,
-                rgba(255, 218, 148, 0.30) 0%,
-                rgba(242, 154, 70, 0.18) 28%,
-                rgba(194, 87, 23, 0.078) 52%,
-                rgba(116, 42, 8, 0.026) 70%,
+                rgba(255, 218, 148, 0.34) 0%,
+                rgba(242, 154, 70, 0.21) 28%,
+                rgba(194, 87, 23, 0.10) 52%,
+                rgba(116, 42, 8, 0.038) 70%,
                 transparent 100%);
-            filter: blur(12px);
+            filter: blur(18px);
             mix-blend-mode: screen;
             will-change: left, top, width, height, opacity;
         }
@@ -1818,10 +1825,10 @@ function updateCandleEffectGeometry() {
     detailScreen.dataset.iconEffectWidth = iconRect.width.toFixed(4);
     detailScreen.dataset.iconEffectHeight = iconRect.height.toFixed(4);
 
-    const shadowWidth = iconRect.width * 1.10;
-    const shadowHeight = iconRect.height * 1.10;
-    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.05).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.05 + 12).toFixed(2)}px`);
+    const shadowWidth = iconRect.width * 1.18;
+    const shadowHeight = iconRect.height * 1.20;
+    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.09).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.10 + 12).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
 
@@ -2034,15 +2041,15 @@ function applyCandleAtmosphereFrame(time) {
     const iconEffectHeight = parseFloat(detailScreen.dataset.iconEffectHeight || '0');
     const iconBreath = Math.max(-0.5, Math.min(0.5,
         (iconLightIntensity - 0.5) * 0.75 + Math.sin((time / 3.3) * Math.PI * 2 + 1.4) * 0.20));
-    const lightCenterX = baseLightX + iconLightMotionX * 3.0;
-    const lightCenterY = baseLightY + iconLightMotionY * 5.0;
+    const lightCenterX = baseLightX + iconLightMotionX * 8.0;
+    const lightCenterY = baseLightY + iconLightMotionY * 10.0;
     const lightField = document.getElementById('iconSurfaceLightField');
     if (lightField && iconEffectWidth > 0 && iconEffectHeight > 0) {
         lightField.style.left = `${(iconEffectWidth * lightCenterX / 100).toFixed(2)}px`;
         lightField.style.top = `${(iconEffectHeight * lightCenterY / 100).toFixed(2)}px`;
-        lightField.style.width = `${(iconEffectWidth * (1.10 + iconBreath * 0.16)).toFixed(2)}px`;
-        lightField.style.height = `${(iconEffectHeight * (0.78 + iconBreath * 0.16)).toFixed(2)}px`;
-        lightField.style.opacity = (0.82 + iconBreath * 0.10).toFixed(4);
+        lightField.style.width = `${(iconEffectWidth * (1.45 + iconBreath * 0.28)).toFixed(2)}px`;
+        lightField.style.height = `${(iconEffectHeight * (1.04 + iconBreath * 0.24)).toFixed(2)}px`;
+        lightField.style.opacity = (0.84 + iconBreath * 0.18).toFixed(4);
     }
     detailScreen.style.setProperty('--surface-light-opacity', '1');
 
