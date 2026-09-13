@@ -685,9 +685,9 @@
             content: '';
             position: absolute;
             inset: 0;
+            z-index: 0;
             pointer-events: none;
             background:
-                linear-gradient(to bottom, rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.14) 20%, transparent 42%),
                 radial-gradient(ellipse 76vw 68vh at var(--icon-center-x, 50%) var(--icon-center-y, 48%),
                     rgba(211, 128, 55, 0.68) 0%, rgba(132, 70, 25, 0.47) 38%,
                     rgba(57, 29, 10, 0.31) 64%, rgba(11, 6, 2, 0) 88%),
@@ -698,6 +698,27 @@
         }
 
         #detailScreen.scene-active .scene-background::after {
+            opacity: 1;
+        }
+
+        /* Отдельное равномерное затемнение только фоновой плоскости. */
+        .scene-background::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.60) 0%,
+                rgba(0, 0, 0, 0.20) 100%
+            );
+            opacity: 0;
+            will-change: opacity;
+            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
+        }
+
+        #detailScreen.scene-active .scene-background::before {
             opacity: 1;
         }
 
@@ -1695,8 +1716,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--projection-opacity', (0.84 + intensity * 0.10).toFixed(4));
     const projectionBlur = 3.5 + intensity * 1.0;
     detailScreen.style.setProperty('--projection-blur-bottom', projectionBlur.toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-blur-middle', (projectionBlur * 1.25).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-blur-top', (projectionBlur * 1.50).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-blur-middle', (projectionBlur * 1.40).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-blur-top', (projectionBlur * 2.00).toFixed(2) + 'px');
 
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
 }
@@ -1766,9 +1787,12 @@ function showCandle() {
     detailScreen.style.setProperty('--icon-center-y', (iconBounds.top + iconBounds.height * 0.5 + candleIconOffsetY) + 'px');
     /* Проекция на 10% крупнее уже увеличенной иконы и центрирована относительно неё. */
     const projectionWidth = scaledIconWidth * 1.10;
-    const projectionHeight = scaledIconHeight * 1.10;
+    const previousProjectionHeight = scaledIconHeight * 1.10;
+    /* Высота увеличена на 5%; нижняя координата остаётся прежней. */
+    const projectionHeight = previousProjectionHeight * 1.05;
     const projectionLeft = scaledIconLeft - scaledIconWidth * 0.05;
-    const projectionTop = scaledIconTop - scaledIconHeight * 0.05;
+    const projectionBottom = scaledIconTop - scaledIconHeight * 0.05 + previousProjectionHeight;
+    const projectionTop = projectionBottom - projectionHeight;
     /* Технический холст почти вдвое больше тени — по 45% запаса с каждой стороны. */
     const projectionPaddingX = projectionWidth * 0.45;
     const projectionPaddingY = projectionHeight * 0.45;
