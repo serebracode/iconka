@@ -654,15 +654,15 @@
     
         /* ========== CANDLE DEPTH REBUILD ========== */
         #detailScreen.scene-active {
-            background: #0b0604 !important;
+            background: #160d06 !important;
         }
 
         #detailScreen.scene-active .scene-background {
             background:
-                radial-gradient(ellipse 70vw 66vh at var(--flame-x, 50%) var(--flame-y, 60%),
-                    rgba(157, 83, 27, 0.38) 0%, rgba(77, 37, 11, 0.24) 39%,
-                    rgba(28, 13, 4, 0.14) 62%, rgba(5, 2, 1, 0) 84%),
-                linear-gradient(to bottom, #0c0704 0%, #1a0d06 53%, #060401 100%) !important;
+                radial-gradient(ellipse 76vw 68vh at var(--icon-center-x, 50%) var(--icon-center-y, 48%),
+                    rgba(194, 112, 44, 0.64) 0%, rgba(112, 57, 18, 0.43) 38%,
+                    rgba(45, 22, 7, 0.28) 64%, rgba(8, 4, 1, 0) 88%),
+                linear-gradient(to bottom, #140c06 0%, #2c170a 51%, #090502 100%) !important;
         }
 
         /* Подвижная тень иконы остаётся на дальней плоскости — под базовой живописью. */
@@ -694,17 +694,17 @@
             transition: opacity 120ms linear, filter 160ms ease-out;
         }
 
-        #detailContent.candle-active #iconShadow { display: block; }
+        #detailContent.candle-active #iconShadow { display: none; }
 
         #iconBackHalo {
-            z-index: 15;
+            z-index: 6;
             background: radial-gradient(ellipse 61vw 51vh at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
-                rgba(224, 151, 70, 0.46) 0%, rgba(131, 70, 24, 0.26) 42%,
-                rgba(22, 12, 4, 0.08) 65%, transparent 84%);
+                rgba(224, 151, 70, 0.34) 0%, rgba(131, 70, 24, 0.18) 42%,
+                rgba(22, 12, 4, 0.05) 65%, transparent 84%);
             mix-blend-mode: screen;
         }
 
-        #candleFlickerShade { z-index: 40; }
+        #candleFlickerShade { z-index: 4; }
 
         #candleFlickerShade::before {
             background: radial-gradient(ellipse 56% 63% at var(--flame-x, 50%) var(--flame-y, 60%),
@@ -714,37 +714,33 @@
         }
 
         #middleHaze {
-            z-index: 50;
+            z-index: 6;
             background: radial-gradient(ellipse 44% 38% at var(--icon-center-x, 50%) var(--icon-center-y, 50%),
                 rgba(255, 159, 72, 0.12), transparent 74%);
             filter: blur(25px);
         }
 
         #flameBackGlow {
-            z-index: 60;
+            z-index: 9;
             width: 25vw;
             background: radial-gradient(ellipse, rgba(255, 189, 97, 0.17) 0%,
                 rgba(255, 123, 42, 0.055) 46%, transparent 76%);
         }
 
         #foregroundVeil {
-            z-index: 90;
-            background: radial-gradient(
-                ellipse 78% 86% at var(--flame-x, 50%) calc(var(--flame-y, 60%) - 5vh),
-                rgba(0, 0, 0, 0) 0%,
-                rgba(0, 0, 0, 0.08) 32%,
-                rgba(0, 0, 0, 0.34) 62%,
-                rgba(0, 0, 0, 0.74) 100%
-            );
+            z-index: 31;
+            background: radial-gradient(ellipse 72% 80% at 50% 50%, transparent 47%,
+                rgba(0, 0, 0, 0.12) 76%, rgba(0, 0, 0, 0.36) 100%);
         }
 
-        #detailScreen.scene-active #foregroundVeil { opacity: var(--foreground-veil-opacity, 0.72); }
+        #detailScreen.scene-active #foregroundVeil { opacity: var(--foreground-veil-opacity, 0.62); }
         #detailScreen.scene-active #foregroundEdgeShade { opacity: 0; }
 
     
         /* Базовая икона, тёплый тон и подвижный отблеск сохраняют прежний порядок. */
         #detailContent.candle-active #iconImage {
             z-index: 20;
+            filter: brightness(0.78) contrast(1.22) blur(0.25px);
         }
 
         #detailContent.candle-active #iconOchreFilter {
@@ -754,21 +750,19 @@
 
         #detailContent.candle-active #iconLight {
             z-index: 30;
-            transform: translate(var(--icon-light-offset-x, 0px), var(--icon-light-offset-y, 0px)) scale(var(--candle-icon-scale, 1.10));
+            transform: translate(var(--icon-light-offset-x, 0px), var(--icon-light-offset-y, 0px)) scale(1.055);
             filter: brightness(1.48) contrast(1.08) saturate(0.95) sepia(0.20);
-            mask-image: linear-gradient(
-                to top,
+            mask-image: radial-gradient(
+                ellipse 49% 42% at 50% 59%,
                 #000 0%,
-                rgba(0, 0, 0, 0.82) 34%,
-                rgba(0, 0, 0, 0.30) 62%,
-                transparent 90%
+                rgba(0, 0, 0, 0.88) 44%,
+                transparent 100%
             );
-            -webkit-mask-image: linear-gradient(
-                to top,
+            -webkit-mask-image: radial-gradient(
+                ellipse 49% 42% at 50% 59%,
                 #000 0%,
-                rgba(0, 0, 0, 0.82) 34%,
-                rgba(0, 0, 0, 0.30) 62%,
-                transparent 90%
+                rgba(0, 0, 0, 0.88) 44%,
+                transparent 100%
             );
         }
 
@@ -1544,7 +1538,7 @@ function applyCandleAtmosphereFrame(time) {
     const lightX = candleFlameSampleActive ? flameMotionX : ((fallbackSlow - 0.5) * 0.72 + (fallbackFast - 0.5) * 0.28);
     const lightY = candleFlameSampleActive ? flameMotionY : ((fallbackFast - 0.5) * 0.38 + (fallbackSlow - 0.5) * 0.62);
 
-    detailScreen.style.setProperty('--icon-light-opacity', (0.16 + intensity * 0.16).toFixed(4));
+    detailScreen.style.setProperty('--icon-light-opacity', (0.14 + intensity * 0.15).toFixed(4));
     detailScreen.style.setProperty('--icon-light-offset-x', (settlingCandleScene ? 0 : lightX * 8).toFixed(2) + 'px');
     detailScreen.style.setProperty('--icon-light-offset-y', (settlingCandleScene ? 0 : lightY * 5).toFixed(2) + 'px');
     detailScreen.style.setProperty('--middle-haze-opacity', (0.028 + intensity * 0.042).toFixed(4));
