@@ -812,8 +812,8 @@
 
         #detailContent.candle-active #iconEdgeShade {
             z-index: 2;
-            /* Не закрываем базовую живопись чёрной маской: свет должен двигаться по видимой иконе. */
-            opacity: 0;
+            /* База → затемнение → свет: живопись читается, а свет ложится поверх тени. */
+            opacity: 0.55;
             transform: scale(var(--candle-icon-scale, 1.10));
         }
 
