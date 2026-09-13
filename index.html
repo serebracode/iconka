@@ -385,8 +385,8 @@
         }
 
         #detailContent.candle-active .icon-wrapper {
-            /* Сохраняем опускание сцены, но без новой изолированной группы слоёв. */
-            top: 10vh;
+            /* Возвращаем икону на исходную вертикальную позицию. */
+            top: 0;
         }
 
         #detailContent.candle-active #iconImage {
@@ -665,6 +665,35 @@
                 linear-gradient(to bottom, #0c0704 0%, #1a0d06 53%, #060401 100%) !important;
         }
 
+        /* Подвижная тень иконы остаётся на дальней плоскости — под базовой живописью. */
+        #iconProjection {
+            position: absolute;
+            z-index: 8;
+            left: var(--projection-left, 0px);
+            top: var(--projection-top, 0px);
+            width: var(--projection-width, 0px);
+            height: var(--projection-height, 0px);
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.92);
+            filter: blur(var(--projection-blur, 5px));
+            opacity: 0;
+            transform: translate(0, -5px) scale(1.02);
+            transform-origin: 50% 52%;
+            will-change: transform, opacity, filter;
+            transition: transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
+                opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing), filter 180ms ease-out;
+        }
+
+        #detailScreen.scene-active #iconProjection {
+            transform: translate(var(--projection-offset-x, 0px), var(--projection-offset-y, -14px))
+                scale(var(--projection-scale, 1.12));
+            opacity: var(--projection-opacity, 0.62);
+        }
+
+        body:not(.candle-transition) #iconProjection {
+            transition: opacity 120ms linear, filter 160ms ease-out;
+        }
+
         #detailContent.candle-active #iconShadow { display: block; }
 
         #iconBackHalo {
@@ -816,6 +845,7 @@
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen scene" style="position: absolute; overflow: hidden; isolation: isolate; background: #020201;">
     <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
+    <div id="iconProjection" aria-hidden="true"></div>
 
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
@@ -1523,6 +1553,12 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
     detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
 
+    detailScreen.style.setProperty('--projection-offset-x', (-lightX * 94).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-offset-y', (-18 - lightY * 60).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-opacity', (0.72 + intensity * 0.20).toFixed(4));
+    detailScreen.style.setProperty('--projection-blur', (4.9 + intensity * 1.7).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-scale', (1.12 + intensity * 0.03).toFixed(4));
+
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
 }
 
@@ -1576,12 +1612,20 @@ function showCandle() {
     const iconScale = iconBounds.width > 0
         ? window.innerWidth * 0.9 / iconBounds.width
         : 1.10;
-    const candleIconOffsetY = window.innerHeight * 0.10;
+    const scaledIconWidth = iconBounds.width * iconScale;
+    const scaledIconHeight = iconBounds.height * iconScale;
+    const scaledIconLeft = iconBounds.left + (iconBounds.width - scaledIconWidth) * 0.5;
+    const candleIconOffsetY = 0;
+    const scaledIconTop = iconBounds.top + iconBounds.height * 0.52 * (1 - iconScale) + candleIconOffsetY;
     detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
     detailContent.style.setProperty('--candle-shadow-scale', (iconScale * 1.18).toFixed(4));
     // Свет и фоновый ореол привязаны к реальному центру исходной иконы.
     detailScreen.style.setProperty('--icon-center-x', (iconBounds.left + iconBounds.width * 0.5) + 'px');
     detailScreen.style.setProperty('--icon-center-y', (iconBounds.top + iconBounds.height * 0.5 + candleIconOffsetY) + 'px');
+    detailScreen.style.setProperty('--projection-left', scaledIconLeft + 'px');
+    detailScreen.style.setProperty('--projection-top', scaledIconTop + 'px');
+    detailScreen.style.setProperty('--projection-width', scaledIconWidth + 'px');
+    detailScreen.style.setProperty('--projection-height', scaledIconHeight + 'px');
     positionCandleAssets();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
