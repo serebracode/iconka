@@ -241,6 +241,30 @@
                 opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
 
+        /* Виньетка самой иконы: тёмные края и живой центр света. */
+        #iconEdgeShade {
+            position: absolute;
+            inset: 0;
+            z-index: 26;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(1);
+            transform-origin: 50% 52%;
+            background: radial-gradient(
+                ellipse var(--icon-light-size-x, 47%) var(--icon-light-size-y, 43%)
+                at var(--icon-light-center-x, 50%) var(--icon-light-center-y, 59%),
+                rgba(0, 0, 0, 0) 0%,
+                rgba(0, 0, 0, 0.05) 32%,
+                rgba(0, 0, 0, 0.34) 68%,
+                rgba(0, 0, 0, 0.72) 100%
+            );
+            box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.34);
+            will-change: opacity, background;
+            transition:
+                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
+                opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
+        }
+
         /* Прямоугольная тень от доски иконы на дальней плоскости. */
         #iconShadow {
             position: absolute;
@@ -690,6 +714,8 @@
             opacity: 0;
             transform: translate(0, 0);
             transform-origin: 50% 52%;
+            /* Верх шире низа: источник света расположен ниже иконы. */
+            clip-path: polygon(0 0, 100% 0, 95.5% 100%, 4.5% 100%);
             will-change: transform, opacity, filter;
             transition:
                 transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
@@ -760,20 +786,27 @@
             opacity: 0.22;
         }
 
+        #detailContent.candle-active #iconEdgeShade {
+            opacity: var(--icon-edge-shade-opacity, 0.66);
+            transform: scale(var(--candle-icon-scale, 1.10));
+        }
+
         #detailContent.candle-active #iconLight {
             z-index: 30;
             /* Копия всегда совпадает с базовой иконой; движется только маска света. */
             transform: scale(var(--candle-icon-scale, 1.10));
             filter: brightness(1.48) contrast(1.08) saturate(0.95) sepia(0.20);
             mask-image: radial-gradient(
-                ellipse 47% 43% at var(--icon-light-center-x, 50%) var(--icon-light-center-y, 59%),
+                ellipse var(--icon-light-size-x, 47%) var(--icon-light-size-y, 43%)
+                at var(--icon-light-center-x, 50%) var(--icon-light-center-y, 59%),
                 #000 0%,
                 rgba(0, 0, 0, 0.92) 36%,
                 rgba(0, 0, 0, 0.42) 68%,
                 transparent 100%
             );
             -webkit-mask-image: radial-gradient(
-                ellipse 47% 43% at var(--icon-light-center-x, 50%) var(--icon-light-center-y, 59%),
+                ellipse var(--icon-light-size-x, 47%) var(--icon-light-size-y, 43%)
+                at var(--icon-light-center-x, 50%) var(--icon-light-center-y, 59%),
                 #000 0%,
                 rgba(0, 0, 0, 0.92) 36%,
                 rgba(0, 0, 0, 0.42) 68%,
@@ -785,8 +818,12 @@
             transition: opacity 100ms linear;
         }
 
-    
-    
+        body:not(.candle-transition) #iconEdgeShade {
+            transition: opacity 100ms linear;
+        }
+
+
+
 
     </style>
 </head>
@@ -863,6 +900,7 @@
                 <div id="iconShadow" class="icon-shadow" aria-hidden="true"></div>
                 <img id="iconImage" class="icon-base" alt="Икона">
                 <div id="iconOchreFilter" aria-hidden="true"></div>
+                <div id="iconEdgeShade" aria-hidden="true"></div>
                 <img id="iconLight" class="icon-light" alt="" aria-hidden="true">
             </div>
             <div class="icon-title">
@@ -1163,6 +1201,9 @@ function resetDetailScreenUI() {
         '--icon-light-opacity',
         '--icon-light-center-x',
         '--icon-light-center-y',
+        '--icon-light-size-x',
+        '--icon-light-size-y',
+        '--icon-edge-shade-opacity',
         '--middle-haze-opacity',
         '--back-glow-opacity',
         '--glow-scale',
@@ -1563,12 +1604,17 @@ function applyCandleAtmosphereFrame(time) {
     const lightX = candleFlameSampleActive ? flameMotionX : ((fallbackSlow - 0.5) * 0.72 + (fallbackFast - 0.5) * 0.28);
     const lightY = candleFlameSampleActive ? flameMotionY : ((fallbackFast - 0.5) * 0.38 + (fallbackSlow - 0.5) * 0.62);
 
-    detailScreen.style.setProperty('--icon-light-opacity', (0.16 + intensity * 0.17).toFixed(4));
-    /* Свет идёт за пламенем, но изображение не сдвигается: меняется центр виньетки. */
-    const lightCenterX = settlingCandleScene ? 50 : 50 + lightX * 18;
-    const lightCenterY = settlingCandleScene ? 59 : 59 + lightY * 16;
+    detailScreen.style.setProperty('--icon-light-opacity', (0.18 + intensity * 0.22).toFixed(4));
+    detailScreen.style.setProperty('--icon-edge-shade-opacity', (0.72 - intensity * 0.14).toFixed(4));
+    /* Свет идёт за пламенем; центр, площадь и плотность виньетки меняются вместе. */
+    const lightCenterX = settlingCandleScene ? 50 : 50 + lightX * 24;
+    const lightCenterY = settlingCandleScene ? 59 : 59 + lightY * 20;
+    const lightSizeX = 43 + intensity * 10;
+    const lightSizeY = 39 + intensity * 9;
     detailScreen.style.setProperty('--icon-light-center-x', lightCenterX.toFixed(2) + '%');
     detailScreen.style.setProperty('--icon-light-center-y', lightCenterY.toFixed(2) + '%');
+    detailScreen.style.setProperty('--icon-light-size-x', lightSizeX.toFixed(2) + '%');
+    detailScreen.style.setProperty('--icon-light-size-y', lightSizeY.toFixed(2) + '%');
     detailScreen.style.setProperty('--middle-haze-opacity', (0.028 + intensity * 0.042).toFixed(4));
     detailScreen.style.setProperty('--back-glow-opacity', (0.11 + intensity * 0.10).toFixed(4));
     detailScreen.style.setProperty('--glow-scale', (0.98 + intensity * 0.075).toFixed(4));
@@ -1578,8 +1624,9 @@ function applyCandleAtmosphereFrame(time) {
     /* Тень идёт в противоходе и проходит до 13% габарита иконы по обеим осям. */
     const projectionTravelX = parseFloat(detailScreen.dataset.projectionTravelX || '0');
     const projectionTravelY = parseFloat(detailScreen.dataset.projectionTravelY || '0');
+    const projectionBaseY = parseFloat(detailScreen.dataset.projectionBaseY || '0');
     detailScreen.style.setProperty('--projection-offset-x', (-lightX * projectionTravelX).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-offset-y', (-lightY * projectionTravelY).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-offset-y', (projectionBaseY - lightY * projectionTravelY).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-opacity', (0.84 + intensity * 0.10).toFixed(4));
     detailScreen.style.setProperty('--projection-blur', (5.5 + intensity * 1.5).toFixed(2) + 'px');
 
@@ -1656,6 +1703,8 @@ function showCandle() {
     /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±13%. */
     detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.26);
     detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.26);
+    /* Постоянно уводим проекцию вверх на 12% её высоты. */
+    detailScreen.dataset.projectionBaseY = String(-projectionHeight * 0.12);
     positionCandleAssets();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
