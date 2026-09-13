@@ -768,13 +768,6 @@
             opacity: var(--projection-opacity, 0.86);
         }
 
-        /* На входе тень начинает проявляться только со второй половины анимации. */
-        body.candle-transition.candle-active #iconProjection {
-            transition:
-                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
-                opacity 1500ms var(--candle-transition-easing) 1500ms;
-        }
-
         body:not(.candle-transition) #iconProjection {
             transition: opacity 120ms linear;
         }
@@ -1766,9 +1759,12 @@ function showCandle() {
     detailScreen.style.setProperty('--icon-center-y', (iconBounds.top + iconBounds.height * 0.5 + candleIconOffsetY) + 'px');
     /* Проекция на 10% крупнее уже увеличенной иконы и центрирована относительно неё. */
     const projectionWidth = scaledIconWidth * 1.10;
-    const projectionHeight = scaledIconHeight * 1.10;
+    const previousProjectionHeight = scaledIconHeight * 1.10;
+    /* Удлиняем тень вверх на 5%, сохраняя нижнюю границу на прежнем месте. */
+    const projectionHeight = previousProjectionHeight * 1.05;
     const projectionLeft = scaledIconLeft - scaledIconWidth * 0.05;
-    const projectionTop = scaledIconTop - scaledIconHeight * 0.05;
+    const projectionBottom = scaledIconTop - scaledIconHeight * 0.05 + previousProjectionHeight;
+    const projectionTop = projectionBottom - projectionHeight;
     /* Технический холст почти вдвое больше тени — по 45% запаса с каждой стороны. */
     const projectionPaddingX = projectionWidth * 0.45;
     const projectionPaddingY = projectionHeight * 0.45;
