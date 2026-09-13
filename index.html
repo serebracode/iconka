@@ -386,8 +386,13 @@
         }
 
         #detailContent.candle-active .icon-wrapper {
-            /* transform создаёт свой stacking context: поднимаем всю икону над проекцией (z-index: 8). */
-            z-index: 12;
+            /*
+             * transform создаёт stacking context. Держим всю группу иконы выше
+             * проекции и общего veil, а порядок её собственных слоёв изолируем,
+             * чтобы их z-index не конкурировали со свечой и пламенем.
+             */
+            z-index: 10;
+            isolation: isolate;
             transform: translateY(10vh);
         }
 
@@ -728,8 +733,8 @@
         }
 
         #foregroundVeil {
-            /* Затемняет пространство сцены, но не закрывает саму икону. */
-            z-index: 7;
+            /* Затемняет пространство сцены, оставаясь между проекцией и иконой. */
+            z-index: 9;
             background: radial-gradient(
                 ellipse 78% 86% at var(--flame-x, 50%) calc(var(--flame-y, 60%) - 5vh),
                 rgba(0, 0, 0, 0) 0%,
@@ -743,22 +748,21 @@
         #detailScreen.scene-active #foregroundEdgeShade { opacity: 0; }
 
     
-        /* Свет возвращается на саму икону: тёмная база + подвижный тёплый отблеск. */
+        /* Обычная базовая икона остаётся видимой под подвижным тёплым отблеском. */
         #detailContent.candle-active #iconImage {
-            /* Порядок внутри поднятой группы иконы: база → тень → свет → охра. */
-            z-index: 32;
+            z-index: 1;
             opacity: 1;
             visibility: visible;
-            filter: blur(0.3px) brightness(0.98) contrast(1.12);
+            filter: none;
         }
 
         #detailContent.candle-active #iconOchreFilter {
-            z-index: 35;
+            z-index: 4;
             opacity: 0.22;
         }
 
         #detailContent.candle-active #iconLight {
-            z-index: 34;
+            z-index: 3;
             transform: translate(var(--icon-light-offset-x, 0px), var(--icon-light-offset-y, 0px)) scale(var(--candle-icon-scale, 1.10));
             filter: brightness(1.48) contrast(1.08) saturate(0.95) sepia(0.20);
             mask-image: linear-gradient(
@@ -807,7 +811,7 @@
         }
 
         #detailContent.candle-active #iconEdgeShade {
-            z-index: 33;
+            z-index: 2;
             /* Не закрываем базовую живопись чёрной маской: свет должен двигаться по видимой иконе. */
             opacity: 0;
             transform: scale(var(--candle-icon-scale, 1.10));
