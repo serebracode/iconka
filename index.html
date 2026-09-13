@@ -369,11 +369,10 @@
                 filter var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
 
-        /* Световая копия входит в том же масштабе, что и исходная икона. */
+        /* Копия загорается только после входа и гаснет до обратного движения. */
         #detailContent.candle-transition #iconLight {
-            transition:
-                opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
-                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
+            opacity: 0 !important;
+            transition: opacity 100ms linear;
         }
 
         #detailContent.candle-active #iconImage {
