@@ -744,20 +744,20 @@
 
         #iconProjection .projection-band-top {
             filter: blur(var(--projection-blur-top, 6px));
-            mask-image: linear-gradient(to bottom, transparent 0%, #000 10%, #000 30%, transparent 54%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 10%, #000 30%, transparent 54%);
+            mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 35%, transparent 60%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 35%, transparent 60%);
         }
 
         #iconProjection .projection-band-middle {
             filter: blur(var(--projection-blur-middle, 5px));
-            mask-image: linear-gradient(to bottom, transparent 20%, #000 42%, #000 58%, transparent 80%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 20%, #000 42%, #000 58%, transparent 80%);
+            mask-image: linear-gradient(to bottom, transparent 28%, #000 44%, #000 56%, transparent 72%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 28%, #000 44%, #000 56%, transparent 72%);
         }
 
         #iconProjection .projection-band-bottom {
             filter: blur(var(--projection-blur-bottom, 4px));
-            mask-image: linear-gradient(to bottom, transparent 46%, #000 70%, #000 90%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 46%, #000 70%, #000 90%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 40%, #000 65%, #000 80%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 40%, #000 65%, #000 80%, transparent 100%);
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -1748,9 +1748,9 @@ function showCandle() {
     const projectionHeight = scaledIconHeight * 1.10;
     const projectionLeft = scaledIconLeft - scaledIconWidth * 0.05;
     const projectionTop = scaledIconTop - scaledIconHeight * 0.05;
-    /* Технический холст на 24% больше тени — blur получает запас со всех сторон. */
-    const projectionPaddingX = projectionWidth * 0.12;
-    const projectionPaddingY = projectionHeight * 0.12;
+    /* Технический холст почти вдвое больше тени — по 45% запаса с каждой стороны. */
+    const projectionPaddingX = projectionWidth * 0.45;
+    const projectionPaddingY = projectionHeight * 0.45;
     detailScreen.style.setProperty('--projection-left', (projectionLeft - projectionPaddingX) + 'px');
     detailScreen.style.setProperty('--projection-top', (projectionTop - projectionPaddingY) + 'px');
     detailScreen.style.setProperty('--projection-width', (projectionWidth + projectionPaddingX * 2) + 'px');
