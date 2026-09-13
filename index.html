@@ -761,7 +761,10 @@
 
         #detailContent.candle-active #iconEdgeShade {
             opacity: 0.90;
-            transform: scale(var(--candle-icon-scale, 1.10));
+            transform: translate(
+                var(--icon-edge-offset-x, 0px),
+                var(--icon-edge-offset-y, 0px)
+            ) scale(var(--candle-icon-scale, 1.10));
         }
 
     
@@ -1531,6 +1534,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--icon-light-opacity', (0.28 + intensity * 0.34).toFixed(4));
     detailScreen.style.setProperty('--icon-light-offset-x', (lightX * 34).toFixed(2) + 'px');
     detailScreen.style.setProperty('--icon-light-offset-y', (lightY * 20).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--icon-edge-offset-x', (lightX * 18).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--icon-edge-offset-y', (lightY * 12).toFixed(2) + 'px');
     detailScreen.style.setProperty('--middle-haze-opacity', (0.028 + intensity * 0.042).toFixed(4));
     detailScreen.style.setProperty('--back-glow-opacity', (0.11 + intensity * 0.10).toFixed(4));
     detailScreen.style.setProperty('--glow-scale', (0.98 + intensity * 0.075).toFixed(4));
