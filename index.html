@@ -745,27 +745,34 @@
 
         #iconProjection .projection-band-top {
             filter: blur(var(--projection-blur-top, 6px));
-            opacity: 0.80;
+            opacity: var(--projection-opacity-top, 0.72);
             mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 35%, transparent 60%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 35%, transparent 60%);
         }
 
         #iconProjection .projection-band-middle {
             filter: blur(var(--projection-blur-middle, 5px));
-            opacity: 0.90;
+            opacity: var(--projection-opacity-middle, 0.81);
             mask-image: linear-gradient(to bottom, transparent 28%, #000 44%, #000 56%, transparent 72%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 28%, #000 44%, #000 56%, transparent 72%);
         }
 
         #iconProjection .projection-band-bottom {
             filter: blur(var(--projection-blur-bottom, 4px));
+            opacity: var(--projection-opacity-bottom, 0.90);
             mask-image: linear-gradient(to bottom, transparent 40%, #000 65%, #000 80%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 40%, #000 65%, #000 80%, transparent 100%);
         }
 
         #detailScreen.scene-active #iconProjection {
             transform: translate(var(--projection-offset-x, 0px), var(--projection-offset-y, 0px));
-            opacity: var(--projection-opacity, 0.86);
+            opacity: 1;
+        }
+
+        body.candle-transition #iconProjection {
+            transition:
+                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
+                opacity var(--candle-transition-duration) var(--candle-transition-easing) !important;
         }
 
         body:not(.candle-transition) #iconProjection {
@@ -1267,7 +1274,9 @@ function resetDetailScreenUI() {
         '--projection-shape-height',
         '--projection-offset-x',
         '--projection-offset-y',
-        '--projection-opacity',
+        '--projection-opacity-top',
+        '--projection-opacity-middle',
+        '--projection-opacity-bottom',
         '--projection-blur-bottom',
         '--projection-blur-middle',
         '--projection-blur-top'
@@ -1685,7 +1694,10 @@ function applyCandleAtmosphereFrame(time) {
     const projectionBaseY = parseFloat(detailScreen.dataset.projectionBaseY || '0');
     detailScreen.style.setProperty('--projection-offset-x', (-lightX * projectionTravelX).toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-offset-y', (projectionBaseY - lightY * projectionTravelY).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-opacity', (0.84 + intensity * 0.10).toFixed(4));
+    const projectionOpacity = 0.84 + intensity * 0.10;
+    detailScreen.style.setProperty('--projection-opacity-bottom', projectionOpacity.toFixed(4));
+    detailScreen.style.setProperty('--projection-opacity-middle', (projectionOpacity * 0.90).toFixed(4));
+    detailScreen.style.setProperty('--projection-opacity-top', (projectionOpacity * 0.80).toFixed(4));
     const projectionBlur = 3.5 + intensity * 1.0;
     detailScreen.style.setProperty('--projection-blur-bottom', projectionBlur.toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-blur-middle', (projectionBlur * 1.25).toFixed(2) + 'px');
@@ -1760,8 +1772,8 @@ function showCandle() {
     /* Проекция на 10% крупнее уже увеличенной иконы и центрирована относительно неё. */
     const projectionWidth = scaledIconWidth * 1.10;
     const previousProjectionHeight = scaledIconHeight * 1.10;
-    /* Удлиняем тень вверх на 5%, сохраняя нижнюю границу на прежнем месте. */
-    const projectionHeight = previousProjectionHeight * 1.05;
+    /* Ширина остаётся 110%, высота задаётся независимо — 120% высоты иконы. */
+    const projectionHeight = scaledIconHeight * 1.20;
     const projectionLeft = scaledIconLeft - scaledIconWidth * 0.05;
     const projectionBottom = scaledIconTop - scaledIconHeight * 0.05 + previousProjectionHeight;
     const projectionTop = projectionBottom - projectionHeight;
@@ -1796,6 +1808,9 @@ function showCandle() {
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
     detailContent.classList.remove('candle-closing');
+
+    /* Фиксируем исходный кадр: WebView должен увидеть opacity: 0 до включения сцены. */
+    void document.getElementById('iconProjection').offsetWidth;
 
     requestAnimationFrame(() => {
         if (!candleVisible) return;
