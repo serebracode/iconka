@@ -807,7 +807,8 @@
 
         #detailContent.candle-active #iconEdgeShade {
             z-index: 33;
-            opacity: 0.90;
+            /* Не закрываем базовую живопись чёрной маской: свет должен двигаться по видимой иконе. */
+            opacity: 0;
             transform: scale(var(--candle-icon-scale, 1.10));
         }
 
