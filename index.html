@@ -902,6 +902,217 @@
             transition: opacity 100ms linear;
         }
 
+        /* ========== CANDLE LIGHT SYSTEM V2 ========== */
+        /* Старые конкурирующие эффекты выключены. Геометрия объектов остаётся прежней. */
+        #iconBackHalo,
+        #candleFlickerShade,
+        #middleHaze,
+        #flameBackGlow,
+        #foregroundVeil,
+        #foregroundEdgeShade,
+        #iconShadow,
+        #iconOchreFilter,
+        #iconEdgeShade,
+        #iconTopShade,
+        #iconLight {
+            display: none !important;
+        }
+
+        #detailScreen.scene-active {
+            background: #080604 !important;
+        }
+
+        .scene-background {
+            background: #080604 !important;
+        }
+
+        .scene-background::after {
+            background: linear-gradient(to bottom, #090807 0%, #080604 50%, #060403 100%);
+        }
+
+        #sceneAmbient,
+        #flameAmbient,
+        #sceneVignette,
+        #iconDarkeningEffect,
+        #iconSurfaceLight,
+        #flameHaloPosition {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
+        }
+
+        #sceneAmbient {
+            inset: 0;
+            z-index: 4;
+            background: radial-gradient(
+                ellipse 55% 42% at var(--flame-x, 50%) var(--flame-y, 62%),
+                rgba(172, 75, 19, 0.10) 0%,
+                rgba(116, 43, 8, 0.055) 35%,
+                rgba(63, 20, 3, 0.025) 60%,
+                transparent 80%
+            );
+            transform: scale(var(--ambient-scale, 1));
+            transform-origin: var(--flame-x, 50%) var(--flame-y, 62%);
+            will-change: opacity, transform;
+        }
+
+        /* Тень строится по фактическим границам иконы и не меняет саму икону. */
+        #iconProjection {
+            z-index: 8;
+            left: var(--effect-shadow-left, 0px);
+            top: var(--effect-shadow-top, 0px);
+            width: var(--effect-shadow-width, 0px);
+            height: var(--effect-shadow-height, 0px);
+            overflow: visible;
+            transform: translate(var(--shadow-shift-x, 0px), var(--shadow-shift-y, 0px));
+            transform-origin: 50% 50%;
+            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
+        }
+
+        #iconProjection .projection-band {
+            inset: 0;
+            overflow: visible;
+            mask-image: none;
+            -webkit-mask-image: none;
+        }
+
+        #iconProjection .projection-shape {
+            inset: 0;
+            clip-path: none;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.50));
+        }
+
+        #iconProjection .projection-band-top {
+            opacity: 0.34;
+            filter: blur(35px);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 46%, transparent 72%);
+            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 46%, transparent 72%);
+        }
+
+        #iconProjection .projection-band-middle {
+            opacity: 0.38;
+            filter: blur(30px);
+            mask-image: linear-gradient(to bottom, transparent 24%, #000 46%, #000 72%, transparent 91%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 24%, #000 46%, #000 72%, transparent 91%);
+        }
+
+        #iconProjection .projection-band-bottom {
+            opacity: 0.48;
+            filter: blur(25px);
+            mask-image: linear-gradient(to bottom, transparent 55%, #000 78%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 55%, #000 78%, #000 100%);
+        }
+
+        #detailScreen.scene-active #iconProjection {
+            opacity: var(--shadow-opacity, 0.92);
+            transform: translate(var(--shadow-shift-x, 0px), var(--shadow-shift-y, 0px));
+        }
+
+        .icon-bound-effect {
+            left: var(--effect-icon-left, 0px);
+            top: var(--effect-icon-top, 0px);
+            width: var(--effect-icon-width, 0px);
+            height: var(--effect-icon-height, 0px);
+            overflow: hidden;
+        }
+
+        #iconDarkeningEffect {
+            z-index: 24;
+            background:
+                linear-gradient(to bottom,
+                    rgba(0, 0, 0, 0.22) 0%,
+                    rgba(0, 0, 0, 0.13) 25%,
+                    rgba(0, 0, 0, 0.03) 55%,
+                    rgba(0, 0, 0, 0.02) 75%,
+                    rgba(0, 0, 0, 0.08) 100%),
+                radial-gradient(ellipse 68% 64% at 50% 58%,
+                    transparent 20%,
+                    rgba(0, 0, 0, 0.04) 42%,
+                    rgba(0, 0, 0, 0.15) 68%,
+                    rgba(0, 0, 0, 0.38) 100%);
+        }
+
+        #iconSurfaceLight {
+            z-index: 28;
+            background: radial-gradient(
+                ellipse var(--surface-light-width, 65%) var(--surface-light-height, 48%)
+                at var(--surface-light-x, 50%) var(--surface-light-y, 108%),
+                rgba(255, 199, 116, 0.25) 0%,
+                rgba(234, 137, 56, 0.16) 25%,
+                rgba(184, 79, 19, 0.075) 48%,
+                rgba(112, 40, 7, 0.025) 65%,
+                transparent 78%
+            );
+            mix-blend-mode: screen;
+            filter: blur(1px);
+            will-change: opacity, background;
+        }
+
+        #flameAmbient {
+            inset: 0;
+            z-index: 34;
+            background: radial-gradient(
+                ellipse 46vw 38vh at var(--flame-x, 50%) var(--flame-y, 62%),
+                rgba(196, 91, 22, 0.075) 0%,
+                rgba(126, 48, 8, 0.035) 48%,
+                transparent 80%
+            );
+            mix-blend-mode: screen;
+        }
+
+        #sceneVignette {
+            inset: 0;
+            z-index: 42;
+            background: radial-gradient(
+                ellipse 70% 72% at var(--flame-x, 50%) 56%,
+                transparent 36%,
+                rgba(0, 0, 0, 0.08) 62%,
+                rgba(0, 0, 0, 0.30) 100%
+            );
+        }
+
+        #flameHaloPosition {
+            z-index: 60;
+            left: var(--flame-x, 50%);
+            top: var(--flame-y, 62%);
+            width: var(--flame-halo-width, 220px);
+            height: var(--flame-halo-height, 180px);
+            transform: translate(-50%, -50%);
+            overflow: visible;
+        }
+
+        #flameHaloEffect {
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse 7% 12% at 50% 50%,
+                    rgba(255, 248, 218, 0.44) 0%, rgba(255, 218, 148, 0.24) 48%, transparent 100%),
+                radial-gradient(ellipse 23% 31% at 50% 52%,
+                    rgba(255, 160, 60, 0.20) 0%, rgba(220, 96, 22, 0.09) 48%, transparent 78%),
+                radial-gradient(ellipse 55% 60% at 50% 54%,
+                    rgba(173, 66, 13, 0.085) 0%, rgba(103, 33, 4, 0.035) 52%, transparent 80%);
+            mix-blend-mode: screen;
+            filter: blur(6px);
+            transform: scale(var(--halo-scale, 1));
+            will-change: opacity, transform;
+            opacity: var(--halo-opacity, 0.94);
+        }
+
+        #detailScreen.scene-active #sceneAmbient { opacity: var(--ambient-opacity, 0.70); }
+        #detailScreen.scene-active #iconDarkeningEffect { opacity: 1; }
+        #detailScreen.scene-active #iconSurfaceLight { opacity: var(--surface-light-opacity, 0.92); }
+        #detailScreen.scene-active #flameAmbient { opacity: var(--flame-ambient-opacity, 0.72); }
+        #detailScreen.scene-active #sceneVignette { opacity: 1; }
+        #detailScreen.scene-active #flameHaloPosition { opacity: 1; }
+
+        @media (prefers-reduced-motion: reduce) {
+            #sceneAmbient,
+            #iconProjection,
+            #iconSurfaceLight,
+            #flameHaloEffect { will-change: auto; }
+        }
+
 
 
 
@@ -971,6 +1182,7 @@
 <!-- ЭКРАН ИКОНЫ -->
 <div id="detailScreen" class="screen scene" style="position: absolute; overflow: hidden; isolation: isolate; background: #020201;">
     <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
+    <div id="sceneAmbient" aria-hidden="true"></div>
     <div id="iconProjection" aria-hidden="true">
         <div class="projection-band projection-band-top"><div class="projection-shape"></div></div>
         <div class="projection-band projection-band-middle"><div class="projection-shape"></div></div>
@@ -1002,6 +1214,12 @@
             <div id="infoContentText" style="color: #FFFFFF; font-size: 16px; line-height: 1.6;"></div>
         </div>
     </div>
+
+    <div id="iconDarkeningEffect" class="icon-bound-effect" aria-hidden="true"></div>
+    <div id="iconSurfaceLight" class="icon-bound-effect" aria-hidden="true"></div>
+    <div id="flameAmbient" aria-hidden="true"></div>
+    <div id="sceneVignette" aria-hidden="true"></div>
+    <div id="flameHaloPosition" aria-hidden="true"><div id="flameHaloEffect"></div></div>
 
     <div id="iconBackHalo" class="icon-back-halo" aria-hidden="true"></div>
     
@@ -1261,6 +1479,7 @@ function selectIcon(id) {
 
 function resetDetailScreenUI() {
     resetIconZoom();
+    candleEffectGeometryToken += 1;
     window.clearTimeout(candleTransitionTimer);
     candleTransitionTimer = null;
     stopCandleAtmosphereAnimation();
@@ -1323,7 +1542,30 @@ function resetDetailScreenUI() {
         '--projection-opacity-bottom',
         '--projection-blur-bottom',
         '--projection-blur-middle',
-        '--projection-blur-top'
+        '--projection-blur-top',
+        '--effect-icon-left',
+        '--effect-icon-top',
+        '--effect-icon-width',
+        '--effect-icon-height',
+        '--effect-shadow-left',
+        '--effect-shadow-top',
+        '--effect-shadow-width',
+        '--effect-shadow-height',
+        '--surface-light-x',
+        '--surface-light-y',
+        '--surface-light-width',
+        '--surface-light-height',
+        '--surface-light-opacity',
+        '--shadow-shift-x',
+        '--shadow-shift-y',
+        '--shadow-opacity',
+        '--ambient-opacity',
+        '--ambient-scale',
+        '--flame-ambient-opacity',
+        '--flame-halo-width',
+        '--flame-halo-height',
+        '--halo-opacity',
+        '--halo-scale'
     ].forEach(property => detailScreen.style.removeProperty(property));
     document.body.classList.remove('candle-active', 'candle-transition');
     detailContent.style.removeProperty('--info-progress');
@@ -1470,6 +1712,7 @@ let iconLightMotionY = 0;
 let iconLightIntensity = 0.5;
 let shadowMotionX = 0;
 let shadowMotionY = 0;
+let candleEffectGeometryToken = 0;
 const CANDLE_SCENE_TRANSITION_MS = 3000;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
@@ -1532,6 +1775,57 @@ function positionCandleAssets() {
         `${bodyBounds.top + bodyBounds.height * 0.8}px`
     );
     detailScreen.style.setProperty('--candle-bottom-shade-end', `${bodyBounds.bottom}px`);
+}
+
+/* Считывает уже рассчитанную геометрию. Функция двигает только слои эффектов. */
+function updateCandleEffectGeometry() {
+    const detailScreen = document.getElementById('detailScreen');
+    const icon = document.getElementById('iconImage');
+    const flame = document.getElementById('candleFlameViewport');
+    if (!detailScreen || !icon || !flame) return;
+
+    const sceneRect = detailScreen.getBoundingClientRect();
+    const iconRect = icon.getBoundingClientRect();
+    const flameRect = flame.getBoundingClientRect();
+    if (!iconRect.width || !iconRect.height || !flameRect.width || !flameRect.height) return;
+
+    const iconLeft = iconRect.left - sceneRect.left;
+    const iconTop = iconRect.top - sceneRect.top;
+    const flameX = flameRect.left + flameRect.width * 0.5 - sceneRect.left;
+    const flameY = flameRect.top + flameRect.height * 0.55 - sceneRect.top;
+    const relativeLightX = ((flameX - iconLeft) / iconRect.width) * 100;
+    const relativeLightY = ((flameY - iconTop) / iconRect.height) * 100;
+
+    detailScreen.style.setProperty('--flame-x', `${flameX.toFixed(2)}px`);
+    detailScreen.style.setProperty('--flame-y', `${flameY.toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-icon-left', `${iconLeft.toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-icon-top', `${iconTop.toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-icon-width', `${iconRect.width.toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-icon-height', `${iconRect.height.toFixed(2)}px`);
+    detailScreen.dataset.iconLightBaseX = relativeLightX.toFixed(4);
+    detailScreen.dataset.iconLightBaseY = relativeLightY.toFixed(4);
+
+    const shadowWidth = iconRect.width * 1.08;
+    const shadowHeight = iconRect.height * 1.08;
+    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.04).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.04 + 12).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
+
+    const flameUnit = Math.max(flameRect.width, 28);
+    detailScreen.style.setProperty('--flame-halo-width', `${(flameUnit * 6).toFixed(2)}px`);
+    detailScreen.style.setProperty('--flame-halo-height', `${(flameUnit * 5).toFixed(2)}px`);
+}
+
+function trackCandleEffectGeometry(duration) {
+    const token = ++candleEffectGeometryToken;
+    const startedAt = performance.now();
+    function track(now) {
+        if (token !== candleEffectGeometryToken) return;
+        updateCandleEffectGeometry();
+        if (now - startedAt < duration) requestAnimationFrame(track);
+    }
+    requestAnimationFrame(track);
 }
 
 function applyInfoProgress(value) {
@@ -1701,8 +1995,6 @@ function startFlameSynchronizedShade() {
 
 function applyCandleAtmosphereFrame(time) {
     const detailScreen = document.getElementById('detailScreen');
-    const detailContent = document.getElementById('detailContent');
-    const settlingCandleScene = detailContent.classList.contains('candle-transition');
     const fallbackSlow = candleFlickerSignal(time, 0.55);
     const fallbackFast = candleFlickerSignal(time, 5);
     const candleFlame = document.getElementById('candleFlame');
@@ -1712,50 +2004,36 @@ function applyCandleAtmosphereFrame(time) {
     const lightX = candleFlameSampleActive ? flameMotionX : ((fallbackSlow - 0.5) * 0.72 + (fallbackFast - 0.5) * 0.28);
     const lightY = candleFlameSampleActive ? flameMotionY : ((fallbackFast - 0.5) * 0.38 + (fallbackSlow - 0.5) * 0.62);
 
-    /* Отдельное инерционное сглаживание убирает скачки световой маски между кадрами видео. */
-    iconLightMotionX += (lightX - iconLightMotionX) * 0.075;
-    iconLightMotionY += (lightY - iconLightMotionY) * 0.065;
-    iconLightIntensity += (intensity - iconLightIntensity) * 0.055;
+    updateCandleEffectGeometry();
 
-    detailScreen.style.setProperty('--icon-light-opacity', (0.18 + iconLightIntensity * 0.22).toFixed(4));
-    detailScreen.style.setProperty('--icon-edge-shade-opacity', (0.72 - iconLightIntensity * 0.14).toFixed(4));
-    /* Свет идёт за пламенем; ход немного спокойнее тени. */
-    const lightCenterX = settlingCandleScene ? 50 : 50 + iconLightMotionX * 12;
-    const lightCenterY = settlingCandleScene ? 59 : 59 + iconLightMotionY * 10;
-    const lightSizeX = 49 + iconLightIntensity * 11;
-    const lightSizeY = 45 + iconLightIntensity * 10;
-    detailScreen.style.setProperty('--icon-light-center-x', lightCenterX.toFixed(2) + '%');
-    detailScreen.style.setProperty('--icon-light-center-y', lightCenterY.toFixed(2) + '%');
-    detailScreen.style.setProperty('--icon-light-size-x', lightSizeX.toFixed(2) + '%');
-    detailScreen.style.setProperty('--icon-light-size-y', lightSizeY.toFixed(2) + '%');
-    detailScreen.style.setProperty('--middle-haze-opacity', (0.028 + intensity * 0.042).toFixed(4));
-    detailScreen.style.setProperty('--back-glow-opacity', (0.11 + intensity * 0.10).toFixed(4));
-    detailScreen.style.setProperty('--glow-scale', (0.98 + intensity * 0.075).toFixed(4));
-    detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
+    /* Инерция света сглаживает дискретное движение огня в видео. */
+    iconLightMotionX += (lightX - iconLightMotionX) * 0.055;
+    iconLightMotionY += (lightY - iconLightMotionY) * 0.045;
+    iconLightIntensity += (intensity - iconLightIntensity) * 0.045;
+    const baseLightX = parseFloat(detailScreen.dataset.iconLightBaseX || '50');
+    const baseLightY = parseFloat(detailScreen.dataset.iconLightBaseY || '108');
+    detailScreen.style.setProperty('--surface-light-x', `${(baseLightX + iconLightMotionX * 2).toFixed(2)}%`);
+    detailScreen.style.setProperty('--surface-light-y', `${(baseLightY + iconLightMotionY * 3).toFixed(2)}%`);
+    detailScreen.style.setProperty('--surface-light-width', `${(65 + (iconLightIntensity - 0.5) * 8).toFixed(2)}%`);
+    detailScreen.style.setProperty('--surface-light-height', `${(48 + (iconLightIntensity - 0.5) * 12).toFixed(2)}%`);
+    detailScreen.style.setProperty('--surface-light-opacity', (0.89 + iconLightIntensity * 0.08).toFixed(4));
 
-    /* Обе границы тени реагируют на один сигнал, но нижняя почти неподвижна. */
-    shadowMotionX += (lightX - shadowMotionX) * 0.12;
-    shadowMotionY += (lightY - shadowMotionY) * 0.10;
-    const projectionTopTravelX = parseFloat(detailScreen.dataset.projectionTopTravelX || '0');
-    const projectionTopTravelY = parseFloat(detailScreen.dataset.projectionTopTravelY || '0');
-    const projectionBottomTravelX = parseFloat(detailScreen.dataset.projectionBottomTravelX || '0');
-    const projectionBottomTravelY = parseFloat(detailScreen.dataset.projectionBottomTravelY || '0');
-    /* Вертикальный ход верха усилен движением и интенсивностью самого пламени. */
-    const shadowTopYSignal = Math.max(-0.5, Math.min(0.5,
-        shadowMotionY * 1.6 + (intensity - 0.5) * 0.12));
-    detailScreen.style.setProperty('--projection-top-offset-x', (-shadowMotionX * projectionTopTravelX).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-top-offset-y', (-shadowTopYSignal * projectionTopTravelY).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-bottom-offset-x', (-shadowMotionX * projectionBottomTravelX).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-bottom-offset-y', (-shadowMotionY * projectionBottomTravelY).toFixed(2) + 'px');
-    const projectionOpacity = 0.84 + intensity * 0.10;
-    detailScreen.style.setProperty('--projection-opacity-bottom', projectionOpacity.toFixed(4));
-    detailScreen.style.setProperty('--projection-opacity-middle', (projectionOpacity * 0.90).toFixed(4));
-    detailScreen.style.setProperty('--projection-opacity-top', (projectionOpacity * 0.75).toFixed(4));
-    const projectionBlur = 3.5 + intensity * 1.0;
-    detailScreen.style.setProperty('--projection-blur-bottom', projectionBlur.toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-blur-middle', (projectionBlur * 1.25).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-blur-top', (projectionBlur * 1.85).toFixed(2) + 'px');
+    /* Тень идёт на противоходе, но заметно спокойнее самого пламени. */
+    shadowMotionX += (lightX - shadowMotionX) * 0.07;
+    shadowMotionY += (lightY - shadowMotionY) * 0.06;
+    detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 10).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-shift-y', `${(-shadowMotionY * 5).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-opacity', (0.88 + intensity * 0.08).toFixed(4));
+
+    /* Разные периоды не дают слоям дышать как единому механическому glow. */
+    const ambientWave = Math.sin((time / 5.1) * Math.PI * 2);
+    const haloWave = Math.sin((time / 2.4) * Math.PI * 2 + 0.7);
+    const iconWave = Math.sin((time / 3.3) * Math.PI * 2 + 1.4);
+    detailScreen.style.setProperty('--ambient-opacity', (0.70 + ambientWave * 0.02).toFixed(4));
+    detailScreen.style.setProperty('--ambient-scale', (1 + ambientWave * 0.012).toFixed(4));
+    detailScreen.style.setProperty('--flame-ambient-opacity', (0.70 + iconWave * 0.025).toFixed(4));
+    detailScreen.style.setProperty('--halo-opacity', (0.94 + haloWave * 0.05).toFixed(4));
+    detailScreen.style.setProperty('--halo-scale', (1 + haloWave * 0.025).toFixed(4));
 
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
 }
@@ -1770,6 +2048,7 @@ function stopCandleAtmosphereAnimation() {
 
 function startCandleAtmosphereAnimation() {
     stopCandleAtmosphereAnimation();
+    candleEffectGeometryToken += 1;
     candleAtmosphereAnimationStart = performance.now();
     iconLightMotionX = 0;
     iconLightMotionY = 0;
@@ -1815,48 +2094,10 @@ function showCandle() {
     const iconScale = iconBounds.width > 0
         ? window.innerWidth * 0.9 / iconBounds.width
         : 1.10;
-    const scaledIconWidth = iconBounds.width * iconScale;
-    const scaledIconHeight = iconBounds.height * iconScale;
-    const scaledIconLeft = iconBounds.left + (iconBounds.width - scaledIconWidth) * 0.5;
-    const candleIconOffsetY = 0;
-    const scaledIconTop = iconBounds.top + iconBounds.height * 0.52 * (1 - iconScale) + candleIconOffsetY;
     detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
     detailContent.style.setProperty('--candle-shadow-scale', (iconScale * 1.18).toFixed(4));
-    // Свет и фоновый ореол привязаны к реальному центру исходной иконы.
-    detailScreen.style.setProperty('--icon-center-x', (iconBounds.left + iconBounds.width * 0.5) + 'px');
-    detailScreen.style.setProperty('--icon-center-y', (iconBounds.top + iconBounds.height * 0.5 + candleIconOffsetY) + 'px');
-    /* Проекция на 10% крупнее уже увеличенной иконы и центрирована относительно неё. */
-    const projectionWidth = scaledIconWidth * 1.10;
-    const previousProjectionHeight = scaledIconHeight * 1.10;
-    /* Ширина остаётся 110%, высота задаётся независимо — 115% высоты иконы. */
-    const projectionHeight = scaledIconHeight * 1.15;
-    const projectionLeft = scaledIconLeft - scaledIconWidth * 0.05;
-    const projectionBottom = scaledIconTop - scaledIconHeight * 0.05 + previousProjectionHeight;
-    const projectionTop = projectionBottom - projectionHeight;
-    /* Технический холст почти вдвое больше тени — по 45% запаса с каждой стороны. */
-    const projectionPaddingX = projectionWidth * 0.45;
-    const projectionPaddingY = projectionHeight * 0.45;
-    detailScreen.style.setProperty('--projection-left', (projectionLeft - projectionPaddingX) + 'px');
-    detailScreen.style.setProperty('--projection-top', (projectionTop - projectionPaddingY) + 'px');
-    detailScreen.style.setProperty('--projection-width', (projectionWidth + projectionPaddingX * 2) + 'px');
-    detailScreen.style.setProperty('--projection-height', (projectionHeight + projectionPaddingY * 2) + 'px');
-    detailScreen.style.setProperty('--projection-shape-left', projectionPaddingX + 'px');
-    detailScreen.style.setProperty('--projection-shape-top', projectionPaddingY + 'px');
-    detailScreen.style.setProperty('--projection-shape-width', projectionWidth + 'px');
-    detailScreen.style.setProperty('--projection-shape-height', projectionHeight + 'px');
-    /* Координаты исходной трапеции внутри увеличенного технического холста. */
-    detailScreen.style.setProperty('--projection-top-left', projectionPaddingX + 'px');
-    detailScreen.style.setProperty('--projection-top-right', (projectionPaddingX + projectionWidth) + 'px');
-    detailScreen.style.setProperty('--projection-top-y', projectionPaddingY + 'px');
-    detailScreen.style.setProperty('--projection-bottom-left', (projectionPaddingX + projectionWidth * 0.0227) + 'px');
-    detailScreen.style.setProperty('--projection-bottom-right', (projectionPaddingX + projectionWidth * 0.9773) + 'px');
-    detailScreen.style.setProperty('--projection-bottom-y', (projectionPaddingY + projectionHeight) + 'px');
-    /* Верхняя грань ходит до ±5%, нижняя — только до ±1%. */
-    detailScreen.dataset.projectionTopTravelX = String(projectionWidth * 0.10);
-    detailScreen.dataset.projectionTopTravelY = String(projectionHeight * 0.10);
-    detailScreen.dataset.projectionBottomTravelX = String(projectionWidth * 0.02);
-    detailScreen.dataset.projectionBottomTravelY = String(projectionHeight * 0.02);
     positionCandleAssets();
+    updateCandleEffectGeometry();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     if (candleFlameDuplicate.readyState >= 1) candleFlameDuplicate.currentTime = 0;
@@ -1873,7 +2114,7 @@ function showCandle() {
     detailContent.classList.remove('candle-closing');
 
     /* Фиксируем исходный кадр: WebView должен увидеть opacity: 0 до включения сцены. */
-    void document.getElementById('iconProjection').offsetWidth;
+    void document.getElementById('sceneAmbient').offsetWidth;
 
     requestAnimationFrame(() => {
         if (!candleVisible) return;
@@ -1917,6 +2158,7 @@ function closeCandle() {
     document.body.classList.remove('candle-active');
     detailScreen.classList.remove('scene-active');
     detailContent.classList.remove('candle-active');
+    trackCandleEffectGeometry(CANDLE_SCENE_TRANSITION_MS);
     candleLayer.style.opacity = '0';
     candleFlame.pause();
     candleFlameDuplicate.pause();
@@ -1987,6 +2229,10 @@ function toggleInfo() {
 
 // Увеличение иконы: двойной тап — x2, перетаскивание — просмотр деталей.
 const iconImageElement = document.getElementById('iconImage');
+iconImageElement.addEventListener('load', () => requestAnimationFrame(updateCandleEffectGeometry));
+window.addEventListener('resize', () => {
+    if (candleVisible) updateCandleEffectGeometry();
+});
 let iconZoomed = false;
 let iconPanX = 0;
 let iconPanY = 0;
