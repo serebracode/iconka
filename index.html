@@ -765,7 +765,7 @@
 
         #iconProjection .projection-band-top {
             filter: blur(var(--projection-blur-top, 6px));
-            opacity: var(--projection-opacity-top, 0.60);
+            opacity: var(--projection-opacity-top, 0.72);
             mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 35%, transparent 60%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 35%, transparent 60%);
         }
@@ -1450,6 +1450,8 @@ let flameVideoIntensity = 0;
 let iconLightMotionX = 0;
 let iconLightMotionY = 0;
 let iconLightIntensity = 0.5;
+let shadowMotionX = 0;
+let shadowMotionY = 0;
 const CANDLE_SCENE_TRANSITION_MS = 3000;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
@@ -1714,16 +1716,19 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--glow-offset-x', (lightX * 14).toFixed(2) + 'px');
     detailScreen.style.setProperty('--glow-offset-y', (lightY * 8).toFixed(2) + 'px');
 
-    /* Тень идёт в противоходе и проходит до 7% габарита иконы по обеим осям. */
+    /* Тень реагирует медленнее света и сохраняет движение в противоходе. */
+    shadowMotionX += (lightX - shadowMotionX) * 0.12;
+    shadowMotionY += (lightY - shadowMotionY) * 0.10;
+    /* Амплитуда ограничена 5% габарита иконы по обеим осям. */
     const projectionTravelX = parseFloat(detailScreen.dataset.projectionTravelX || '0');
     const projectionTravelY = parseFloat(detailScreen.dataset.projectionTravelY || '0');
     const projectionBaseY = parseFloat(detailScreen.dataset.projectionBaseY || '0');
-    detailScreen.style.setProperty('--projection-offset-x', (-lightX * projectionTravelX).toFixed(2) + 'px');
-    detailScreen.style.setProperty('--projection-offset-y', (projectionBaseY - lightY * projectionTravelY).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-offset-x', (-shadowMotionX * projectionTravelX).toFixed(2) + 'px');
+    detailScreen.style.setProperty('--projection-offset-y', (projectionBaseY - shadowMotionY * projectionTravelY).toFixed(2) + 'px');
     const projectionOpacity = 0.84 + intensity * 0.10;
     detailScreen.style.setProperty('--projection-opacity-bottom', projectionOpacity.toFixed(4));
     detailScreen.style.setProperty('--projection-opacity-middle', (projectionOpacity * 0.90).toFixed(4));
-    detailScreen.style.setProperty('--projection-opacity-top', (projectionOpacity * 0.65).toFixed(4));
+    detailScreen.style.setProperty('--projection-opacity-top', (projectionOpacity * 0.80).toFixed(4));
     const projectionBlur = 3.5 + intensity * 1.0;
     detailScreen.style.setProperty('--projection-blur-bottom', projectionBlur.toFixed(2) + 'px');
     detailScreen.style.setProperty('--projection-blur-middle', (projectionBlur * 1.25).toFixed(2) + 'px');
@@ -1746,6 +1751,8 @@ function startCandleAtmosphereAnimation() {
     iconLightMotionX = 0;
     iconLightMotionY = 0;
     iconLightIntensity = 0.5;
+    shadowMotionX = 0;
+    shadowMotionY = 0;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         applyCandleAtmosphereFrame(0);
@@ -1814,9 +1821,9 @@ function showCandle() {
     detailScreen.style.setProperty('--projection-shape-top', projectionPaddingY + 'px');
     detailScreen.style.setProperty('--projection-shape-width', projectionWidth + 'px');
     detailScreen.style.setProperty('--projection-shape-height', projectionHeight + 'px');
-    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±7%. */
-    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.14);
-    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.14);
+    /* lightX/lightY лежат примерно в диапазоне -0.5…0.5: множитель даёт ход ±5%. */
+    detailScreen.dataset.projectionTravelX = String(projectionWidth * 0.10);
+    detailScreen.dataset.projectionTravelY = String(projectionHeight * 0.10);
     /* Без постоянного подъёма: нижний край тени остаётся виден под иконой. */
     detailScreen.dataset.projectionBaseY = '0';
     positionCandleAssets();
