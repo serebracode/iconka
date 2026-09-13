@@ -294,17 +294,19 @@
             mix-blend-mode: screen;
             opacity: 0;
             pointer-events: none;
-            mask-image: radial-gradient(
-                ellipse 42% 36% at 50% 58%,
+            mask-image: linear-gradient(
+                to top,
                 #000 0%,
-                rgba(0, 0, 0, 0.85) 42%,
-                transparent 100%
+                rgba(0, 0, 0, 0.82) 34%,
+                rgba(0, 0, 0, 0.30) 62%,
+                transparent 90%
             );
-            -webkit-mask-image: radial-gradient(
-                ellipse 42% 36% at 50% 58%,
+            -webkit-mask-image: linear-gradient(
+                to top,
                 #000 0%,
-                rgba(0, 0, 0, 0.85) 42%,
-                transparent 100%
+                rgba(0, 0, 0, 0.82) 34%,
+                rgba(0, 0, 0, 0.30) 62%,
+                transparent 90%
             );
             transition: opacity var(--candle-icon-transition-duration) var(--candle-icon-transition-easing);
         }
@@ -738,17 +740,19 @@
         #iconLight {
             transform: translate(var(--icon-light-offset-x, 0px), var(--icon-light-offset-y, 0px)) scale(var(--candle-icon-scale, 1.10));
             filter: brightness(1.48) contrast(1.08) saturate(0.95) sepia(0.20);
-            mask-image: radial-gradient(
-                ellipse 49% 42% at 50% 59%,
+            mask-image: linear-gradient(
+                to top,
                 #000 0%,
-                rgba(0, 0, 0, 0.88) 44%,
-                transparent 100%
+                rgba(0, 0, 0, 0.82) 34%,
+                rgba(0, 0, 0, 0.30) 62%,
+                transparent 90%
             );
-            -webkit-mask-image: radial-gradient(
-                ellipse 49% 42% at 50% 59%,
+            -webkit-mask-image: linear-gradient(
+                to top,
                 #000 0%,
-                rgba(0, 0, 0, 0.88) 44%,
-                transparent 100%
+                rgba(0, 0, 0, 0.82) 34%,
+                rgba(0, 0, 0, 0.30) 62%,
+                transparent 90%
             );
         }
 
