@@ -742,14 +742,20 @@
     
         /* Свет возвращается на саму икону: тёмная база + подвижный тёплый отблеск. */
         #detailContent.candle-active #iconImage {
+            /* База должна лежать выше общего затемняющего veil сцены (z-index: 31). */
+            z-index: 32;
+            opacity: 1;
+            visibility: visible;
             filter: blur(0.3px) brightness(0.87) contrast(1.18);
         }
 
         #detailContent.candle-active #iconOchreFilter {
+            z-index: 35;
             opacity: 0.22;
         }
 
         #detailContent.candle-active #iconLight {
+            z-index: 34;
             transform: translate(var(--icon-light-offset-x, 0px), var(--icon-light-offset-y, 0px)) scale(var(--candle-icon-scale, 1.10));
             filter: brightness(1.48) contrast(1.08) saturate(0.95) sepia(0.20);
             mask-image: linear-gradient(
@@ -798,6 +804,7 @@
         }
 
         #detailContent.candle-active #iconEdgeShade {
+            z-index: 33;
             opacity: 0.90;
             transform: scale(var(--candle-icon-scale, 1.10));
         }
