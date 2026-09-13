@@ -185,7 +185,7 @@
             display: flex;
             justify-content: center;
             position: relative;
-            transition-property: width;
+            transition-property: width, transform;
         }
 
         #iconImage {
@@ -383,6 +383,10 @@
         #detailContent.candle-closing #iconLight {
             opacity: 0 !important;
             transition: opacity 100ms linear;
+        }
+
+        #detailContent.candle-active .icon-wrapper {
+            transform: translateY(10vh);
         }
 
         #detailContent.candle-active #iconImage {
@@ -1637,12 +1641,13 @@ function showCandle() {
     const scaledIconWidth = iconBounds.width * iconScale;
     const scaledIconHeight = iconBounds.height * iconScale;
     const scaledIconLeft = iconBounds.left + (iconBounds.width - scaledIconWidth) * 0.5;
-    const scaledIconTop = iconBounds.top + iconBounds.height * 0.52 * (1 - iconScale);
+    const candleIconOffsetY = window.innerHeight * 0.10;
+    const scaledIconTop = iconBounds.top + iconBounds.height * 0.52 * (1 - iconScale) + candleIconOffsetY;
     detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
     detailContent.style.setProperty('--candle-shadow-scale', (iconScale * 1.18).toFixed(4));
     // Свет возвращён к прежней опорной точке исходной иконы; проекция живёт по масштабированным границам.
     detailScreen.style.setProperty('--icon-center-x', (iconBounds.left + iconBounds.width * 0.5) + 'px');
-    detailScreen.style.setProperty('--icon-center-y', (iconBounds.top + iconBounds.height * 0.5) + 'px');
+    detailScreen.style.setProperty('--icon-center-y', (iconBounds.top + iconBounds.height * 0.5 + candleIconOffsetY) + 'px');
     detailScreen.style.setProperty('--projection-left', scaledIconLeft + 'px');
     detailScreen.style.setProperty('--projection-top', scaledIconTop + 'px');
     detailScreen.style.setProperty('--projection-width', scaledIconWidth + 'px');
