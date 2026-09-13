@@ -386,6 +386,8 @@
         }
 
         #detailContent.candle-active .icon-wrapper {
+            /* transform создаёт свой stacking context: поднимаем всю икону над проекцией (z-index: 8). */
+            z-index: 12;
             transform: translateY(10vh);
         }
 
@@ -742,7 +744,7 @@
     
         /* Свет возвращается на саму икону: тёмная база + подвижный тёплый отблеск. */
         #detailContent.candle-active #iconImage {
-            /* База должна лежать выше общего затемняющего veil сцены (z-index: 31). */
+            /* Порядок внутри поднятой группы иконы: база → тень → свет → охра. */
             z-index: 32;
             opacity: 1;
             visibility: visible;
