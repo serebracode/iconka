@@ -1028,7 +1028,7 @@
             width: var(--effect-shadow-width, 0px);
             height: var(--effect-shadow-height, 0px);
             overflow: visible;
-            transform: translate(var(--shadow-shift-x, 0px), var(--shadow-shift-y, 0px));
+            transform: none;
             transform-origin: 50% 50%;
             transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
         }
@@ -1042,7 +1042,17 @@
 
         #iconProjection .projection-shape {
             inset: 0;
-            clip-path: polygon(0% 0%, 100% 0%, 99% 100%, 1% 100%);
+            /* Одна трапеция: верх живо повторяет огонь, низ лишь слегка дрейфует. */
+            clip-path: polygon(
+                calc(0% + var(--shadow-top-shift-x, 0px))
+                    calc(0% + var(--shadow-top-shift-y, -18px)),
+                calc(100% + var(--shadow-top-shift-x, 0px))
+                    calc(0% + var(--shadow-top-shift-y, -18px)),
+                calc(92% + var(--shadow-bottom-shift-x, 0px))
+                    calc(100% + var(--shadow-bottom-shift-y, -18px)),
+                calc(8% + var(--shadow-bottom-shift-x, 0px))
+                    calc(100% + var(--shadow-bottom-shift-y, -18px))
+            );
             border-radius: 2px;
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.54), rgba(0, 0, 0, 0.72));
             /* Проекция повторяет alpha-силуэт объекта, а не прямоугольник файла. */
@@ -1074,7 +1084,7 @@
 
         #detailScreen.scene-active #iconProjection {
             opacity: var(--shadow-opacity, 0.92);
-            transform: translate(var(--shadow-shift-x, 0px), var(--shadow-shift-y, 0px));
+            transform: none;
         }
 
         .icon-bound-effect {
@@ -1445,6 +1455,16 @@ function isPhoneDevice() {
     return phoneUA || (phoneScreen && window.matchMedia('(pointer: coarse)').matches);
 }
 
+function isPortraitTablet() {
+    const width = window.innerWidth;
+    const height = getStableViewportHeight();
+    const tabletUA = /iPad|Android(?!.*Mobile)|Tablet/i.test(navigator.userAgent);
+    const tabletViewport = width > 600
+        && Math.min(screen.width || width, screen.height || height) <= 1366
+        && window.matchMedia('(pointer: coarse)').matches;
+    return (tabletUA || tabletViewport) && height >= width;
+}
+
 function updatePhoneOrientationPolicy() {
     if (!isPhoneDevice()) {
         document.body.classList.remove('phone-landscape');
@@ -1717,7 +1737,7 @@ function getOrderedIcons() {
 }
 
 function switchIconBySwipe(direction) {
-    if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed) return;
+    if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed || isPortraitTablet()) return;
 
     const orderedIcons = getOrderedIcons();
     const currentIndex = orderedIcons.findIndex(icon => icon.id === selectedIcon.id);
@@ -1847,8 +1867,10 @@ function resetDetailScreenUI() {
         '--surface-light-width',
         '--surface-light-height',
         '--surface-light-opacity',
-        '--shadow-shift-x',
-        '--shadow-shift-y',
+        '--shadow-top-shift-x',
+        '--shadow-top-shift-y',
+        '--shadow-bottom-shift-x',
+        '--shadow-bottom-shift-y',
         '--shadow-top-x',
         '--shadow-top-y',
         '--shadow-bottom-x',
@@ -2133,7 +2155,7 @@ function updateCandleEffectGeometry() {
     detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135).toFixed(2)}px`);
     /* Пламя находится ниже иконы, поэтому проекция раскрывается вверх.
        Нижний край плотного силуэта остаётся за объектом и не образует чёрную полосу. */
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.18 + 8).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.13 + 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
 
@@ -2370,14 +2392,14 @@ function applyCandleAtmosphereFrame(time) {
     }
     detailScreen.style.setProperty('--surface-light-opacity', '1');
 
-    /* Один сигнал ведёт всю сцену. Тень идёт в противоходе и больше не
-       сглаживается CSS-transition поверх кадровой инерции. */
+    /* Верх трапеции повторяет прежнюю амплитуду проекции, низ удерживается
+       около стартовой позиции; из четырёх вершин естественно меняются боковины. */
     shadowMotionX += (sceneMotionX - shadowMotionX) * 0.26;
     shadowMotionY += (sceneMotionY - shadowMotionY) * 0.12;
-    /* CSS владеет transform, JS передаёт только координаты. Так каскад больше
-       не может молча заменить покадровое движение статическим transform. */
-    detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 100).toFixed(2)}px`);
-    detailScreen.style.setProperty('--shadow-shift-y', `${(-18 - shadowMotionY * 52).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-top-shift-x', `${(-shadowMotionX * 100).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-top-shift-y', `${(-18 - shadowMotionY * 52).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-bottom-shift-x', `${(-shadowMotionX * 14).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-bottom-shift-y', `${(-18 - shadowMotionY * 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
@@ -2762,7 +2784,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
         const deltaX = currentX - startX;
         const deltaY = startY - e.touches[0].clientY;
 
-        if (!infoPanelVisible && !iconZoomed
+        if (!infoPanelVisible && !iconZoomed && !isPortraitTablet()
             && Math.abs(deltaX) > 18
             && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
             horizontalIntent = true;
