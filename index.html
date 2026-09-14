@@ -1039,6 +1039,16 @@
             clip-path: polygon(0% 0%, 100% 0%, 99% 100%, 1% 100%);
             border-radius: 2px;
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.54), rgba(0, 0, 0, 0.72));
+            /* Проекция повторяет alpha-силуэт объекта, а не прямоугольник файла. */
+            mask-image: var(--icon-alpha-mask, none);
+            -webkit-mask-image: var(--icon-alpha-mask, none);
+            mask-mode: alpha;
+            mask-position: center;
+            -webkit-mask-position: center;
+            mask-size: 100% 100%;
+            -webkit-mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
             will-change: transform;
         }
 
@@ -1067,6 +1077,16 @@
             width: var(--effect-icon-width, 0px);
             height: var(--effect-icon-height, 0px);
             overflow: hidden;
+            /* Свет и затемнение существуют только на непрозрачных пикселях иконы. */
+            mask-image: var(--icon-alpha-mask, none);
+            -webkit-mask-image: var(--icon-alpha-mask, none);
+            mask-mode: alpha;
+            mask-position: center;
+            -webkit-mask-position: center;
+            mask-size: 100% 100%;
+            -webkit-mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
         }
 
         #iconDarkeningEffect {
@@ -1515,6 +1535,8 @@ function selectIcon(id) {
     listScreen.classList.add('loading-fadeout');
     
     // Заполняем данные
+    const alphaMaskUrl = `url("${new URL(selectedIcon.image, document.baseURI).href}")`;
+    detailScreen.style.setProperty('--icon-alpha-mask', alphaMaskUrl);
     document.getElementById('iconImage').src = selectedIcon.image;
     document.getElementById('iconLight').src = selectedIcon.image;
         document.getElementById('iconTitleText').textContent = selectedIcon.title_short || selectedIcon.title;
@@ -2126,7 +2148,7 @@ function applyCandleAtmosphereFrame(time) {
         ? flameVideoIntensity * 0.78 + fallbackSlow * 0.14 + fallbackFast * 0.08
         : fallbackSlow * 0.82 + fallbackFast * 0.18;
     const intensity = clampUnit(0.5 + (rawIntensity - 0.5) * 1.18);
-    const sampledX = candleFlameSampleActive ? flameMotionX * 3.1 : 0;
+    const sampledX = candleFlameSampleActive ? flameMotionX * 4.2 : 0;
     const sampledY = candleFlameSampleActive ? flameMotionY * 1.05 : 0;
     /* Синусоиды лишь не дают сцене замереть при плохом чтении видео.
        При нормальном видео направление определяет само пламя. */
@@ -2165,10 +2187,10 @@ function applyCandleAtmosphereFrame(time) {
        сглаживается CSS-transition поверх кадровой инерции. */
     shadowMotionX += (lightX - shadowMotionX) * 0.26;
     shadowMotionY += (lightY - shadowMotionY) * 0.12;
-    const iconProjection = document.getElementById('iconProjection');
-    if (iconProjection) {
-        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 50).toFixed(2)}px, ${(-18 - shadowMotionY * 16).toFixed(2)}px, 0)`;
-    }
+    /* CSS владеет transform, JS передаёт только координаты. Так каскад больше
+       не может молча заменить покадровое движение статическим transform. */
+    detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 50).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-shift-y', `${(-18 - shadowMotionY * 16).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
