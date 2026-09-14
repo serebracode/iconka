@@ -2130,6 +2130,7 @@ function applyCandleAtmosphereFrame(time) {
     const sceneAmbient = document.getElementById('sceneAmbient');
     const haloEffect = document.getElementById('flameHaloEffect');
     const haloPosition = document.getElementById('flameHaloPosition');
+    const candleWaxHighlight = document.getElementById('candleWaxHighlight');
     if (sceneAmbient) {
         sceneAmbient.style.transform = `translate3d(${(lightX * 18).toFixed(2)}px, ${(lightY * 12).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
@@ -2138,6 +2139,10 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--flame-ambient-opacity', (0.34 + intensity * 0.34).toFixed(4));
     if (haloPosition) {
         haloPosition.style.transform = `translate(calc(-50% + ${(lightX * 14).toFixed(2)}px), calc(-50% + ${(lightY * 10).toFixed(2)}px))`;
+    }
+    if (candleWaxHighlight) {
+        // Воск всегда освещён; сигнал пламени меняет яркость лишь слегка.
+        candleWaxHighlight.style.opacity = (0.60 + intensity * 0.12).toFixed(4);
     }
     if (haloEffect) {
         haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
