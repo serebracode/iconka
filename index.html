@@ -1082,7 +1082,11 @@
             height: var(--contact-shadow-height, 40px);
             pointer-events: none;
             opacity: 0;
-            transform: translate3d(var(--contact-shadow-shift-x, 0px), 0, 0);
+            transform: translate3d(
+                var(--contact-shadow-shift-x, 0px),
+                var(--contact-shadow-shift-y, 0px),
+                0
+            );
             background: radial-gradient(
                 ellipse 88% 100% at 50% 0%,
                 rgba(0, 0, 0, 0.98) 0%,
@@ -1091,7 +1095,7 @@
                 rgba(0, 0, 0, 0.36) 68%,
                 transparent 100%
             );
-            filter: blur(4px);
+            filter: blur(7px);
             will-change: opacity, transform;
             transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
         }
@@ -2205,7 +2209,7 @@ function applyCandleAtmosphereFrame(time) {
         : fallbackSlow * 0.82 + fallbackFast * 0.18;
     const intensity = clampUnit(0.5 + (rawIntensity - 0.5) * 1.18);
     const sampledX = candleFlameSampleActive ? flameMotionX * 4.2 : 0;
-    const sampledY = candleFlameSampleActive ? flameMotionY * 1.05 : 0;
+    const sampledY = candleFlameSampleActive ? flameMotionY * 4.2 : 0;
     /* Синусоиды лишь не дают сцене замереть при плохом чтении видео.
        При нормальном видео направление определяет само пламя. */
     const organicX = Math.sin(time * 1.31) * 0.38 + Math.sin(time * 2.17 + 1.4) * 0.16;
@@ -2213,7 +2217,7 @@ function applyCandleAtmosphereFrame(time) {
     const lightX = Math.max(-0.5, Math.min(0.5,
         candleFlameSampleActive ? sampledX + organicX * 0.10 : organicX));
     const lightY = Math.max(-0.5, Math.min(0.5,
-        candleFlameSampleActive ? sampledY * 0.28 + organicY * 0.06 : organicY * 0.38));
+        candleFlameSampleActive ? sampledY + organicY * 0.10 : organicY * 0.50));
 
     updateCandleEffectGeometry();
 
@@ -2246,8 +2250,9 @@ function applyCandleAtmosphereFrame(time) {
     /* CSS владеет transform, JS передаёт только координаты. Так каскад больше
        не может молча заменить покадровое движение статическим transform. */
     detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 100).toFixed(2)}px`);
-    detailScreen.style.setProperty('--shadow-shift-y', `${(-18 - shadowMotionY * 16).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-shift-y', `${(-18 - shadowMotionY * 52).toFixed(2)}px`);
     detailScreen.style.setProperty('--contact-shadow-shift-x', `${(-shadowMotionX * 28).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-shift-y', `${(-shadowMotionY * 16).toFixed(2)}px`);
     detailScreen.style.setProperty('--contact-shadow-opacity', (0.88 + intensity * 0.10).toFixed(4));
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
