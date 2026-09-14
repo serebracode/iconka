@@ -511,9 +511,9 @@
             position: absolute;
             z-index: 3;
             pointer-events: none;
-            opacity: 0.66;
-            filter: brightness(2.05) sepia(0.30) saturate(1.28);
-            mix-blend-mode: soft-light;
+            opacity: 0.72;
+            filter: brightness(1.75) contrast(1.28) sepia(0.38) saturate(1.42);
+            mix-blend-mode: screen;
             mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.92) 18%, rgba(0, 0, 0, 0.32) 43%, transparent 62%);
             -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.92) 18%, rgba(0, 0, 0, 0.32) 43%, transparent 62%);
         }
@@ -2125,7 +2125,7 @@ function applyCandleAtmosphereFrame(time) {
         haloPosition.style.transform = `translate(calc(-50% + ${(lightX * 14).toFixed(2)}px), calc(-50% + ${(lightY * 10).toFixed(2)}px))`;
     }
     if (candleBodyLight) {
-        candleBodyLight.style.opacity = (0.40 + intensity * 0.46).toFixed(4);
+        candleBodyLight.style.opacity = (0.34 + intensity * 0.56).toFixed(4);
     }
     if (haloEffect) {
         haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
