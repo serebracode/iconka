@@ -2117,19 +2117,25 @@ function startFlameSynchronizedShade() {
 
 function applyCandleAtmosphereFrame(time) {
     const detailScreen = document.getElementById('detailScreen');
-    const fallbackSlow = candleFlickerSignal(time, 0.55);
-    const fallbackFast = candleFlickerSignal(time, 5);
+    const fallbackSlow = candleFlickerSignal(time, 0.72);
+    const fallbackFast = candleFlickerSignal(time, 5.8);
     const candleFlame = document.getElementById('candleFlame');
     if (typeof candleFlame.requestVideoFrameCallback !== 'function') candleFlameSampleActive = sampleFlameShadeSignal();
 
-    const intensity = candleFlameSampleActive ? clampUnit(fallbackSlow * 0.28 + flameVideoIntensity * 0.72) : fallbackSlow;
-    const sampledX = candleFlameSampleActive ? flameMotionX * 1.8 : (fallbackSlow - 0.5);
-    const sampledY = candleFlameSampleActive ? flameMotionY * 1.8 : (fallbackFast - 0.5);
-    /* Старый расчёт огня остаётся основой; широкий дрейф не даёт сигналу схлопнуться. */
+    const rawIntensity = candleFlameSampleActive
+        ? flameVideoIntensity * 0.78 + fallbackSlow * 0.14 + fallbackFast * 0.08
+        : fallbackSlow * 0.82 + fallbackFast * 0.18;
+    const intensity = clampUnit(0.5 + (rawIntensity - 0.5) * 1.18);
+    const sampledX = candleFlameSampleActive ? flameMotionX * 3.1 : 0;
+    const sampledY = candleFlameSampleActive ? flameMotionY * 1.05 : 0;
+    /* Синусоиды лишь не дают сцене замереть при плохом чтении видео.
+       При нормальном видео направление определяет само пламя. */
     const organicX = Math.sin(time * 1.31) * 0.38 + Math.sin(time * 2.17 + 1.4) * 0.16;
     const organicY = Math.sin(time * 1.07 + 0.8) * 0.34 + Math.sin(time * 1.83 + 2.1) * 0.14;
-    const lightX = Math.max(-0.5, Math.min(0.5, sampledX * 0.55 + organicX));
-    const lightY = Math.max(-0.5, Math.min(0.5, sampledY * 0.55 + organicY));
+    const lightX = Math.max(-0.5, Math.min(0.5,
+        candleFlameSampleActive ? sampledX + organicX * 0.10 : organicX));
+    const lightY = Math.max(-0.5, Math.min(0.5,
+        candleFlameSampleActive ? sampledY * 0.28 + organicY * 0.06 : organicY * 0.38));
 
     updateCandleEffectGeometry();
 
@@ -2157,11 +2163,11 @@ function applyCandleAtmosphereFrame(time) {
 
     /* Один сигнал ведёт всю сцену. Тень идёт в противоходе и больше не
        сглаживается CSS-transition поверх кадровой инерции. */
-    shadowMotionX += (lightX - shadowMotionX) * 0.22;
-    shadowMotionY += (lightY - shadowMotionY) * 0.18;
+    shadowMotionX += (lightX - shadowMotionX) * 0.26;
+    shadowMotionY += (lightY - shadowMotionY) * 0.12;
     const iconProjection = document.getElementById('iconProjection');
     if (iconProjection) {
-        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 72).toFixed(2)}px, ${(-18 - shadowMotionY * 46).toFixed(2)}px, 0)`;
+        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 50).toFixed(2)}px, ${(-18 - shadowMotionY * 16).toFixed(2)}px, 0)`;
     }
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
@@ -2189,11 +2195,11 @@ function applyCandleAtmosphereFrame(time) {
     }
     if (candleWaxHighlight) {
         // Воск всегда освещён; сигнал пламени меняет яркость лишь слегка.
-        candleWaxHighlight.style.opacity = (0.60 + intensity * 0.12).toFixed(4);
+        candleWaxHighlight.style.opacity = (0.59 + intensity * 0.15).toFixed(4);
     }
     if (candleBody) {
         // Всё тело реагирует едва заметно: меняются рефлексы, а не сам цвет свечи.
-        candleBody.style.filter = `brightness(${(0.82 + intensity * 0.045).toFixed(4)}) contrast(1.12) saturate(${(0.96 + intensity * 0.04).toFixed(4)})`;
+        candleBody.style.filter = `brightness(${(0.815 + intensity * 0.060).toFixed(4)}) contrast(1.12) saturate(${(0.955 + intensity * 0.05).toFixed(4)})`;
     }
     if (haloEffect) {
         haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
@@ -2259,6 +2265,7 @@ function showCandle() {
     updateCandleEffectGeometry();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
+    candleFlame.playbackRate = 1.08;
     candleFlame.play().catch(() => {});
     startFlameSynchronizedShade();
     document.getElementById('globalLogo').classList.remove('list-fadein');
