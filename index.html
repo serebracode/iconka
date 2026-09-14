@@ -927,14 +927,7 @@
         }
 
         .scene-background::after {
-            background:
-                radial-gradient(
-                    ellipse 112vw 94vh at var(--flame-x, 50%) calc(var(--flame-y, 62%) - 5vh),
-                    rgba(116, 52, 18, 0.32) 0%,
-                    rgba(62, 24, 7, 0.16) 48%,
-                    rgba(19, 7, 2, 0) 88%
-                ),
-                linear-gradient(to bottom, #21170f 0%, #17100b 53%, #0d0704 100%);
+            background: linear-gradient(to bottom, #21170f 0%, #17100b 53%, #0d0704 100%);
         }
 
         #sceneAmbient,
@@ -950,17 +943,20 @@
         }
 
         #sceneAmbient {
-            inset: 0;
+            left: var(--scene-ambient-left, -50vw);
+            top: var(--scene-ambient-top, -50vh);
+            width: var(--scene-ambient-width, 200vw);
+            height: var(--scene-ambient-height, 150vh);
             z-index: 4;
             background: radial-gradient(
-                ellipse 112% 83% at var(--flame-x, 50%) calc(var(--flame-y, 62%) - 5vh),
+                ellipse at 50% 50%,
                 rgba(172, 75, 19, 0.30) 0%,
                 rgba(116, 43, 8, 0.13) 44%,
                 rgba(63, 20, 3, 0.055) 70%,
                 transparent 96%
             );
             transform: scale(var(--ambient-scale, 1));
-            transform-origin: var(--flame-x, 50%) var(--flame-y, 62%);
+            transform-origin: 50% 50%;
             will-change: opacity, transform;
         }
 
@@ -1568,6 +1564,10 @@ function resetDetailScreenUI() {
         '--effect-icon-top',
         '--effect-icon-width',
         '--effect-icon-height',
+        '--scene-ambient-left',
+        '--scene-ambient-top',
+        '--scene-ambient-width',
+        '--scene-ambient-height',
         '--effect-shadow-left',
         '--effect-shadow-top',
         '--effect-shadow-width',
@@ -1827,6 +1827,16 @@ function updateCandleEffectGeometry() {
     detailScreen.style.setProperty('--effect-icon-top', `${iconTop.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-width', `${iconRect.width.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-height', `${iconRect.height.toFixed(2)}px`);
+    // Ореол сцены измеряется высотой иконы, а не шириной телефона.
+    // Поэтому на узких и широких иконах он сохраняет одну и ту же физическую логику.
+    const sceneAmbientWidth = iconRect.height * 2.4;
+    const sceneAmbientHeight = iconRect.height * 1.70;
+    const sceneAmbientCenterX = iconLeft + iconRect.width * 0.5;
+    const sceneAmbientCenterY = iconTop + iconRect.height * 0.64;
+    detailScreen.style.setProperty('--scene-ambient-left', `${(sceneAmbientCenterX - sceneAmbientWidth * 0.5).toFixed(2)}px`);
+    detailScreen.style.setProperty('--scene-ambient-top', `${(sceneAmbientCenterY - sceneAmbientHeight * 0.5).toFixed(2)}px`);
+    detailScreen.style.setProperty('--scene-ambient-width', `${sceneAmbientWidth.toFixed(2)}px`);
+    detailScreen.style.setProperty('--scene-ambient-height', `${sceneAmbientHeight.toFixed(2)}px`);
     detailScreen.dataset.iconLightBaseX = relativeLightX.toFixed(4);
     detailScreen.dataset.iconLightBaseY = relativeLightY.toFixed(4);
     detailScreen.dataset.iconEffectWidth = iconRect.width.toFixed(4);
