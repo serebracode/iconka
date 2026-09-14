@@ -481,7 +481,8 @@
         }
 
         #candleBody,
-        #candleBodyShade {
+        #candleBodyShade,
+        #candleBodyLight {
             position: absolute;
             left: 50%;
             top: 59.37vh;
@@ -494,15 +495,27 @@
 
         #candleBody {
             z-index: 1;
+            filter: brightness(0.60) contrast(1.08) saturate(0.92);
         }
 
         #candleBodyShade {
             z-index: 2;
             pointer-events: none;
             filter: brightness(0);
-            opacity: 0.5;
-            mask-image: linear-gradient(to bottom, transparent 50%, #000 80%, #000 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 50%, #000 80%, #000 100%);
+            opacity: 0.68;
+            mask-image: linear-gradient(to bottom, transparent 32%, #000 76%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 32%, #000 76%, #000 100%);
+        }
+
+        /* Светит не вся свеча: от фитиля вниз остаётся только короткий тёплый отблеск. */
+        #candleBodyLight {
+            z-index: 3;
+            pointer-events: none;
+            filter: brightness(1.55) sepia(0.32) saturate(1.35);
+            mix-blend-mode: screen;
+            opacity: 0.46;
+            mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.90) 16%, rgba(0, 0, 0, 0.28) 39%, transparent 58%);
+            -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.90) 16%, rgba(0, 0, 0, 0.28) 39%, transparent 58%);
         }
 
         #candleFlameViewport {
@@ -1249,6 +1262,7 @@
     <div id="candleLayer">
         <img id="candleBody" src="./video/candle-body.png" alt="Свеча">
         <img id="candleBodyShade" src="./video/candle-body.png" alt="" aria-hidden="true">
+        <img id="candleBodyLight" src="./video/candle-body.png" alt="" aria-hidden="true">
     </div>
     <div id="candleFlameViewport" aria-hidden="true">
         <video id="candleFlame" muted playsinline loop preload="auto">
@@ -1845,9 +1859,10 @@ function updateCandleEffectGeometry() {
     // Икона отстоит от задней плоскости на ~7–8 см при ~30 см до пламени:
     // проекция на стену увеличивается примерно в 1.27 раза.
     const shadowWidth = iconRect.width * 1.27;
-    const shadowHeight = iconRect.height * 1.27;
+    // По ширине тень раскрывается по глубине, но вертикально не должна залезать флагом над иконой.
+    const shadowHeight = iconRect.height * 1.18;
     detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.135 + 10).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.09 + 10).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
 
@@ -2088,6 +2103,7 @@ function applyCandleAtmosphereFrame(time) {
     const sceneAmbient = document.getElementById('sceneAmbient');
     const haloEffect = document.getElementById('flameHaloEffect');
     const haloPosition = document.getElementById('flameHaloPosition');
+    const candleBodyLight = document.getElementById('candleBodyLight');
     if (sceneAmbient) {
         sceneAmbient.style.transform = `translate3d(${(lightX * 18).toFixed(2)}px, ${(lightY * 12).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
@@ -2096,6 +2112,9 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--flame-ambient-opacity', (0.34 + intensity * 0.34).toFixed(4));
     if (haloPosition) {
         haloPosition.style.transform = `translate(calc(-50% + ${(lightX * 14).toFixed(2)}px), calc(-50% + ${(lightY * 10).toFixed(2)}px))`;
+    }
+    if (candleBodyLight) {
+        candleBodyLight.style.opacity = (0.22 + intensity * 0.42).toFixed(4);
     }
     if (haloEffect) {
         haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
