@@ -919,15 +919,22 @@
         }
 
         #detailScreen.scene-active {
-            background: #0d0a07 !important;
+            background: #17100b !important;
         }
 
         .scene-background {
-            background: #0d0a07 !important;
+            background: #17100b !important;
         }
 
         .scene-background::after {
-            background: linear-gradient(to bottom, #100d0b 0%, #0d0a07 50%, #080504 100%);
+            background:
+                radial-gradient(
+                    ellipse 112vw 94vh at var(--flame-x, 50%) calc(var(--flame-y, 62%) - 5vh),
+                    rgba(116, 52, 18, 0.32) 0%,
+                    rgba(62, 24, 7, 0.16) 48%,
+                    rgba(19, 7, 2, 0) 88%
+                ),
+                linear-gradient(to bottom, #21170f 0%, #17100b 53%, #0d0704 100%);
         }
 
         #sceneAmbient,
@@ -946,11 +953,11 @@
             inset: 0;
             z-index: 4;
             background: radial-gradient(
-                ellipse 72% 58% at var(--flame-x, 50%) calc(var(--flame-y, 62%) - 8vh),
-                rgba(172, 75, 19, 0.16) 0%,
-                rgba(116, 43, 8, 0.078) 38%,
-                rgba(63, 20, 3, 0.034) 64%,
-                transparent 86%
+                ellipse 112% 83% at var(--flame-x, 50%) calc(var(--flame-y, 62%) - 5vh),
+                rgba(172, 75, 19, 0.30) 0%,
+                rgba(116, 43, 8, 0.13) 44%,
+                rgba(63, 20, 3, 0.055) 70%,
+                transparent 96%
             );
             transform: scale(var(--ambient-scale, 1));
             transform-origin: var(--flame-x, 50%) var(--flame-y, 62%);
@@ -2070,9 +2077,9 @@ function applyCandleAtmosphereFrame(time) {
     const sceneAmbient = document.getElementById('sceneAmbient');
     const haloEffect = document.getElementById('flameHaloEffect');
     if (sceneAmbient) {
-        sceneAmbient.style.transform = `scale(${(1 + ambientWave * 0.012).toFixed(4)})`;
+        sceneAmbient.style.transform = `translate3d(${(lightX * 18).toFixed(2)}px, ${(lightY * 12).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
-    detailScreen.style.setProperty('--ambient-opacity', (0.72 + ambientWave * 0.018).toFixed(4));
+    detailScreen.style.setProperty('--ambient-opacity', (0.86 + ambientWave * 0.055).toFixed(4));
     detailScreen.style.setProperty('--flame-ambient-opacity', (0.55 + iconWave * 0.020).toFixed(4));
     if (haloEffect) {
         haloEffect.style.opacity = (0.94 + haloWave * 0.045).toFixed(4);
