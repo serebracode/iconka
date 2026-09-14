@@ -1952,7 +1952,9 @@ function updateCandleEffectGeometry() {
     // По ширине тень раскрывается по глубине, но вертикально не должна залезать флагом над иконой.
     const shadowHeight = iconRect.height * 1.18;
     detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.09 + 10).toFixed(2)}px`);
+    /* Пламя находится ниже иконы, поэтому проекция раскрывается вверх.
+       Нижний край плотного силуэта остаётся за объектом и не образует чёрную полосу. */
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.18 + 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
 
@@ -2189,7 +2191,7 @@ function applyCandleAtmosphereFrame(time) {
     shadowMotionY += (lightY - shadowMotionY) * 0.12;
     /* CSS владеет transform, JS передаёт только координаты. Так каскад больше
        не может молча заменить покадровое движение статическим transform. */
-    detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 50).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 100).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-shift-y', `${(-18 - shadowMotionY * 16).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
