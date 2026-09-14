@@ -1039,6 +1039,16 @@
             clip-path: polygon(0% 0%, 100% 0%, 99% 100%, 1% 100%);
             border-radius: 2px;
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.54), rgba(0, 0, 0, 0.72));
+            /* Проекция повторяет alpha-силуэт объекта, а не прямоугольник файла. */
+            mask-image: var(--icon-alpha-mask, none);
+            -webkit-mask-image: var(--icon-alpha-mask, none);
+            mask-mode: alpha;
+            mask-position: center;
+            -webkit-mask-position: center;
+            mask-size: 100% 100%;
+            -webkit-mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
             will-change: transform;
         }
 
@@ -1061,12 +1071,55 @@
             transform: translate(var(--shadow-shift-x, 0px), var(--shadow-shift-y, 0px));
         }
 
+        /* Небольшая опорная тень возвращает контакт с дальней плоскостью,
+           не раскрывая вниз плотный прямоугольник основной проекции. */
+        #iconContactShadow {
+            position: absolute;
+            z-index: 19;
+            left: var(--contact-shadow-left, 0px);
+            top: var(--contact-shadow-top, 0px);
+            width: var(--contact-shadow-width, 0px);
+            height: var(--contact-shadow-height, 40px);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate3d(
+                var(--contact-shadow-shift-x, 0px),
+                var(--contact-shadow-shift-y, 0px),
+                0
+            );
+            background: radial-gradient(
+                ellipse 88% 100% at 50% 0%,
+                rgba(0, 0, 0, 0.98) 0%,
+                rgba(0, 0, 0, 0.94) 18%,
+                rgba(0, 0, 0, 0.74) 42%,
+                rgba(0, 0, 0, 0.36) 68%,
+                transparent 100%
+            );
+            filter: blur(7px);
+            will-change: opacity, transform;
+            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
+        }
+
+        #detailScreen.scene-active #iconContactShadow {
+            opacity: var(--contact-shadow-opacity, 0.94);
+        }
+
         .icon-bound-effect {
             left: var(--effect-icon-left, 0px);
             top: var(--effect-icon-top, 0px);
             width: var(--effect-icon-width, 0px);
             height: var(--effect-icon-height, 0px);
             overflow: hidden;
+            /* Свет и затемнение существуют только на непрозрачных пикселях иконы. */
+            mask-image: var(--icon-alpha-mask, none);
+            -webkit-mask-image: var(--icon-alpha-mask, none);
+            mask-mode: alpha;
+            mask-position: center;
+            -webkit-mask-position: center;
+            mask-size: 100% 100%;
+            -webkit-mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
         }
 
         #iconDarkeningEffect {
@@ -1259,6 +1312,7 @@
         <div class="projection-band projection-band-middle"><div class="projection-shape"></div></div>
         <div class="projection-band projection-band-bottom"><div class="projection-shape"></div></div>
     </div>
+    <div id="iconContactShadow" aria-hidden="true"></div>
 
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
@@ -1505,6 +1559,23 @@ document.getElementById('clearSearch').addEventListener('click', () => {
     renderIconsList();
 });
 
+function applyIconAlphaMask(imagePath) {
+    const absoluteImageUrl = new URL(imagePath, document.baseURI).href;
+    const maskValue = `url("${absoluteImageUrl}")`;
+    const maskedLayers = [
+        document.getElementById('iconDarkeningEffect'),
+        document.getElementById('iconSurfaceLight'),
+        ...document.querySelectorAll('#iconProjection .projection-shape')
+    ];
+
+    maskedLayers.forEach(layer => {
+        if (!layer) return;
+        /* Прямое свойство надёжнее наследуемой CSS-переменной в Telegram WebView. */
+        layer.style.maskImage = maskValue;
+        layer.style.setProperty('-webkit-mask-image', maskValue);
+    });
+}
+
 function selectIcon(id) {
     selectedIcon = ICONS_DATA.find(s => s.id === id);
     if (!selectedIcon) return;
@@ -1515,6 +1586,9 @@ function selectIcon(id) {
     listScreen.classList.add('loading-fadeout');
     
     // Заполняем данные
+    const alphaMaskUrl = `url("${new URL(selectedIcon.image, document.baseURI).href}")`;
+    detailScreen.style.setProperty('--icon-alpha-mask', alphaMaskUrl);
+    applyIconAlphaMask(selectedIcon.image);
     document.getElementById('iconImage').src = selectedIcon.image;
     document.getElementById('iconLight').src = selectedIcon.image;
         document.getElementById('iconTitleText').textContent = selectedIcon.title_short || selectedIcon.title;
@@ -1930,9 +2004,17 @@ function updateCandleEffectGeometry() {
     // По ширине тень раскрывается по глубине, но вертикально не должна залезать флагом над иконой.
     const shadowHeight = iconRect.height * 1.18;
     detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.09 + 10).toFixed(2)}px`);
+    /* Пламя находится ниже иконы, поэтому проекция раскрывается вверх.
+       Нижний край плотного силуэта остаётся за объектом и не образует чёрную полосу. */
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.18 + 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
+
+    const contactShadowHeight = Math.max(32, Math.min(54, iconRect.height * 0.055));
+    detailScreen.style.setProperty('--contact-shadow-left', `${(iconLeft - iconRect.width * 0.04).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-top', `${(iconTop + iconRect.height - 3).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-width', `${(iconRect.width * 1.08).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-height', `${contactShadowHeight.toFixed(2)}px`);
 
     const flameUnit = Math.max(flameRect.width, 28);
     detailScreen.style.setProperty('--flame-halo-width', `${(flameUnit * 6).toFixed(2)}px`);
@@ -2126,8 +2208,8 @@ function applyCandleAtmosphereFrame(time) {
         ? flameVideoIntensity * 0.78 + fallbackSlow * 0.14 + fallbackFast * 0.08
         : fallbackSlow * 0.82 + fallbackFast * 0.18;
     const intensity = clampUnit(0.5 + (rawIntensity - 0.5) * 1.18);
-    const sampledX = candleFlameSampleActive ? flameMotionX * 3.1 : 0;
-    const sampledY = candleFlameSampleActive ? flameMotionY * 1.05 : 0;
+    const sampledX = candleFlameSampleActive ? flameMotionX * 4.2 : 0;
+    const sampledY = candleFlameSampleActive ? flameMotionY * 4.2 : 0;
     /* Синусоиды лишь не дают сцене замереть при плохом чтении видео.
        При нормальном видео направление определяет само пламя. */
     const organicX = Math.sin(time * 1.31) * 0.38 + Math.sin(time * 2.17 + 1.4) * 0.16;
@@ -2135,7 +2217,7 @@ function applyCandleAtmosphereFrame(time) {
     const lightX = Math.max(-0.5, Math.min(0.5,
         candleFlameSampleActive ? sampledX + organicX * 0.10 : organicX));
     const lightY = Math.max(-0.5, Math.min(0.5,
-        candleFlameSampleActive ? sampledY * 0.28 + organicY * 0.06 : organicY * 0.38));
+        candleFlameSampleActive ? sampledY + organicY * 0.10 : organicY * 0.50));
 
     updateCandleEffectGeometry();
 
@@ -2165,10 +2247,13 @@ function applyCandleAtmosphereFrame(time) {
        сглаживается CSS-transition поверх кадровой инерции. */
     shadowMotionX += (lightX - shadowMotionX) * 0.26;
     shadowMotionY += (lightY - shadowMotionY) * 0.12;
-    const iconProjection = document.getElementById('iconProjection');
-    if (iconProjection) {
-        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 50).toFixed(2)}px, ${(-18 - shadowMotionY * 16).toFixed(2)}px, 0)`;
-    }
+    /* CSS владеет transform, JS передаёт только координаты. Так каскад больше
+       не может молча заменить покадровое движение статическим transform. */
+    detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 100).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-shift-y', `${(-18 - shadowMotionY * 52).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-shift-x', `${(-shadowMotionX * 28).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-shift-y', `${(-shadowMotionY * 16).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-opacity', (0.88 + intensity * 0.10).toFixed(4));
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
