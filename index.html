@@ -1077,39 +1077,6 @@
             transform: translate(var(--shadow-shift-x, 0px), var(--shadow-shift-y, 0px));
         }
 
-        /* Небольшая опорная тень возвращает контакт с дальней плоскостью,
-           не раскрывая вниз плотный прямоугольник основной проекции. */
-        #iconContactShadow {
-            position: absolute;
-            z-index: 19;
-            left: var(--contact-shadow-left, 0px);
-            top: var(--contact-shadow-top, 0px);
-            width: var(--contact-shadow-width, 0px);
-            height: var(--contact-shadow-height, 40px);
-            pointer-events: none;
-            opacity: 0;
-            transform: translate3d(
-                var(--contact-shadow-shift-x, 0px),
-                var(--contact-shadow-shift-y, 0px),
-                0
-            );
-            background: radial-gradient(
-                ellipse 88% 100% at 50% 0%,
-                rgba(0, 0, 0, 0.98) 0%,
-                rgba(0, 0, 0, 0.94) 18%,
-                rgba(0, 0, 0, 0.74) 42%,
-                rgba(0, 0, 0, 0.36) 68%,
-                transparent 100%
-            );
-            filter: blur(7px);
-            will-change: opacity, transform;
-            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
-        }
-
-        #detailScreen.scene-active #iconContactShadow {
-            opacity: var(--contact-shadow-opacity, 0.94);
-        }
-
         .icon-bound-effect {
             left: var(--effect-icon-left, 0px);
             top: var(--effect-icon-top, 0px);
@@ -1356,8 +1323,6 @@
         <div class="projection-band projection-band-middle"><div class="projection-shape"></div></div>
         <div class="projection-band projection-band-bottom"><div class="projection-shape"></div></div>
     </div>
-    <div id="iconContactShadow" aria-hidden="true"></div>
-
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
         <div class="icon-section">
@@ -1455,6 +1420,9 @@ document.body.setAttribute('data-platform', PLATFORM);
 const ART_STAGE_MAX_WIDTH = 560;
 /* На широком экране художественная колонка не шире половины своей высоты. */
 const ART_STAGE_HEIGHT_RATIO = 0.50;
+/* Свеча сохраняет физический размер эталонного мобильного макета. */
+const CANDLE_REFERENCE_STAGE_WIDTH = 390;
+const CANDLE_REFERENCE_STAGE_HEIGHT = 844;
 
 function getStableViewportHeight() {
     const telegramHeight = Number(window.Telegram?.WebApp?.viewportStableHeight);
@@ -1501,7 +1469,7 @@ function updateResponsiveStage() {
     root.style.setProperty('--info-icon-min-height', `${(stage.height * 0.42).toFixed(2)}px`);
     root.style.setProperty('--icon-max-height', `${(stage.height * 0.70).toFixed(2)}px`);
     root.style.setProperty('--candle-body-top', `${(stage.height * 0.5937).toFixed(2)}px`);
-    root.style.setProperty('--candle-body-height', `${(stage.height * 0.4275).toFixed(2)}px`);
+    root.style.setProperty('--candle-body-height', `${(Math.min(stage.height, CANDLE_REFERENCE_STAGE_HEIGHT) * 0.4275).toFixed(2)}px`);
     document.body.dataset.layout = window.innerWidth <= 600 ? 'phone' : (window.innerWidth <= 1024 ? 'tablet' : 'desktop');
     updatePhoneOrientationPolicy();
     positionLaunchHint();
@@ -1678,16 +1646,10 @@ function applyIconAlphaMask(imagePath) {
     });
 }
 
-function selectIcon(id) {
-    selectedIcon = ICONS_DATA.find(s => s.id === id);
-    if (!selectedIcon) return;
-    
-    const listScreen = document.getElementById('listScreen');
+function populateIconDetails(icon) {
+    selectedIcon = icon;
     const detailScreen = document.getElementById('detailScreen');
-    
-    listScreen.classList.add('loading-fadeout');
-    
-    // Заполняем данные
+
     const alphaMaskUrl = `url("${new URL(selectedIcon.image, document.baseURI).href}")`;
     detailScreen.style.setProperty('--icon-alpha-mask', alphaMaskUrl);
     applyIconAlphaMask(selectedIcon.image);
@@ -1718,7 +1680,17 @@ function selectIcon(id) {
         ${imageAttribution}
     `;
     document.getElementById('infoContentText').innerHTML = infoContent;
-    
+}
+
+function selectIcon(id) {
+    const icon = ICONS_DATA.find(item => item.id === id);
+    if (!icon) return;
+
+    const listScreen = document.getElementById('listScreen');
+    const detailScreen = document.getElementById('detailScreen');
+    listScreen.classList.add('loading-fadeout');
+    populateIconDetails(icon);
+
     setTimeout(() => {
         listScreen.classList.remove('active');
         listScreen.classList.remove('loading-fadeout');
@@ -1736,6 +1708,57 @@ function selectIcon(id) {
             detailScreen.classList.remove('detail-fadein');
         }, 400);
     }, 300);
+}
+
+let iconSwipeTransitionToken = 0;
+
+function getOrderedIcons() {
+    return [...ICONS_DATA].sort((a, b) => a.title.localeCompare(b.title));
+}
+
+function switchIconBySwipe(direction) {
+    if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed) return;
+
+    const orderedIcons = getOrderedIcons();
+    const currentIndex = orderedIcons.findIndex(icon => icon.id === selectedIcon.id);
+    if (currentIndex < 0 || orderedIcons.length < 2) return;
+
+    const nextIndex = (currentIndex + direction + orderedIcons.length) % orderedIcons.length;
+    const nextIcon = orderedIcons[nextIndex];
+    const iconSection = document.querySelector('#detailContent .icon-section');
+    const transitionToken = ++iconSwipeTransitionToken;
+    const outgoingX = direction > 0 ? -28 : 28;
+    const incomingX = -outgoingX;
+
+    const replaceIcon = () => {
+        if (transitionToken !== iconSwipeTransitionToken) return;
+        populateIconDetails(nextIcon);
+        if (!iconSection?.animate) return;
+        iconSection.animate(
+            [
+                { opacity: 0, transform: `translate3d(${incomingX}px, 0, 0)` },
+                { opacity: 1, transform: 'translate3d(0, 0, 0)' }
+            ],
+            { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+        );
+    };
+
+    if (!iconSection?.animate) {
+        replaceIcon();
+        return;
+    }
+
+    const outgoing = iconSection.animate(
+        [
+            { opacity: 1, transform: 'translate3d(0, 0, 0)' },
+            { opacity: 0, transform: `translate3d(${outgoingX}px, 0, 0)` }
+        ],
+        { duration: 120, easing: 'ease-in', fill: 'forwards' }
+    );
+    outgoing.finished.then(() => {
+        outgoing.cancel();
+        replaceIcon();
+    }).catch(() => {});
 }
 
 function resetDetailScreenUI() {
@@ -2020,13 +2043,14 @@ function positionCandleAssets() {
     const flameViewport = document.getElementById('candleFlameViewport');
     const flame = document.getElementById('candleFlame');
     const stage = getArtStageMetrics();
-    const bodyHeight = stage.height * CANDLE_BODY_HEIGHT_VIEWPORT;
+    const bodyHeight = Math.min(stage.height, CANDLE_REFERENCE_STAGE_HEIGHT) * CANDLE_BODY_HEIGHT_VIEWPORT;
     body.style.height = `${bodyHeight}px`;
     body.style.top = `${stage.height * CANDLE_WICK_VIEWPORT_Y - bodyHeight * CANDLE_WICK_TIP_Y}px`;
     bodyShade.style.height = body.style.height;
     bodyShade.style.top = body.style.top;
     const bodyBounds = body.getBoundingClientRect();
-    const flameScale = stage.width / CANDLE_VIDEO_WIDTH * CANDLE_FLAME_SCALE;
+    const flameScale = Math.min(stage.width, CANDLE_REFERENCE_STAGE_WIDTH)
+        / CANDLE_VIDEO_WIDTH * CANDLE_FLAME_SCALE;
     const flameWidth = CANDLE_VIDEO_WIDTH * flameScale;
     const flameHeight = CANDLE_VIDEO_HEIGHT * flameScale;
     const wickTipY = bodyBounds.top + bodyBounds.height * CANDLE_WICK_TIP_Y;
@@ -2112,12 +2136,6 @@ function updateCandleEffectGeometry() {
     detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.18 + 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
-
-    const contactShadowHeight = Math.max(32, Math.min(54, iconRect.height * 0.055));
-    detailScreen.style.setProperty('--contact-shadow-left', `${(iconLeft - iconRect.width * 0.04).toFixed(2)}px`);
-    detailScreen.style.setProperty('--contact-shadow-top', `${(iconTop + iconRect.height - 3).toFixed(2)}px`);
-    detailScreen.style.setProperty('--contact-shadow-width', `${(iconRect.width * 1.08).toFixed(2)}px`);
-    detailScreen.style.setProperty('--contact-shadow-height', `${contactShadowHeight.toFixed(2)}px`);
 
     const flameUnit = Math.max(flameRect.width, 28);
     detailScreen.style.setProperty('--flame-halo-width', `${(flameUnit * 6).toFixed(2)}px`);
@@ -2360,9 +2378,6 @@ function applyCandleAtmosphereFrame(time) {
        не может молча заменить покадровое движение статическим transform. */
     detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 100).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-shift-y', `${(-18 - shadowMotionY * 52).toFixed(2)}px`);
-    detailScreen.style.setProperty('--contact-shadow-shift-x', `${(-shadowMotionX * 28).toFixed(2)}px`);
-    detailScreen.style.setProperty('--contact-shadow-shift-y', `${(-shadowMotionY * 16).toFixed(2)}px`);
-    detailScreen.style.setProperty('--contact-shadow-opacity', (0.88 + intensity * 0.10).toFixed(4));
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
@@ -2713,7 +2728,10 @@ iconImageElement.addEventListener('dblclick', (event) => {
 
 // Свайп
 (function() {
+    let startX = 0;
     let startY = 0;
+    let currentX = 0;
+    let horizontalIntent = false;
     let startTime = 0;
     let startProgress = 0;
     let progress = 0;
@@ -2724,7 +2742,10 @@ iconImageElement.addEventListener('dblclick', (event) => {
     
     detailScreen.addEventListener('touchstart', (e) => {
         if (candleVisible) return;
+        startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
+        currentX = startX;
+        horizontalIntent = false;
         startTime = Date.now();
         startProgress = infoPanelVisible ? 1 : 0;
         progress = startProgress;
@@ -2737,7 +2758,24 @@ iconImageElement.addEventListener('dblclick', (event) => {
     detailScreen.addEventListener('touchmove', (e) => {
         if (candleVisible || !tracking) return;
 
+        currentX = e.touches[0].clientX;
+        const deltaX = currentX - startX;
         const deltaY = startY - e.touches[0].clientY;
+
+        if (!infoPanelVisible && !iconZoomed
+            && Math.abs(deltaX) > 18
+            && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
+            horizontalIntent = true;
+            detailContent.classList.remove('is-dragging');
+            applyInfoProgress(startProgress);
+            e.preventDefault();
+            return;
+        }
+
+        if (horizontalIntent) {
+            e.preventDefault();
+            return;
+        }
 
         // При открытом описании свайп вверх принадлежит обычному скроллу.
         // Свайп вниз закрывает панель только у верхней границы, включая
@@ -2757,13 +2795,25 @@ iconImageElement.addEventListener('dblclick', (event) => {
     
     detailScreen.addEventListener('touchend', (e) => {
         if (candleVisible) return;
+        const endX = e.changedTouches[0].clientX;
         const endY = e.changedTouches[0].clientY;
         const endTime = Date.now();
         const deltaTime = endTime - startTime;
+        const deltaX = endX - startX;
         const velocity = (startY - endY) / Math.max(deltaTime, 1);
 
         detailContent.classList.remove('is-dragging');
         if (!tracking) return;
+        if (horizontalIntent) {
+            applyInfoProgress(startProgress);
+            const swipeThreshold = Math.min(72, window.innerWidth * 0.15);
+            if (Math.abs(deltaX) >= swipeThreshold) {
+                switchIconBySwipe(deltaX < 0 ? 1 : -1);
+            }
+            horizontalIntent = false;
+            tracking = false;
+            return;
+        }
         const shouldOpen = velocity > 0.35 || (velocity > -0.35 && progress >= 0.5);
         setInfoPanel(shouldOpen);
         tracking = false;
@@ -2771,6 +2821,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
 
     detailScreen.addEventListener('touchcancel', () => {
         detailContent.classList.remove('is-dragging');
+        horizontalIntent = false;
         if (!tracking) return;
         setInfoPanel(startProgress === 1);
         tracking = false;
