@@ -2265,7 +2265,6 @@ function showCandle() {
     updateCandleEffectGeometry();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
-    candleFlame.playbackRate = 1.08;
     candleFlame.play().catch(() => {});
     startFlameSynchronizedShade();
     document.getElementById('globalLogo').classList.remove('list-fadein');
