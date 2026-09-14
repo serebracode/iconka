@@ -481,8 +481,7 @@
         }
 
         #candleBody,
-        #candleBodyShade,
-        #candleBodyGlow {
+        #candleBodyShade {
             position: absolute;
             left: 50%;
             top: 59.37vh;
@@ -507,28 +506,16 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 32%, #000 76%, #000 100%);
         }
 
-        /* Не копия свечи, а свет, вырезанный её исходным силуэтом. */
-        #candleBodyGlow {
+        /* Яркая копия тела: её фактическая геометрия синхронизируется с основной свечой в JS. */
+        #candleBodyLight {
+            position: absolute;
             z-index: 3;
             pointer-events: none;
-            width: var(--candle-body-width, 0px);
-            opacity: 0.42;
-            background:
-                radial-gradient(ellipse 28% 22% at 50% 2%,
-                    rgba(255, 231, 174, 0.82) 0%,
-                    rgba(255, 164, 57, 0.38) 42%,
-                    transparent 100%),
-                linear-gradient(to bottom,
-                    rgba(255, 155, 50, 0.18) 0%,
-                    rgba(255, 112, 24, 0.08) 28%,
-                    transparent 48%);
+            opacity: 0.52;
+            filter: brightness(1.8) sepia(0.38) saturate(1.45);
             mix-blend-mode: screen;
-            mask-image: url('./video/candle-body.png');
-            -webkit-mask-image: url('./video/candle-body.png');
-            mask-size: 100% 100%;
-            -webkit-mask-size: 100% 100%;
-            mask-repeat: no-repeat;
-            -webkit-mask-repeat: no-repeat;
+            mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.92) 18%, rgba(0, 0, 0, 0.32) 43%, transparent 62%);
+            -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.92) 18%, rgba(0, 0, 0, 0.32) 43%, transparent 62%);
         }
 
 
@@ -1276,7 +1263,7 @@
     <div id="candleLayer">
         <img id="candleBody" src="./video/candle-body.png" alt="Свеча">
         <img id="candleBodyShade" src="./video/candle-body.png" alt="" aria-hidden="true">
-        <div id="candleBodyGlow" aria-hidden="true"></div>
+        <img id="candleBodyLight" src="./video/candle-body.png" alt="" aria-hidden="true">
     </div>
     <div id="candleFlameViewport" aria-hidden="true">
         <video id="candleFlame" muted playsinline loop preload="auto">
@@ -1596,7 +1583,6 @@ function resetDetailScreenUI() {
         '--scene-ambient-top',
         '--scene-ambient-width',
         '--scene-ambient-height',
-        '--candle-body-width',
         '--effect-shadow-left',
         '--effect-shadow-top',
         '--effect-shadow-width',
@@ -1837,6 +1823,7 @@ function updateCandleEffectGeometry() {
     const icon = document.getElementById('iconImage');
     const flame = document.getElementById('candleFlameViewport');
     const candleBody = document.getElementById('candleBody');
+    const candleBodyLight = document.getElementById('candleBodyLight');
     if (!detailScreen || !icon || !flame || !candleBody) return;
 
     const sceneRect = detailScreen.getBoundingClientRect();
@@ -1858,7 +1845,13 @@ function updateCandleEffectGeometry() {
     detailScreen.style.setProperty('--effect-icon-top', `${iconTop.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-width', `${iconRect.width.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-height', `${iconRect.height.toFixed(2)}px`);
-    detailScreen.style.setProperty('--candle-body-width', `${candleBodyRect.width.toFixed(2)}px`);
+    if (candleBodyLight) {
+        candleBodyLight.style.left = `${(candleBodyRect.left - sceneRect.left).toFixed(2)}px`;
+        candleBodyLight.style.top = `${(candleBodyRect.top - sceneRect.top).toFixed(2)}px`;
+        candleBodyLight.style.width = `${candleBodyRect.width.toFixed(2)}px`;
+        candleBodyLight.style.height = `${candleBodyRect.height.toFixed(2)}px`;
+        candleBodyLight.style.transform = 'none';
+    }
     // Ореол сцены измеряется высотой иконы, а не шириной телефона.
     // Поэтому на узких и широких иконах он сохраняет одну и ту же физическую логику.
     const sceneAmbientWidth = iconRect.height * 2.4;
@@ -2121,7 +2114,7 @@ function applyCandleAtmosphereFrame(time) {
     const sceneAmbient = document.getElementById('sceneAmbient');
     const haloEffect = document.getElementById('flameHaloEffect');
     const haloPosition = document.getElementById('flameHaloPosition');
-    const candleBodyGlow = document.getElementById('candleBodyGlow');
+    const candleBodyLight = document.getElementById('candleBodyLight');
     if (sceneAmbient) {
         sceneAmbient.style.transform = `translate3d(${(lightX * 18).toFixed(2)}px, ${(lightY * 12).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
@@ -2131,8 +2124,8 @@ function applyCandleAtmosphereFrame(time) {
     if (haloPosition) {
         haloPosition.style.transform = `translate(calc(-50% + ${(lightX * 14).toFixed(2)}px), calc(-50% + ${(lightY * 10).toFixed(2)}px))`;
     }
-    if (candleBodyGlow) {
-        candleBodyGlow.style.opacity = (0.18 + intensity * 0.40).toFixed(4);
+    if (candleBodyLight) {
+        candleBodyLight.style.opacity = (0.28 + intensity * 0.48).toFixed(4);
     }
     if (haloEffect) {
         haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
