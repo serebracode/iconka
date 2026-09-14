@@ -1071,6 +1071,34 @@
             transform: translate(var(--shadow-shift-x, 0px), var(--shadow-shift-y, 0px));
         }
 
+        /* Небольшая опорная тень возвращает контакт с дальней плоскостью,
+           не раскрывая вниз плотный прямоугольник основной проекции. */
+        #iconContactShadow {
+            position: absolute;
+            z-index: 9;
+            left: var(--contact-shadow-left, 0px);
+            top: var(--contact-shadow-top, 0px);
+            width: var(--contact-shadow-width, 0px);
+            height: var(--contact-shadow-height, 40px);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate3d(var(--contact-shadow-shift-x, 0px), 0, 0);
+            background: radial-gradient(
+                ellipse 72% 78% at 50% 0%,
+                rgba(0, 0, 0, 0.78) 0%,
+                rgba(0, 0, 0, 0.48) 34%,
+                rgba(0, 0, 0, 0.18) 58%,
+                transparent 86%
+            );
+            filter: blur(7px);
+            will-change: opacity, transform;
+            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
+        }
+
+        #detailScreen.scene-active #iconContactShadow {
+            opacity: var(--contact-shadow-opacity, 0.72);
+        }
+
         .icon-bound-effect {
             left: var(--effect-icon-left, 0px);
             top: var(--effect-icon-top, 0px);
@@ -1279,6 +1307,7 @@
         <div class="projection-band projection-band-middle"><div class="projection-shape"></div></div>
         <div class="projection-band projection-band-bottom"><div class="projection-shape"></div></div>
     </div>
+    <div id="iconContactShadow" aria-hidden="true"></div>
 
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
@@ -1976,6 +2005,12 @@ function updateCandleEffectGeometry() {
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
 
+    const contactShadowHeight = Math.max(32, Math.min(54, iconRect.height * 0.055));
+    detailScreen.style.setProperty('--contact-shadow-left', `${(iconLeft - iconRect.width * 0.04).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-top', `${(iconTop + iconRect.height - 7).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-width', `${(iconRect.width * 1.08).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-height', `${contactShadowHeight.toFixed(2)}px`);
+
     const flameUnit = Math.max(flameRect.width, 28);
     detailScreen.style.setProperty('--flame-halo-width', `${(flameUnit * 6).toFixed(2)}px`);
     detailScreen.style.setProperty('--flame-halo-height', `${(flameUnit * 5).toFixed(2)}px`);
@@ -2211,6 +2246,8 @@ function applyCandleAtmosphereFrame(time) {
        не может молча заменить покадровое движение статическим transform. */
     detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 100).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-shift-y', `${(-18 - shadowMotionY * 16).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-shift-x', `${(-shadowMotionX * 28).toFixed(2)}px`);
+    detailScreen.style.setProperty('--contact-shadow-opacity', (0.58 + intensity * 0.18).toFixed(4));
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
