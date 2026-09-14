@@ -1068,18 +1068,42 @@
             will-change: transform;
         }
 
-        #iconProjection .projection-band-top,
-        #iconProjection .projection-band-middle { display: none; }
+        /* Один и тот же силуэт делится лишь по оптике: далеко сверху — мягче,
+           к нижнему краю — собраннее. Перекрывающиеся маски убирают ступени. */
+        #iconProjection .projection-band-top {
+            display: block;
+            opacity: 0.58;
+            filter: blur(15px);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 24%, rgba(0, 0, 0, 0.74) 42%, transparent 61%);
+            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 24%, rgba(0, 0, 0, 0.74) 42%, transparent 61%);
+        }
+
+        #iconProjection .projection-band-middle {
+            display: block;
+            opacity: 0.66;
+            filter: blur(10px);
+            mask-image: linear-gradient(to bottom, transparent 21%, rgba(0, 0, 0, 0.78) 39%, #000 52%, rgba(0, 0, 0, 0.60) 68%, transparent 82%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 21%, rgba(0, 0, 0, 0.78) 39%, #000 52%, rgba(0, 0, 0, 0.60) 68%, transparent 82%);
+        }
 
         #iconProjection .projection-band-bottom {
-            opacity: 1;
-            filter: blur(15.7px);
-            mask-image: none;
-            -webkit-mask-image: none;
+            display: block;
+            opacity: 0.82;
+            filter: blur(6px);
+            mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 78%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 78%, #000 100%);
+        }
+
+        #iconProjection .projection-band-top .projection-shape {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.84));
+        }
+
+        #iconProjection .projection-band-middle .projection-shape {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.92));
         }
 
         #iconProjection .projection-band-bottom .projection-shape {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.98));
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.98));
         }
 
         #detailScreen.scene-active #iconProjection {
