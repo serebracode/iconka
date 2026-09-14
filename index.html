@@ -1230,7 +1230,8 @@
             margin-right: auto;
         }
 
-        #portraitOrientationNotice {
+        #portraitOrientationNotice,
+        #landscapeOrientationNotice {
             position: fixed;
             inset: 0;
             z-index: 10000;
@@ -1249,6 +1250,10 @@
             display: flex;
         }
 
+        body.tablet-portrait #landscapeOrientationNotice {
+            display: flex;
+        }
+
 
 
 
@@ -1258,6 +1263,9 @@
 
 <div id="portraitOrientationNotice" role="status" aria-live="polite">
     Поверните телефон вертикально
+</div>
+<div id="landscapeOrientationNotice" role="status" aria-live="polite">
+    Поверните планшет горизонтально
 </div>
 
 <!-- ГЛОБАЛЬНЫЙ ЛОГОТИП (для списка и иконы) -->
@@ -1455,29 +1463,39 @@ function isPhoneDevice() {
     return phoneUA || (phoneScreen && window.matchMedia('(pointer: coarse)').matches);
 }
 
-function isPortraitTablet() {
+function isTabletDevice() {
     const width = window.innerWidth;
     const height = getStableViewportHeight();
     const tabletUA = /iPad|Android(?!.*Mobile)|Tablet/i.test(navigator.userAgent);
-    const tabletViewport = width > 600
+    const tabletViewport = !isPhoneDevice()
+        && width > 600
         && Math.min(screen.width || width, screen.height || height) <= 1366
         && window.matchMedia('(pointer: coarse)').matches;
-    return (tabletUA || tabletViewport) && height >= width;
+    return tabletUA || tabletViewport;
 }
 
-function updatePhoneOrientationPolicy() {
-    if (!isPhoneDevice()) {
-        document.body.classList.remove('phone-landscape');
-        return;
+function updateOrientationPolicy() {
+    const isLandscape = window.innerWidth > getStableViewportHeight();
+    const isPhone = isPhoneDevice();
+    const isTablet = !isPhone && isTabletDevice();
+
+    document.body.classList.toggle('phone-landscape', isPhone && isLandscape);
+    document.body.classList.toggle('tablet-portrait', isTablet && !isLandscape);
+
+    if (isPhone && !isLandscape) {
+        /* Telegram фиксирует текущую ориентацию, поэтому для телефона вызываем в портрете. */
+        try { window.Telegram?.WebApp?.lockOrientation?.(); } catch (error) {}
+        try { screen.orientation?.lock?.('portrait').catch(() => {}); } catch (error) {}
     }
 
-    const isLandscape = window.innerWidth > getStableViewportHeight();
-    document.body.classList.toggle('phone-landscape', isLandscape);
-    if (isLandscape) return;
-
-    /* Telegram блокирует текущую ориентацию, поэтому вызываем метод только в портрете. */
-    try { window.Telegram?.WebApp?.lockOrientation?.(); } catch (error) {}
-    try { screen.orientation?.lock?.('portrait').catch(() => {}); } catch (error) {}
+    if (isTablet) {
+        /* На планшете допустима только горизонталь. Telegram фиксирует её после поворота,
+           обычный Screen Orientation API пытается перевести устройство сразу. */
+        if (isLandscape) {
+            try { window.Telegram?.WebApp?.lockOrientation?.(); } catch (error) {}
+        }
+        try { screen.orientation?.lock?.('landscape').catch(() => {}); } catch (error) {}
+    }
 }
 
 function updateResponsiveStage() {
@@ -1491,7 +1509,7 @@ function updateResponsiveStage() {
     root.style.setProperty('--candle-body-top', `${(stage.height * 0.5937).toFixed(2)}px`);
     root.style.setProperty('--candle-body-height', `${(Math.min(stage.height, CANDLE_REFERENCE_STAGE_HEIGHT) * 0.4275).toFixed(2)}px`);
     document.body.dataset.layout = window.innerWidth <= 600 ? 'phone' : (window.innerWidth <= 1024 ? 'tablet' : 'desktop');
-    updatePhoneOrientationPolicy();
+    updateOrientationPolicy();
     positionLaunchHint();
 
     const detailContent = document.getElementById('detailContent');
@@ -1520,7 +1538,7 @@ function positionLaunchHint() {
 window.addEventListener('resize', updateResponsiveStage);
 window.visualViewport?.addEventListener('resize', updateResponsiveStage);
 window.addEventListener('orientationchange', updateResponsiveStage);
-document.addEventListener('pointerdown', updatePhoneOrientationPolicy, { once: true, capture: true });
+document.addEventListener('pointerdown', updateOrientationPolicy, { once: true, capture: true });
 requestAnimationFrame(updateResponsiveStage);
 
 // ============================================
@@ -1737,7 +1755,7 @@ function getOrderedIcons() {
 }
 
 function switchIconBySwipe(direction) {
-    if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed || isPortraitTablet()) return;
+    if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed) return;
 
     const orderedIcons = getOrderedIcons();
     const currentIndex = orderedIcons.findIndex(icon => icon.id === selectedIcon.id);
@@ -2784,7 +2802,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
         const deltaX = currentX - startX;
         const deltaY = startY - e.touches[0].clientY;
 
-        if (!infoPanelVisible && !iconZoomed && !isPortraitTablet()
+        if (!infoPanelVisible && !iconZoomed
             && Math.abs(deltaX) > 18
             && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
             horizontalIntent = true;
