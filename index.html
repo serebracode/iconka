@@ -495,6 +495,7 @@
         #candleBody {
             z-index: 1;
             filter: brightness(0.84) contrast(1.12) saturate(0.98);
+            will-change: filter;
         }
 
         #candleBodyShade {
@@ -2131,6 +2132,7 @@ function applyCandleAtmosphereFrame(time) {
     const haloEffect = document.getElementById('flameHaloEffect');
     const haloPosition = document.getElementById('flameHaloPosition');
     const candleWaxHighlight = document.getElementById('candleWaxHighlight');
+    const candleBody = document.getElementById('candleBody');
     if (sceneAmbient) {
         sceneAmbient.style.transform = `translate3d(${(lightX * 18).toFixed(2)}px, ${(lightY * 12).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
@@ -2143,6 +2145,10 @@ function applyCandleAtmosphereFrame(time) {
     if (candleWaxHighlight) {
         // Воск всегда освещён; сигнал пламени меняет яркость лишь слегка.
         candleWaxHighlight.style.opacity = (0.60 + intensity * 0.12).toFixed(4);
+    }
+    if (candleBody) {
+        // Всё тело реагирует едва заметно: меняются рефлексы, а не сам цвет свечи.
+        candleBody.style.filter = `brightness(${(0.82 + intensity * 0.045).toFixed(4)}) contrast(1.12) saturate(${(0.96 + intensity * 0.04).toFixed(4)})`;
     }
     if (haloEffect) {
         haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
