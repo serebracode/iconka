@@ -815,7 +815,8 @@
         }
 
         #iconProjection .projection-shape {
-            inset: 0;
+            /* Контейнер шире силуэта: фильтру есть куда расходиться без отсечки. */
+            inset: var(--projection-frame-padding, 0px);
             background: rgb(0, 0, 0);
             /* Верх и низ получают один сигнал огня, но двигаются с разной амплитудой. */
             clip-path: polygon(
@@ -1041,7 +1042,8 @@
         }
 
         #iconProjection .projection-shape {
-            inset: 0;
+            /* Контейнер шире силуэта: фильтру есть куда расходиться без отсечки. */
+            inset: var(--projection-frame-padding, 0px);
             /* Одна трапеция: верх живо повторяет огонь, низ лишь слегка дрейфует. */
             clip-path: polygon(
                 calc(0% + var(--shadow-top-shift-x, 0px))
@@ -1904,6 +1906,7 @@ function resetDetailScreenUI() {
         '--effect-shadow-top',
         '--effect-shadow-width',
         '--effect-shadow-height',
+        '--projection-frame-padding',
         '--surface-light-x',
         '--surface-light-y',
         '--surface-light-width',
@@ -2194,12 +2197,15 @@ function updateCandleEffectGeometry() {
     const shadowWidth = iconRect.width * 1.27;
     // По ширине тень раскрывается по глубине, но вертикально не должна залезать флагом над иконой.
     const shadowHeight = iconRect.height * 1.18;
-    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135).toFixed(2)}px`);
+    // Запас вокруг силуэта нужен не для увеличения тени, а для её мягкого blur-выхода.
+    const shadowFramePadding = Math.max(40, Math.min(72, iconRect.height * 0.075));
+    detailScreen.style.setProperty('--projection-frame-padding', `${shadowFramePadding.toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135 - shadowFramePadding).toFixed(2)}px`);
     /* Пламя находится ниже иконы, поэтому проекция раскрывается вверх.
        Нижний край плотного силуэта остаётся за объектом и не образует чёрную полосу. */
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.13 + 8).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.13 + 8 - shadowFramePadding).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-width', `${(shadowWidth + shadowFramePadding * 2).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-height', `${(shadowHeight + shadowFramePadding * 2).toFixed(2)}px`);
 
     const flameUnit = Math.max(flameRect.width, 28);
     detailScreen.style.setProperty('--flame-halo-width', `${(flameUnit * 6).toFixed(2)}px`);
