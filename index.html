@@ -2323,12 +2323,16 @@ function applyCandleAtmosphereFrame(time) {
         candleFlameSampleActive ? sampledX + organicX * 0.10 : organicX));
     const lightY = Math.max(-0.5, Math.min(0.5,
         candleFlameSampleActive ? sampledY + organicY * 0.10 : organicY * 0.50));
+    // Единая направленность для всех эффектов: горизонтальное блуждание
+    // приглушено вдвое, вертикальный отклик немного выразительнее.
+    const sceneMotionX = lightX * 0.50;
+    const sceneMotionY = lightY * 1.20;
 
     updateCandleEffectGeometry();
 
     /* Инерция света сглаживает дискретное движение огня в видео. */
-    iconLightMotionX += (lightX - iconLightMotionX) * 0.12;
-    iconLightMotionY += (lightY - iconLightMotionY) * 0.10;
+    iconLightMotionX += (sceneMotionX - iconLightMotionX) * 0.12;
+    iconLightMotionY += (sceneMotionY - iconLightMotionY) * 0.10;
     iconLightIntensity += (intensity - iconLightIntensity) * 0.06;
     const baseLightX = parseFloat(detailScreen.dataset.iconLightBaseX || '50');
     const baseLightY = parseFloat(detailScreen.dataset.iconLightBaseY || '108');
@@ -2350,8 +2354,8 @@ function applyCandleAtmosphereFrame(time) {
 
     /* Один сигнал ведёт всю сцену. Тень идёт в противоходе и больше не
        сглаживается CSS-transition поверх кадровой инерции. */
-    shadowMotionX += (lightX - shadowMotionX) * 0.26;
-    shadowMotionY += (lightY - shadowMotionY) * 0.12;
+    shadowMotionX += (sceneMotionX - shadowMotionX) * 0.26;
+    shadowMotionY += (sceneMotionY - shadowMotionY) * 0.12;
     /* CSS владеет transform, JS передаёт только координаты. Так каскад больше
        не может молча заменить покадровое движение статическим transform. */
     detailScreen.style.setProperty('--shadow-shift-x', `${(-shadowMotionX * 100).toFixed(2)}px`);
@@ -2372,16 +2376,16 @@ function applyCandleAtmosphereFrame(time) {
     const candleBody = document.getElementById('candleBody');
     if (sceneAmbient) {
         /* Светлое пятно на дальней плоскости движется вместе с источником света. */
-        sceneAmbient.style.transform = `translate3d(${(lightX * 76).toFixed(2)}px, ${(lightY * 48).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
+        sceneAmbient.style.transform = `translate3d(${(sceneMotionX * 76).toFixed(2)}px, ${(sceneMotionY * 48).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
     if (flameAmbient) {
-        flameAmbient.style.transform = `translate3d(${(lightX * 42).toFixed(2)}px, ${(lightY * 28).toFixed(2)}px, 0) scale(${(0.98 + intensity * 0.055).toFixed(4)})`;
+        flameAmbient.style.transform = `translate3d(${(sceneMotionX * 42).toFixed(2)}px, ${(sceneMotionY * 28).toFixed(2)}px, 0) scale(${(0.98 + intensity * 0.055).toFixed(4)})`;
     }
     // Общая среда и ореол теперь получают тот же сигнал, что свет и тень.
     detailScreen.style.setProperty('--ambient-opacity', (0.66 + intensity * 0.30 + ambientWave * 0.020).toFixed(4));
     detailScreen.style.setProperty('--flame-ambient-opacity', (0.34 + intensity * 0.34).toFixed(4));
     if (haloPosition) {
-        haloPosition.style.transform = `translate(calc(-50% + ${(lightX * 14).toFixed(2)}px), calc(-50% + ${(lightY * 10).toFixed(2)}px))`;
+        haloPosition.style.transform = `translate(calc(-50% + ${(sceneMotionX * 14).toFixed(2)}px), calc(-50% + ${(sceneMotionY * 10).toFixed(2)}px))`;
     }
     if (candleWaxHighlight) {
         // Воск всегда освещён; сигнал пламени меняет яркость лишь слегка.
