@@ -1048,20 +1048,13 @@
 
         #iconProjection .projection-band-bottom {
             opacity: 1;
-            filter: blur(22.4px);
+            filter: blur(15.7px);
             mask-image: none;
             -webkit-mask-image: none;
         }
 
         #iconProjection .projection-band-bottom .projection-shape {
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.98));
-            animation: projection-shadow-live 3.7s ease-in-out infinite alternate;
-        }
-
-        @keyframes projection-shadow-live {
-            0% { transform: translate3d(-5px, -3px, 0) scaleY(1.015); }
-            48% { transform: translate3d(3px, 2px, 0) scaleY(0.99); }
-            100% { transform: translate3d(6px, -5px, 0) scaleY(1.025); }
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -2176,7 +2169,7 @@ function applyCandleAtmosphereFrame(time) {
     const iconProjection = document.getElementById('iconProjection');
     if (iconProjection) {
         /* Тень следует за пламенем в противоходе, но на физически правдоподобную величину. */
-        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 28).toFixed(2)}px, ${(-18 - shadowMotionY * 18).toFixed(2)}px, 0)`;
+        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 40).toFixed(2)}px, ${(-18 - shadowMotionY * 26).toFixed(2)}px, 0)`;
     }
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
