@@ -1525,6 +1525,23 @@ document.getElementById('clearSearch').addEventListener('click', () => {
     renderIconsList();
 });
 
+function applyIconAlphaMask(imagePath) {
+    const absoluteImageUrl = new URL(imagePath, document.baseURI).href;
+    const maskValue = `url("${absoluteImageUrl}")`;
+    const maskedLayers = [
+        document.getElementById('iconDarkeningEffect'),
+        document.getElementById('iconSurfaceLight'),
+        ...document.querySelectorAll('#iconProjection .projection-shape')
+    ];
+
+    maskedLayers.forEach(layer => {
+        if (!layer) return;
+        /* Прямое свойство надёжнее наследуемой CSS-переменной в Telegram WebView. */
+        layer.style.maskImage = maskValue;
+        layer.style.setProperty('-webkit-mask-image', maskValue);
+    });
+}
+
 function selectIcon(id) {
     selectedIcon = ICONS_DATA.find(s => s.id === id);
     if (!selectedIcon) return;
@@ -1537,6 +1554,7 @@ function selectIcon(id) {
     // Заполняем данные
     const alphaMaskUrl = `url("${new URL(selectedIcon.image, document.baseURI).href}")`;
     detailScreen.style.setProperty('--icon-alpha-mask', alphaMaskUrl);
+    applyIconAlphaMask(selectedIcon.image);
     document.getElementById('iconImage').src = selectedIcon.image;
     document.getElementById('iconLight').src = selectedIcon.image;
         document.getElementById('iconTitleText').textContent = selectedIcon.title_short || selectedIcon.title;
