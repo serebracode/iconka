@@ -44,6 +44,16 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        @keyframes launchHintFadeIn {
+            from { opacity: 0; }
+            to { opacity: 0.16; }
+        }
+
+        @keyframes launchHintPulse {
+            0%, 100% { opacity: 0.09; }
+            50% { opacity: 0.23; }
+        }
+
         @keyframes roundCorners {
             from { border-radius: 0; }
             to { border-radius: 22%; }
@@ -368,6 +378,8 @@
             max-height: var(--title-height);
             overflow: hidden;
             transition-property: opacity, transform, max-height, margin;
+            transition-duration: 520ms;
+            transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         #detailContent.info-open .icon-title {
@@ -377,6 +389,17 @@
         #detailContent.candle-transition .icon-title {
             transition-duration: var(--candle-transition-duration);
             transition-timing-function: var(--candle-transition-easing);
+        }
+
+        /* На входе подпись уходит до начала сцены; на выходе удерживается до её конца. */
+        #detailContent.candle-title-leaving .icon-title {
+            opacity: 0 !important;
+            transition: opacity 480ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+        }
+
+        #detailContent.candle-closing .icon-title {
+            opacity: 0 !important;
+            transition: none !important;
         }
 
         #detailContent.candle-active .icon-title {
@@ -494,16 +517,48 @@
 
         #candleBody {
             z-index: 1;
+            filter: brightness(0.84) contrast(1.12) saturate(0.98);
+            will-change: filter;
         }
 
         #candleBodyShade {
             z-index: 2;
             pointer-events: none;
             filter: brightness(0);
-            opacity: 0.5;
-            mask-image: linear-gradient(to bottom, transparent 50%, #000 80%, #000 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 50%, #000 80%, #000 100%);
+            opacity: 0.50;
+            mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.16) 52%, rgba(0, 0, 0, 0.66) 82%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.16) 52%, rgba(0, 0, 0, 0.66) 82%, #000 100%);
         }
+
+        /* Узкий максимум света начинается на верхней кромке воска, фитиль не затрагивается. */
+        #candleWaxHighlight {
+            position: absolute;
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0.68;
+            overflow: hidden;
+            clip-path: inset(6.5% 0 0 0);
+            background:
+                radial-gradient(ellipse 76% 23% at 50% 7.5%,
+                    rgba(255, 247, 207, 0.78) 0%,
+                    rgba(255, 207, 108, 0.72) 34%,
+                    rgba(255, 137, 37, 0.30) 68%,
+                    transparent 100%),
+                linear-gradient(to bottom,
+                    transparent 6%,
+                    rgba(255, 178, 59, 0.28) 8%,
+                    rgba(255, 112, 25, 0.10) 28%,
+                    rgba(255, 86, 18, 0.035) 46%,
+                    transparent 62%);
+            mix-blend-mode: screen;
+            mask-image: url('./video/candle-body.png');
+            -webkit-mask-image: url('./video/candle-body.png');
+            mask-size: 100% 100%;
+            -webkit-mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
+        }
+
 
         #candleFlameViewport {
             position: absolute;
@@ -519,8 +574,7 @@
             opacity: 1;
         }
 
-        #candleFlame,
-        #candleFlameDuplicate {
+        #candleFlame {
             position: absolute;
             display: block;
             max-width: none;
@@ -798,9 +852,9 @@
         }
 
         body.candle-transition #iconProjection {
-            transition:
-                transform var(--candle-icon-transition-duration) var(--candle-icon-transition-easing),
-                opacity var(--candle-transition-duration) var(--candle-transition-easing) !important;
+            /* Transform управляется покадрово от пламени: длинный transition
+               заставлял тень бесконечно догонять новое положение и визуально замирать. */
+            transition: opacity var(--candle-transition-duration) var(--candle-transition-easing) !important;
         }
 
         body:not(.candle-transition) #iconProjection {
@@ -919,15 +973,15 @@
         }
 
         #detailScreen.scene-active {
-            background: #0b0806 !important;
+            background: #261a11 !important;
         }
 
         .scene-background {
-            background: #0b0806 !important;
+            background: #000000 !important;
         }
 
         .scene-background::after {
-            background: linear-gradient(to bottom, #0d0b09 0%, #0b0806 50%, #070403 100%);
+            background: linear-gradient(to bottom, #38271b 0%, #261a11 53%, #130a06 100%);
         }
 
         #sceneAmbient,
@@ -943,17 +997,20 @@
         }
 
         #sceneAmbient {
-            inset: 0;
+            left: var(--scene-ambient-left, -50vw);
+            top: var(--scene-ambient-top, -50vh);
+            width: var(--scene-ambient-width, 200vw);
+            height: var(--scene-ambient-height, 150vh);
             z-index: 4;
             background: radial-gradient(
-                ellipse 72% 58% at var(--flame-x, 50%) calc(var(--flame-y, 62%) - 8vh),
-                rgba(172, 75, 19, 0.16) 0%,
-                rgba(116, 43, 8, 0.078) 38%,
-                rgba(63, 20, 3, 0.034) 64%,
-                transparent 86%
+                ellipse at 50% 50%,
+                rgba(172, 75, 19, 0.60) 0%,
+                rgba(116, 43, 8, 0.26) 44%,
+                rgba(63, 20, 3, 0.11) 70%,
+                transparent 96%
             );
             transform: scale(var(--ambient-scale, 1));
-            transform-origin: var(--flame-x, 50%) var(--flame-y, 62%);
+            transform-origin: 50% 50%;
             will-change: opacity, transform;
         }
 
@@ -990,20 +1047,13 @@
 
         #iconProjection .projection-band-bottom {
             opacity: 1;
-            filter: blur(32px);
+            filter: blur(15.7px);
             mask-image: none;
             -webkit-mask-image: none;
         }
 
         #iconProjection .projection-band-bottom .projection-shape {
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.98));
-            animation: projection-shadow-live 3.7s ease-in-out infinite alternate;
-        }
-
-        @keyframes projection-shadow-live {
-            0% { transform: translate3d(-5px, -3px, 0) scaleY(1.015); }
-            48% { transform: translate3d(3px, 2px, 0) scaleY(0.99); }
-            100% { transform: translate3d(6px, -5px, 0) scaleY(1.025); }
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -1073,6 +1123,8 @@
                 transparent 86%
             );
             mix-blend-mode: screen;
+            transform-origin: var(--flame-x, 50%) var(--flame-y, 62%);
+            will-change: opacity, transform;
         }
 
         #sceneVignette {
@@ -1146,6 +1198,11 @@
     
     <img id="loadingLogotype" src="./id/iconka_logotype.svg" alt="Iconka" class="animated"
          style="width: 183px; height: 27px; opacity: 0; transition: opacity 0.3s ease-out; animation: fadeIn 2.5s ease-out 1.5s forwards;">
+
+    <div id="launchHint" aria-hidden="true"
+         style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #FFFFFF; font-size: 20px; font-weight: 400; line-height: 1.3; white-space: nowrap; opacity: 0; pointer-events: none; animation: launchHintFadeIn 0.8s ease-out 4s forwards, launchHintPulse 3.8s ease-in-out 4.8s infinite;">
+        Нажмите для запуска
+    </div>
     
     <button id="aboutBtn" onclick="event.stopPropagation(); showAboutScreen();" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 24px); left: 50%; transform: translateX(-50%); background: transparent; border: none; color: #8E8E93; font-size: 16px; font-weight: 400; font-family: inherit; cursor: pointer; padding: 12px 24px; opacity: 1; transition: opacity 0.3s ease-out;">
         О проекте
@@ -1246,12 +1303,10 @@
     <div id="candleLayer">
         <img id="candleBody" src="./video/candle-body.png" alt="Свеча">
         <img id="candleBodyShade" src="./video/candle-body.png" alt="" aria-hidden="true">
+        <div id="candleWaxHighlight" aria-hidden="true"></div>
     </div>
     <div id="candleFlameViewport" aria-hidden="true">
         <video id="candleFlame" muted playsinline loop preload="auto">
-            <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
-        </video>
-        <video id="candleFlameDuplicate" muted playsinline loop preload="auto" aria-hidden="true">
             <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
         </video>
     </div>
@@ -1310,6 +1365,22 @@ function getPlatform() {
 }
 const PLATFORM = getPlatform();
 document.body.setAttribute('data-platform', PLATFORM);
+
+function positionLaunchHint() {
+    const logotype = document.getElementById('loadingLogotype');
+    const aboutButton = document.getElementById('aboutBtn');
+    const hint = document.getElementById('launchHint');
+    if (!logotype || !aboutButton || !hint) return;
+
+    const logotypeRect = logotype.getBoundingClientRect();
+    const aboutRect = aboutButton.getBoundingClientRect();
+    if (!logotypeRect.height || !aboutRect.height) return;
+
+    hint.style.top = `${((logotypeRect.bottom + aboutRect.top) * 0.5).toFixed(2)}px`;
+}
+
+window.addEventListener('resize', positionLaunchHint);
+requestAnimationFrame(positionLaunchHint);
 
 // ============================================
 // ДАННЫЕ
@@ -1495,7 +1566,9 @@ function resetDetailScreenUI() {
     resetIconZoom();
     candleEffectGeometryToken += 1;
     window.clearTimeout(candleTransitionTimer);
+    window.clearTimeout(candleTitleTimer);
     candleTransitionTimer = null;
+    candleTitleTimer = null;
     stopCandleAtmosphereAnimation();
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
@@ -1505,6 +1578,7 @@ function resetDetailScreenUI() {
     detailContent.classList.remove('candle-active');
     detailContent.classList.remove('candle-transition');
     detailContent.classList.remove('candle-closing');
+    detailContent.classList.remove('candle-title-leaving');
     detailScreen.classList.remove('scene-active');
     [
         '--flame-x',
@@ -1561,6 +1635,10 @@ function resetDetailScreenUI() {
         '--effect-icon-top',
         '--effect-icon-width',
         '--effect-icon-height',
+        '--scene-ambient-left',
+        '--scene-ambient-top',
+        '--scene-ambient-width',
+        '--scene-ambient-height',
         '--effect-shadow-left',
         '--effect-shadow-top',
         '--effect-shadow-width',
@@ -1604,11 +1682,8 @@ function resetDetailScreenUI() {
     
     document.getElementById('candleLayer').style.opacity = '0';
     const candleFlame = document.getElementById('candleFlame');
-    const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     candleFlame.pause();
-    candleFlameDuplicate.pause();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
-    if (candleFlameDuplicate.readyState >= 1) candleFlameDuplicate.currentTime = 0;
     document.getElementById('shareBtn').style.opacity = '1';
     document.getElementById('candleBtn').style.opacity = '1';
     document.getElementById('infoBtn').style.opacity = '1';
@@ -1653,6 +1728,7 @@ function goBack() {
             loadingScreen.classList.remove('loading-fadeout');
             loadingScreen.style.display = 'flex';
             loadingScreen.classList.add('active');
+            requestAnimationFrame(positionLaunchHint);
             tg?.BackButton?.hide();
         }, 300);
     } else if (loadingScreen.classList.contains('active')) {
@@ -1668,6 +1744,7 @@ function goBackToLoading() {
     const globalLogo = document.getElementById('globalLogo');
     const loadingIcon = document.getElementById('loadingIcon');
     const loadingLogotype = document.getElementById('loadingLogotype');
+    const launchHint = document.getElementById('launchHint');
     
     let currentScreen = null;
     if (detailScreen.classList.contains('active')) currentScreen = detailScreen;
@@ -1688,9 +1765,11 @@ function goBackToLoading() {
         // Сброс и перезапуск анимаций loadingScreen
         loadingIcon.style.animation = 'none';
         loadingLogotype.style.animation = 'none';
+        launchHint.style.animation = 'none';
         loadingIcon.style.opacity = '0';
         loadingIcon.style.borderRadius = '0';
         loadingLogotype.style.opacity = '0';
+        launchHint.style.opacity = '0';
         
         loadingScreen.classList.remove('loading-fadeout');
         loadingScreen.style.display = 'flex';
@@ -1698,8 +1777,10 @@ function goBackToLoading() {
         
         // Перезапуск анимаций
         requestAnimationFrame(() => {
+            positionLaunchHint();
             loadingIcon.style.animation = 'fadeIn 1.2s ease-out forwards, roundCorners 1.2s ease-out 1.5s forwards';
             loadingLogotype.style.animation = 'fadeIn 2.5s ease-out 1.5s forwards';
+            launchHint.style.animation = 'launchHintFadeIn 0.8s ease-out 4s forwards, launchHintPulse 3.8s ease-in-out 4.8s infinite';
         });
         
         tg?.BackButton?.hide();
@@ -1714,6 +1795,7 @@ let candleVisible = false;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
 let candleTransitionTimer = null;
+let candleTitleTimer = null;
 let candleWakeLock = null;
 let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
@@ -1732,6 +1814,7 @@ let shadowMotionX = 0;
 let shadowMotionY = 0;
 let candleEffectGeometryToken = 0;
 const CANDLE_SCENE_TRANSITION_MS = 3000;
+const CANDLE_TITLE_EXIT_MS = 480;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
 const CANDLE_FLAME_X = 540;
@@ -1760,7 +1843,6 @@ function positionCandleAssets() {
     const bodyShade = document.getElementById('candleBodyShade');
     const flameViewport = document.getElementById('candleFlameViewport');
     const flame = document.getElementById('candleFlame');
-    const flameDuplicate = document.getElementById('candleFlameDuplicate');
     const bodyHeight = window.innerHeight * CANDLE_BODY_HEIGHT_VIEWPORT;
     body.style.height = `${bodyHeight}px`;
     body.style.top = `${window.innerHeight * CANDLE_WICK_VIEWPORT_Y - bodyHeight * CANDLE_WICK_TIP_Y}px`;
@@ -1779,12 +1861,10 @@ function positionCandleAssets() {
     flameViewport.style.height = `${CANDLE_FLAME_CROP_HEIGHT * flameScale}px`;
     flameViewport.style.left = `${flameX - (CANDLE_FLAME_X - CANDLE_FLAME_CROP_LEFT) * flameScale}px`;
     flameViewport.style.top = `${flameY - (CANDLE_FLAME_BASE_Y - CANDLE_FLAME_CROP_TOP) * flameScale}px`;
-    [flame, flameDuplicate].forEach(flameLayer => {
-        flameLayer.style.width = `${flameWidth}px`;
-        flameLayer.style.height = `${flameHeight}px`;
-        flameLayer.style.left = `${-CANDLE_FLAME_CROP_LEFT * flameScale}px`;
-        flameLayer.style.top = `${-CANDLE_FLAME_CROP_TOP * flameScale}px`;
-    });
+    flame.style.width = `${flameWidth}px`;
+    flame.style.height = `${flameHeight}px`;
+    flame.style.left = `${-CANDLE_FLAME_CROP_LEFT * flameScale}px`;
+    flame.style.top = `${-CANDLE_FLAME_CROP_TOP * flameScale}px`;
 
     detailScreen.style.setProperty('--flame-x', `${flameX}px`);
     detailScreen.style.setProperty('--flame-y', `${flameY}px`);
@@ -1800,12 +1880,15 @@ function updateCandleEffectGeometry() {
     const detailScreen = document.getElementById('detailScreen');
     const icon = document.getElementById('iconImage');
     const flame = document.getElementById('candleFlameViewport');
-    if (!detailScreen || !icon || !flame) return;
+    const candleBody = document.getElementById('candleBody');
+    const candleWaxHighlight = document.getElementById('candleWaxHighlight');
+    if (!detailScreen || !icon || !flame || !candleBody) return;
 
     const sceneRect = detailScreen.getBoundingClientRect();
     const iconRect = icon.getBoundingClientRect();
     const flameRect = flame.getBoundingClientRect();
-    if (!iconRect.width || !iconRect.height || !flameRect.width || !flameRect.height) return;
+    const candleBodyRect = candleBody.getBoundingClientRect();
+    if (!iconRect.width || !iconRect.height || !flameRect.width || !flameRect.height || !candleBodyRect.width) return;
 
     const iconLeft = iconRect.left - sceneRect.left;
     const iconTop = iconRect.top - sceneRect.top;
@@ -1820,15 +1903,34 @@ function updateCandleEffectGeometry() {
     detailScreen.style.setProperty('--effect-icon-top', `${iconTop.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-width', `${iconRect.width.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-height', `${iconRect.height.toFixed(2)}px`);
+    if (candleWaxHighlight) {
+        candleWaxHighlight.style.left = `${(candleBodyRect.left - sceneRect.left).toFixed(2)}px`;
+        candleWaxHighlight.style.top = `${(candleBodyRect.top - sceneRect.top).toFixed(2)}px`;
+        candleWaxHighlight.style.width = `${candleBodyRect.width.toFixed(2)}px`;
+        candleWaxHighlight.style.height = `${candleBodyRect.height.toFixed(2)}px`;
+    }
+    // Ореол сцены измеряется высотой иконы, а не шириной телефона.
+    // Поэтому на узких и широких иконах он сохраняет одну и ту же физическую логику.
+    const sceneAmbientWidth = iconRect.height * 2.4;
+    const sceneAmbientHeight = iconRect.height * 1.70;
+    const sceneAmbientCenterX = iconLeft + iconRect.width * 0.5;
+    const sceneAmbientCenterY = iconTop + iconRect.height * 0.64;
+    detailScreen.style.setProperty('--scene-ambient-left', `${(sceneAmbientCenterX - sceneAmbientWidth * 0.5).toFixed(2)}px`);
+    detailScreen.style.setProperty('--scene-ambient-top', `${(sceneAmbientCenterY - sceneAmbientHeight * 0.5).toFixed(2)}px`);
+    detailScreen.style.setProperty('--scene-ambient-width', `${sceneAmbientWidth.toFixed(2)}px`);
+    detailScreen.style.setProperty('--scene-ambient-height', `${sceneAmbientHeight.toFixed(2)}px`);
     detailScreen.dataset.iconLightBaseX = relativeLightX.toFixed(4);
     detailScreen.dataset.iconLightBaseY = relativeLightY.toFixed(4);
     detailScreen.dataset.iconEffectWidth = iconRect.width.toFixed(4);
     detailScreen.dataset.iconEffectHeight = iconRect.height.toFixed(4);
 
-    const shadowWidth = iconRect.width * 1.18;
-    const shadowHeight = iconRect.height * 1.20;
-    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.09).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.10 + 12).toFixed(2)}px`);
+    // Икона отстоит от задней плоскости на ~7–8 см при ~30 см до пламени:
+    // проекция на стену увеличивается примерно в 1.27 раза.
+    const shadowWidth = iconRect.width * 1.27;
+    // По ширине тень раскрывается по глубине, но вертикально не должна залезать флагом над иконой.
+    const shadowHeight = iconRect.height * 1.18;
+    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.09 + 10).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
 
@@ -2015,19 +2117,25 @@ function startFlameSynchronizedShade() {
 
 function applyCandleAtmosphereFrame(time) {
     const detailScreen = document.getElementById('detailScreen');
-    const fallbackSlow = candleFlickerSignal(time, 0.55);
-    const fallbackFast = candleFlickerSignal(time, 5);
+    const fallbackSlow = candleFlickerSignal(time, 0.72);
+    const fallbackFast = candleFlickerSignal(time, 5.8);
     const candleFlame = document.getElementById('candleFlame');
     if (typeof candleFlame.requestVideoFrameCallback !== 'function') candleFlameSampleActive = sampleFlameShadeSignal();
 
-    const intensity = candleFlameSampleActive ? clampUnit(fallbackSlow * 0.28 + flameVideoIntensity * 0.72) : fallbackSlow;
-    const sampledX = candleFlameSampleActive ? flameMotionX * 1.8 : (fallbackSlow - 0.5);
-    const sampledY = candleFlameSampleActive ? flameMotionY * 1.8 : (fallbackFast - 0.5);
-    /* Старый расчёт огня остаётся основой; широкий дрейф не даёт сигналу схлопнуться. */
+    const rawIntensity = candleFlameSampleActive
+        ? flameVideoIntensity * 0.78 + fallbackSlow * 0.14 + fallbackFast * 0.08
+        : fallbackSlow * 0.82 + fallbackFast * 0.18;
+    const intensity = clampUnit(0.5 + (rawIntensity - 0.5) * 1.18);
+    const sampledX = candleFlameSampleActive ? flameMotionX * 3.1 : 0;
+    const sampledY = candleFlameSampleActive ? flameMotionY * 1.05 : 0;
+    /* Синусоиды лишь не дают сцене замереть при плохом чтении видео.
+       При нормальном видео направление определяет само пламя. */
     const organicX = Math.sin(time * 1.31) * 0.38 + Math.sin(time * 2.17 + 1.4) * 0.16;
     const organicY = Math.sin(time * 1.07 + 0.8) * 0.34 + Math.sin(time * 1.83 + 2.1) * 0.14;
-    const lightX = Math.max(-0.5, Math.min(0.5, sampledX * 0.55 + organicX));
-    const lightY = Math.max(-0.5, Math.min(0.5, sampledY * 0.55 + organicY));
+    const lightX = Math.max(-0.5, Math.min(0.5,
+        candleFlameSampleActive ? sampledX + organicX * 0.10 : organicX));
+    const lightY = Math.max(-0.5, Math.min(0.5,
+        candleFlameSampleActive ? sampledY * 0.28 + organicY * 0.06 : organicY * 0.38));
 
     updateCandleEffectGeometry();
 
@@ -2040,7 +2148,7 @@ function applyCandleAtmosphereFrame(time) {
     const iconEffectWidth = parseFloat(detailScreen.dataset.iconEffectWidth || '0');
     const iconEffectHeight = parseFloat(detailScreen.dataset.iconEffectHeight || '0');
     const iconBreath = Math.max(-0.5, Math.min(0.5,
-        (iconLightIntensity - 0.5) * 0.75 + Math.sin((time / 3.3) * Math.PI * 2 + 1.4) * 0.20));
+        (iconLightIntensity - 0.5) * 0.95 + Math.sin((time / 3.3) * Math.PI * 2 + 1.4) * 0.06));
     const lightCenterX = baseLightX + iconLightMotionX * 8.0;
     const lightCenterY = baseLightY + iconLightMotionY * 10.0;
     const lightField = document.getElementById('iconSurfaceLightField');
@@ -2049,34 +2157,53 @@ function applyCandleAtmosphereFrame(time) {
         lightField.style.top = `${(iconEffectHeight * lightCenterY / 100).toFixed(2)}px`;
         lightField.style.width = `${(iconEffectWidth * (1.45 + iconBreath * 0.28)).toFixed(2)}px`;
         lightField.style.height = `${(iconEffectHeight * (1.04 + iconBreath * 0.24)).toFixed(2)}px`;
-        lightField.style.opacity = (0.84 + iconBreath * 0.18).toFixed(4);
+        lightField.style.opacity = (0.82 + iconBreath * 0.28).toFixed(4);
     }
     detailScreen.style.setProperty('--surface-light-opacity', '1');
 
-    /* Тень идёт на противоходе, но заметно спокойнее самого пламени. */
-    shadowMotionX += (lightX - shadowMotionX) * 0.14;
+    /* Один сигнал ведёт всю сцену. Тень идёт в противоходе и больше не
+       сглаживается CSS-transition поверх кадровой инерции. */
+    shadowMotionX += (lightX - shadowMotionX) * 0.26;
     shadowMotionY += (lightY - shadowMotionY) * 0.12;
     const iconProjection = document.getElementById('iconProjection');
     if (iconProjection) {
-        /* Коэффициенты прежней читаемой проекции: противоход 94px / 60px. */
-        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 94).toFixed(2)}px, ${(-18 - shadowMotionY * 60).toFixed(2)}px, 0)`;
+        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 50).toFixed(2)}px, ${(-18 - shadowMotionY * 16).toFixed(2)}px, 0)`;
     }
-    detailScreen.style.setProperty('--shadow-opacity', (0.78 + intensity * 0.12).toFixed(4));
+    detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
     const ambientWave = Math.sin((time / 5.1) * Math.PI * 2);
     const haloWave = Math.sin((time / 2.4) * Math.PI * 2 + 0.7);
-    const iconWave = Math.sin((time / 3.3) * Math.PI * 2 + 1.4);
     const sceneAmbient = document.getElementById('sceneAmbient');
+    const flameAmbient = document.getElementById('flameAmbient');
     const haloEffect = document.getElementById('flameHaloEffect');
+    const haloPosition = document.getElementById('flameHaloPosition');
+    const candleWaxHighlight = document.getElementById('candleWaxHighlight');
+    const candleBody = document.getElementById('candleBody');
     if (sceneAmbient) {
-        sceneAmbient.style.transform = `scale(${(1 + ambientWave * 0.012).toFixed(4)})`;
+        /* Светлое пятно на дальней плоскости движется вместе с источником света. */
+        sceneAmbient.style.transform = `translate3d(${(lightX * 76).toFixed(2)}px, ${(lightY * 48).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
-    detailScreen.style.setProperty('--ambient-opacity', (0.72 + ambientWave * 0.018).toFixed(4));
-    detailScreen.style.setProperty('--flame-ambient-opacity', (0.55 + iconWave * 0.020).toFixed(4));
+    if (flameAmbient) {
+        flameAmbient.style.transform = `translate3d(${(lightX * 42).toFixed(2)}px, ${(lightY * 28).toFixed(2)}px, 0) scale(${(0.98 + intensity * 0.055).toFixed(4)})`;
+    }
+    // Общая среда и ореол теперь получают тот же сигнал, что свет и тень.
+    detailScreen.style.setProperty('--ambient-opacity', (0.66 + intensity * 0.30 + ambientWave * 0.020).toFixed(4));
+    detailScreen.style.setProperty('--flame-ambient-opacity', (0.34 + intensity * 0.34).toFixed(4));
+    if (haloPosition) {
+        haloPosition.style.transform = `translate(calc(-50% + ${(lightX * 14).toFixed(2)}px), calc(-50% + ${(lightY * 10).toFixed(2)}px))`;
+    }
+    if (candleWaxHighlight) {
+        // Воск всегда освещён; сигнал пламени меняет яркость лишь слегка.
+        candleWaxHighlight.style.opacity = (0.59 + intensity * 0.15).toFixed(4);
+    }
+    if (candleBody) {
+        // Всё тело реагирует едва заметно: меняются рефлексы, а не сам цвет свечи.
+        candleBody.style.filter = `brightness(${(0.815 + intensity * 0.060).toFixed(4)}) contrast(1.12) saturate(${(0.955 + intensity * 0.05).toFixed(4)})`;
+    }
     if (haloEffect) {
-        haloEffect.style.opacity = (0.94 + haloWave * 0.045).toFixed(4);
-        haloEffect.style.transform = `scale(${(1 + haloWave * 0.025).toFixed(4)})`;
+        haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
+        haloEffect.style.transform = `scale(${(0.92 + intensity * 0.18 + haloWave * 0.012).toFixed(4)})`;
     }
 
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
@@ -2128,7 +2255,6 @@ function showCandle() {
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
-    const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
     const iconScale = iconBounds.width > 0
         ? window.innerWidth * 0.9 / iconBounds.width
@@ -2139,44 +2265,46 @@ function showCandle() {
     updateCandleEffectGeometry();
     startCandleAtmosphereAnimation();
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
-    if (candleFlameDuplicate.readyState >= 1) candleFlameDuplicate.currentTime = 0;
     candleFlame.play().catch(() => {});
-    candleFlameDuplicate.play().catch(() => {});
     startFlameSynchronizedShade();
     document.getElementById('globalLogo').classList.remove('list-fadein');
 
-    // Сначала браузер получает исходное состояние с нужными transition.
-    // Конечное состояние включается на следующем кадре: иначе WebView Telegram
-    // иногда схлопывает переход filter и показывает его только в финале.
-    document.body.classList.add('candle-transition');
-    detailContent.classList.add('candle-transition');
     detailContent.classList.remove('candle-closing');
-
-    /* Фиксируем исходный кадр: WebView должен увидеть opacity: 0 до включения сцены. */
-    void document.getElementById('sceneAmbient').offsetWidth;
-
-    requestAnimationFrame(() => {
+    detailContent.classList.add('candle-title-leaving');
+    window.clearTimeout(candleTitleTimer);
+    candleTitleTimer = window.setTimeout(() => {
         if (!candleVisible) return;
 
-        document.body.classList.add('candle-active');
-        detailScreen.classList.add('scene-active');
-        detailContent.classList.add('candle-active');
-        window.clearTimeout(candleTransitionTimer);
-        candleTransitionTimer = window.setTimeout(() => {
+        candleTitleTimer = null;
+        // Основная сцена начинает переход только после исчезновения подписи.
+        document.body.classList.add('candle-transition');
+        detailContent.classList.add('candle-transition');
+        void document.getElementById('sceneAmbient').offsetWidth;
+
+        requestAnimationFrame(() => {
             if (!candleVisible) return;
-            document.body.classList.remove('candle-transition');
-            detailContent.classList.remove('candle-transition');
-            candleTransitionTimer = null;
-        }, CANDLE_SCENE_TRANSITION_MS);
-        document.getElementById('candleLayer').style.opacity = '1';
-        document.getElementById('globalLogo').style.opacity = '0';
-        document.getElementById('shareBtn').style.opacity = '0';
-        document.getElementById('candleBtn').style.opacity = '0';
-        document.getElementById('infoBtn').style.opacity = '0';
-        document.getElementById('shareBtn').style.pointerEvents = 'none';
-        document.getElementById('candleBtn').style.pointerEvents = 'none';
-        document.getElementById('infoBtn').style.pointerEvents = 'none';
-    });
+
+            document.body.classList.add('candle-active');
+            detailScreen.classList.add('scene-active');
+            detailContent.classList.add('candle-active');
+            detailContent.classList.remove('candle-title-leaving');
+            window.clearTimeout(candleTransitionTimer);
+            candleTransitionTimer = window.setTimeout(() => {
+                if (!candleVisible) return;
+                document.body.classList.remove('candle-transition');
+                detailContent.classList.remove('candle-transition');
+                candleTransitionTimer = null;
+            }, CANDLE_SCENE_TRANSITION_MS);
+            document.getElementById('candleLayer').style.opacity = '1';
+            document.getElementById('globalLogo').style.opacity = '0';
+            document.getElementById('shareBtn').style.opacity = '0';
+            document.getElementById('candleBtn').style.opacity = '0';
+            document.getElementById('infoBtn').style.opacity = '0';
+            document.getElementById('shareBtn').style.pointerEvents = 'none';
+            document.getElementById('candleBtn').style.pointerEvents = 'none';
+            document.getElementById('infoBtn').style.pointerEvents = 'none';
+        });
+    }, CANDLE_TITLE_EXIT_MS);
 }
 
 function closeCandle() {
@@ -2189,8 +2317,10 @@ function closeCandle() {
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
-    const candleFlameDuplicate = document.getElementById('candleFlameDuplicate');
     window.clearTimeout(candleTransitionTimer);
+    window.clearTimeout(candleTitleTimer);
+    candleTitleTimer = null;
+    detailContent.classList.remove('candle-title-leaving');
     detailContent.classList.add('candle-closing');
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
@@ -2200,7 +2330,6 @@ function closeCandle() {
     trackCandleEffectGeometry(CANDLE_SCENE_TRANSITION_MS);
     candleLayer.style.opacity = '0';
     candleFlame.pause();
-    candleFlameDuplicate.pause();
     
     document.getElementById('globalLogo').style.opacity = '1';
     document.getElementById('shareBtn').style.opacity = '1';
@@ -2212,7 +2341,6 @@ function closeCandle() {
     
     candleTransitionTimer = setTimeout(() => {
         if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
-        if (candleFlameDuplicate.readyState >= 1) candleFlameDuplicate.currentTime = 0;
         detailContent.classList.remove('candle-transition');
         detailContent.classList.remove('candle-closing');
         document.body.classList.remove('candle-transition');
