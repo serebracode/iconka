@@ -507,6 +507,34 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 24%, rgba(0, 0, 0, 0.32) 48%, #000 82%, #000 100%);
         }
 
+        /* Узкий максимум света начинается на верхней кромке воска, фитиль не затрагивается. */
+        #candleWaxHighlight {
+            position: absolute;
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0;
+            overflow: hidden;
+            clip-path: inset(6.5% 0 0 0);
+            background:
+                radial-gradient(ellipse 72% 13% at 50% 7.5%,
+                    rgba(255, 250, 214, 1) 0%,
+                    rgba(255, 211, 113, 0.94) 34%,
+                    rgba(255, 137, 37, 0.48) 67%,
+                    transparent 100%),
+                linear-gradient(to bottom,
+                    transparent 6%,
+                    rgba(255, 178, 59, 0.42) 8%,
+                    rgba(255, 112, 25, 0.12) 18%,
+                    transparent 29%);
+            mix-blend-mode: screen;
+            mask-image: url('./video/candle-body.png');
+            -webkit-mask-image: url('./video/candle-body.png');
+            mask-size: 100% 100%;
+            -webkit-mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
+        }
+
 
         #candleFlameViewport {
             position: absolute;
@@ -1252,6 +1280,7 @@
     <div id="candleLayer">
         <img id="candleBody" src="./video/candle-body.png" alt="Свеча">
         <img id="candleBodyShade" src="./video/candle-body.png" alt="" aria-hidden="true">
+        <div id="candleWaxHighlight" aria-hidden="true"></div>
     </div>
     <div id="candleFlameViewport" aria-hidden="true">
         <video id="candleFlame" muted playsinline loop preload="auto">
@@ -1811,6 +1840,7 @@ function updateCandleEffectGeometry() {
     const icon = document.getElementById('iconImage');
     const flame = document.getElementById('candleFlameViewport');
     const candleBody = document.getElementById('candleBody');
+    const candleWaxHighlight = document.getElementById('candleWaxHighlight');
     if (!detailScreen || !icon || !flame || !candleBody) return;
 
     const sceneRect = detailScreen.getBoundingClientRect();
@@ -1832,6 +1862,12 @@ function updateCandleEffectGeometry() {
     detailScreen.style.setProperty('--effect-icon-top', `${iconTop.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-width', `${iconRect.width.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-height', `${iconRect.height.toFixed(2)}px`);
+    if (candleWaxHighlight) {
+        candleWaxHighlight.style.left = `${(candleBodyRect.left - sceneRect.left).toFixed(2)}px`;
+        candleWaxHighlight.style.top = `${(candleBodyRect.top - sceneRect.top).toFixed(2)}px`;
+        candleWaxHighlight.style.width = `${candleBodyRect.width.toFixed(2)}px`;
+        candleWaxHighlight.style.height = `${candleBodyRect.height.toFixed(2)}px`;
+    }
     // Ореол сцены измеряется высотой иконы, а не шириной телефона.
     // Поэтому на узких и широких иконах он сохраняет одну и ту же физическую логику.
     const sceneAmbientWidth = iconRect.height * 2.4;
@@ -2095,6 +2131,7 @@ function applyCandleAtmosphereFrame(time) {
     const haloEffect = document.getElementById('flameHaloEffect');
     const haloPosition = document.getElementById('flameHaloPosition');
     const candleBody = document.getElementById('candleBody');
+    const candleWaxHighlight = document.getElementById('candleWaxHighlight');
     if (sceneAmbient) {
         sceneAmbient.style.transform = `translate3d(${(lightX * 18).toFixed(2)}px, ${(lightY * 12).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
@@ -2106,6 +2143,9 @@ function applyCandleAtmosphereFrame(time) {
     }
     if (candleBody) {
         candleBody.style.filter = `brightness(${(0.76 + intensity * 0.18).toFixed(4)}) contrast(1.12) saturate(0.98)`;
+    }
+    if (candleWaxHighlight) {
+        candleWaxHighlight.style.opacity = (0.62 + intensity * 0.36).toFixed(4);
     }
     if (haloEffect) {
         haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
