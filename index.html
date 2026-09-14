@@ -1842,10 +1842,12 @@ function updateCandleEffectGeometry() {
     detailScreen.dataset.iconEffectWidth = iconRect.width.toFixed(4);
     detailScreen.dataset.iconEffectHeight = iconRect.height.toFixed(4);
 
-    const shadowWidth = iconRect.width * 1.18;
-    const shadowHeight = iconRect.height * 1.20;
-    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.09).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.10 + 12).toFixed(2)}px`);
+    // Икона отстоит от задней плоскости на ~7–8 см при ~30 см до пламени:
+    // проекция на стену увеличивается примерно в 1.27 раза.
+    const shadowWidth = iconRect.width * 1.27;
+    const shadowHeight = iconRect.height * 1.27;
+    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.135 + 10).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${shadowWidth.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${shadowHeight.toFixed(2)}px`);
 
@@ -2075,8 +2077,8 @@ function applyCandleAtmosphereFrame(time) {
     shadowMotionY += (lightY - shadowMotionY) * 0.12;
     const iconProjection = document.getElementById('iconProjection');
     if (iconProjection) {
-        /* Коэффициенты прежней читаемой проекции: противоход 94px / 60px. */
-        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 94).toFixed(2)}px, ${(-18 - shadowMotionY * 60).toFixed(2)}px, 0)`;
+        /* Тень следует за пламенем в противоходе, но на физически правдоподобную величину. */
+        iconProjection.style.transform = `translate3d(${(-shadowMotionX * 28).toFixed(2)}px, ${(-18 - shadowMotionY * 18).toFixed(2)}px, 0)`;
     }
     detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
