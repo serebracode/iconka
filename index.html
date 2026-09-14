@@ -2057,7 +2057,7 @@ function applyCandleAtmosphereFrame(time) {
     const iconEffectWidth = parseFloat(detailScreen.dataset.iconEffectWidth || '0');
     const iconEffectHeight = parseFloat(detailScreen.dataset.iconEffectHeight || '0');
     const iconBreath = Math.max(-0.5, Math.min(0.5,
-        (iconLightIntensity - 0.5) * 0.75 + Math.sin((time / 3.3) * Math.PI * 2 + 1.4) * 0.20));
+        (iconLightIntensity - 0.5) * 0.95 + Math.sin((time / 3.3) * Math.PI * 2 + 1.4) * 0.06));
     const lightCenterX = baseLightX + iconLightMotionX * 8.0;
     const lightCenterY = baseLightY + iconLightMotionY * 10.0;
     const lightField = document.getElementById('iconSurfaceLightField');
@@ -2066,7 +2066,7 @@ function applyCandleAtmosphereFrame(time) {
         lightField.style.top = `${(iconEffectHeight * lightCenterY / 100).toFixed(2)}px`;
         lightField.style.width = `${(iconEffectWidth * (1.45 + iconBreath * 0.28)).toFixed(2)}px`;
         lightField.style.height = `${(iconEffectHeight * (1.04 + iconBreath * 0.24)).toFixed(2)}px`;
-        lightField.style.opacity = (0.84 + iconBreath * 0.18).toFixed(4);
+        lightField.style.opacity = (0.82 + iconBreath * 0.28).toFixed(4);
     }
     detailScreen.style.setProperty('--surface-light-opacity', '1');
 
@@ -2078,22 +2078,26 @@ function applyCandleAtmosphereFrame(time) {
         /* Коэффициенты прежней читаемой проекции: противоход 94px / 60px. */
         iconProjection.style.transform = `translate3d(${(-shadowMotionX * 94).toFixed(2)}px, ${(-18 - shadowMotionY * 60).toFixed(2)}px, 0)`;
     }
-    detailScreen.style.setProperty('--shadow-opacity', (0.78 + intensity * 0.12).toFixed(4));
+    detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
     const ambientWave = Math.sin((time / 5.1) * Math.PI * 2);
     const haloWave = Math.sin((time / 2.4) * Math.PI * 2 + 0.7);
-    const iconWave = Math.sin((time / 3.3) * Math.PI * 2 + 1.4);
     const sceneAmbient = document.getElementById('sceneAmbient');
     const haloEffect = document.getElementById('flameHaloEffect');
+    const haloPosition = document.getElementById('flameHaloPosition');
     if (sceneAmbient) {
         sceneAmbient.style.transform = `translate3d(${(lightX * 18).toFixed(2)}px, ${(lightY * 12).toFixed(2)}px, 0) scale(${(1 + ambientWave * 0.032).toFixed(4)})`;
     }
-    detailScreen.style.setProperty('--ambient-opacity', (0.86 + ambientWave * 0.055).toFixed(4));
-    detailScreen.style.setProperty('--flame-ambient-opacity', (0.55 + iconWave * 0.020).toFixed(4));
+    // Общая среда и ореол теперь получают тот же сигнал, что свет и тень.
+    detailScreen.style.setProperty('--ambient-opacity', (0.66 + intensity * 0.30 + ambientWave * 0.020).toFixed(4));
+    detailScreen.style.setProperty('--flame-ambient-opacity', (0.34 + intensity * 0.34).toFixed(4));
+    if (haloPosition) {
+        haloPosition.style.transform = `translate(calc(-50% + ${(lightX * 14).toFixed(2)}px), calc(-50% + ${(lightY * 10).toFixed(2)}px))`;
+    }
     if (haloEffect) {
-        haloEffect.style.opacity = (0.94 + haloWave * 0.045).toFixed(4);
-        haloEffect.style.transform = `scale(${(1 + haloWave * 0.025).toFixed(4)})`;
+        haloEffect.style.opacity = Math.min(1, 0.68 + intensity * 0.32 + haloWave * 0.018).toFixed(4);
+        haloEffect.style.transform = `scale(${(0.92 + intensity * 0.18 + haloWave * 0.012).toFixed(4)})`;
     }
 
     if (!candleFlameSampleActive) applyFallbackShadeFlicker(time);
