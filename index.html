@@ -1049,7 +1049,7 @@
             filter: brightness(0) blur(0px);
             transform: translate3d(
                 var(--projection-shift-x, 0px),
-                var(--projection-shift-y, -8px),
+                var(--projection-shift-y, 0px),
                 0
             );
             transform-origin: 50% 52%;
@@ -2155,12 +2155,12 @@ function updateCandleEffectGeometry() {
     detailScreen.dataset.iconEffectHeight = iconRect.height.toFixed(4);
 
     // Диагностический силуэт: почти размер объекта, без запаса под blur.
-    const shadowWidth = iconRect.width * 1.06;
-    const shadowHeight = iconRect.height * 1.08;
+    const shadowWidth = iconRect.width * 1.02;
+    const shadowHeight = iconRect.height * 1.02;
     const shadowFramePadding = 0;
     detailScreen.style.setProperty('--projection-frame-padding', `${shadowFramePadding.toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.03).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.04 + 8).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft + 4).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop + 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${(shadowWidth + shadowFramePadding * 2).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${(shadowHeight + shadowFramePadding * 2).toFixed(2)}px`);
 
@@ -2405,8 +2405,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--shadow-top-shift-y', `${(-18 - shadowMotionY * 52).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-bottom-shift-x', `${(-shadowMotionX * 14).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-bottom-shift-y', `${(-18 - shadowMotionY * 8).toFixed(2)}px`);
-    detailScreen.style.setProperty('--projection-shift-x', `${(-shadowMotionX * 62).toFixed(2)}px`);
-    detailScreen.style.setProperty('--projection-shift-y', `${(-8 - shadowMotionY * 28).toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-shift-x', `${(-shadowMotionX * 16).toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-shift-y', `${(-shadowMotionY * 10).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-opacity', '1');
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
