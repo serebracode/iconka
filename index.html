@@ -1044,10 +1044,12 @@
             object-fit: fill;
             background: none;
             opacity: 1;
-            filter: brightness(0) blur(17px);
+            /* Диагностический режим: силуэт без blur, чтобы его можно было
+               увидеть и оценить до возвращения мягких краёв. */
+            filter: brightness(0) blur(0px);
             transform: translate3d(
                 var(--projection-shift-x, 0px),
-                var(--projection-shift-y, -26px),
+                var(--projection-shift-y, -8px),
                 0
             );
             transform-origin: 50% 52%;
@@ -2152,18 +2154,13 @@ function updateCandleEffectGeometry() {
     detailScreen.dataset.iconEffectWidth = iconRect.width.toFixed(4);
     detailScreen.dataset.iconEffectHeight = iconRect.height.toFixed(4);
 
-    // Икона отстоит от задней плоскости на ~7–8 см при ~30 см до пламени:
-    // проекция на стену увеличивается примерно в 1.27 раза.
-    const shadowWidth = iconRect.width * 1.27;
-    // По ширине тень раскрывается по глубине, но вертикально не должна залезать флагом над иконой.
-    const shadowHeight = iconRect.height * 1.18;
-    // Запас вокруг силуэта нужен не для увеличения тени, а для её мягкого blur-выхода.
-    const shadowFramePadding = Math.max(40, Math.min(72, iconRect.height * 0.075));
+    // Диагностический силуэт: почти размер объекта, без запаса под blur.
+    const shadowWidth = iconRect.width * 1.06;
+    const shadowHeight = iconRect.height * 1.08;
+    const shadowFramePadding = 0;
     detailScreen.style.setProperty('--projection-frame-padding', `${shadowFramePadding.toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.135 - shadowFramePadding).toFixed(2)}px`);
-    /* Пламя находится ниже иконы, поэтому проекция раскрывается вверх.
-       Нижний край плотного силуэта остаётся за объектом и не образует чёрную полосу. */
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.13 + 8 - shadowFramePadding).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.03).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.04 + 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${(shadowWidth + shadowFramePadding * 2).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${(shadowHeight + shadowFramePadding * 2).toFixed(2)}px`);
 
@@ -2409,8 +2406,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--shadow-bottom-shift-x', `${(-shadowMotionX * 14).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-bottom-shift-y', `${(-18 - shadowMotionY * 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--projection-shift-x', `${(-shadowMotionX * 62).toFixed(2)}px`);
-    detailScreen.style.setProperty('--projection-shift-y', `${(-26 - shadowMotionY * 28).toFixed(2)}px`);
-    detailScreen.style.setProperty('--shadow-opacity', ((0.68 + intensity * 0.26) * 0.5).toFixed(4));
+    detailScreen.style.setProperty('--projection-shift-y', `${(-8 - shadowMotionY * 28).toFixed(2)}px`);
+    detailScreen.style.setProperty('--shadow-opacity', '1');
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
     const ambientWave = Math.sin((time / 5.1) * Math.PI * 2);
