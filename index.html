@@ -1039,15 +1039,19 @@
                периодически съедал их и оставлял либо ноль, либо прямоугольник. */
             /* У img натуральный размер 900×1134. Без явных width/height Safari
                ставит его от левого верхнего угла и уводит низ вправо за экран. */
+            /* Поле шире самой альфы: blur не упирается в границы img-слоя. */
             inset: auto;
-            left: var(--projection-frame-padding, 0px);
-            top: var(--projection-frame-padding, 0px);
-            width: calc(100% - var(--projection-frame-padding, 0px) - var(--projection-frame-padding, 0px));
-            height: calc(100% - var(--projection-frame-padding, 0px) - var(--projection-frame-padding, 0px));
+            left: calc(var(--projection-frame-padding, 0px) - var(--projection-layer-padding, 0px));
+            top: calc(var(--projection-frame-padding, 0px) - var(--projection-layer-padding, 0px));
+            width: calc(100% - var(--projection-frame-padding, 0px) - var(--projection-frame-padding, 0px) + var(--projection-layer-padding, 0px) + var(--projection-layer-padding, 0px));
+            height: calc(100% - var(--projection-frame-padding, 0px) - var(--projection-frame-padding, 0px) + var(--projection-layer-padding, 0px) + var(--projection-layer-padding, 0px));
+            padding: var(--projection-layer-padding, 0px);
+            box-sizing: border-box;
             clip-path: none;
             border-radius: 0;
             display: block;
             object-fit: fill;
+            object-position: center;
             background: none;
             opacity: 1;
             /* Одна мягкая проекция по реальной PNG-альфе. */
@@ -1889,6 +1893,9 @@ function resetDetailScreenUI() {
         '--effect-shadow-width',
         '--effect-shadow-height',
         '--projection-frame-padding',
+        '--projection-layer-padding',
+        '--projection-blur',
+        '--projection-bottom-blur',
         '--surface-light-x',
         '--surface-light-y',
         '--surface-light-width',
@@ -2187,7 +2194,10 @@ function updateCandleEffectGeometry() {
         Math.min(shadowImageLeft, sceneRect.width - shadowImageRight) - 2
     );
     const shadowBlur = Math.min(14, availableShadowBlur);
+    // Для CSS blur нужно не менее трёх радиусов прозрачного поля по краям.
+    const shadowLayerPadding = shadowBlur * 3 + 4;
     detailScreen.style.setProperty('--projection-frame-padding', `${shadowFramePadding.toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-layer-padding', `${shadowLayerPadding.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-left', `${(shadowImageLeft - shadowFramePadding).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.088 - shadowFramePadding).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${(shadowWidth + shadowFramePadding * 2).toFixed(2)}px`);
