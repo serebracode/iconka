@@ -1056,17 +1056,14 @@
                     calc(100% + var(--shadow-bottom-shift-y, -18px))
             );
             border-radius: 2px;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.54), rgba(0, 0, 0, 0.72));
-            /* Проекция повторяет alpha-силуэт объекта, а не прямоугольник файла. */
-            mask-image: var(--icon-alpha-mask, none);
-            -webkit-mask-image: var(--icon-alpha-mask, none);
-            mask-mode: alpha;
-            mask-position: center;
-            -webkit-mask-position: center;
-            mask-size: 100% 100%;
-            -webkit-mask-size: 100% 100%;
-            mask-repeat: no-repeat;
-            -webkit-mask-repeat: no-repeat;
+            display: block;
+            object-fit: fill;
+            /* Прозрачный WebP рисует сам силуэт: Telegram WebView больше не
+               зависит от CSS mask-image, который в нём давал прямоугольник. */
+            background: none;
+            filter: brightness(0);
+            mask-image: none;
+            -webkit-mask-image: none;
             will-change: transform;
         }
 
@@ -1096,20 +1093,8 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 78%, #000 100%);
         }
 
-        #iconProjection .projection-band-top .projection-shape {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.84));
-        }
-
-        #iconProjection .projection-band-middle .projection-shape {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.92));
-        }
-
-        #iconProjection .projection-band-bottom .projection-shape {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.98));
-        }
-
         #detailScreen.scene-active #iconProjection {
-            opacity: var(--shadow-opacity, 0.92);
+            opacity: var(--shadow-opacity, 0.46);
             transform: none;
         }
 
@@ -1363,9 +1348,9 @@
     <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
     <div id="sceneAmbient" aria-hidden="true"></div>
     <div id="iconProjection" aria-hidden="true">
-        <div class="projection-band projection-band-top"><div class="projection-shape"></div></div>
-        <div class="projection-band projection-band-middle"><div class="projection-shape"></div></div>
-        <div class="projection-band projection-band-bottom"><div class="projection-shape"></div></div>
+        <div class="projection-band projection-band-top"><img class="projection-shape" alt=""></div>
+        <div class="projection-band projection-band-middle"><img class="projection-shape" alt=""></div>
+        <div class="projection-band projection-band-bottom"><img class="projection-shape" alt=""></div>
     </div>
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
@@ -1698,8 +1683,7 @@ function applyIconAlphaMask(imagePath) {
     const maskValue = `url("${absoluteImageUrl}")`;
     const maskedLayers = [
         document.getElementById('iconDarkeningEffect'),
-        document.getElementById('iconSurfaceLight'),
-        ...document.querySelectorAll('#iconProjection .projection-shape')
+        document.getElementById('iconSurfaceLight')
     ];
 
     maskedLayers.forEach(layer => {
@@ -1707,6 +1691,12 @@ function applyIconAlphaMask(imagePath) {
         /* Прямое свойство надёжнее наследуемой CSS-переменной в Telegram WebView. */
         layer.style.maskImage = maskValue;
         layer.style.setProperty('-webkit-mask-image', maskValue);
+    });
+
+    /* Проекция — это три настоящие прозрачные копии иконы, а не CSS-маска.
+       Так прозрачный фон сохраняется и в Telegram WebView. */
+    document.querySelectorAll('#iconProjection .projection-shape').forEach(layer => {
+        if (layer.src !== absoluteImageUrl) layer.src = absoluteImageUrl;
     });
 }
 
@@ -2455,7 +2445,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--shadow-top-shift-y', `${(-18 - shadowMotionY * 52).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-bottom-shift-x', `${(-shadowMotionX * 14).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-bottom-shift-y', `${(-18 - shadowMotionY * 8).toFixed(2)}px`);
-    detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.26).toFixed(4));
+    detailScreen.style.setProperty('--shadow-opacity', ((0.68 + intensity * 0.26) * 0.5).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
     const ambientWave = Math.sin((time / 5.1) * Math.PI * 2);
