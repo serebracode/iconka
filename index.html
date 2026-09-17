@@ -2468,7 +2468,7 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--projection-shift-y', `${(-3 - shadowMotionY * 12).toFixed(2)}px`);
     detailScreen.style.setProperty('--projection-top-shift-x', `${(-shadowMotionX * 22.5).toFixed(2)}px`);
     detailScreen.style.setProperty('--projection-top-shift-y', `${(-3 - shadowMotionY * 15).toFixed(2)}px`);
-    detailScreen.style.setProperty('--shadow-opacity', (0.56 + intensity * 0.08).toFixed(4));
+    detailScreen.style.setProperty('--shadow-opacity', (0.68 + intensity * 0.08).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
     const ambientWave = Math.sin((time / 5.1) * Math.PI * 2);
