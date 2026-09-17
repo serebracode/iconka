@@ -1051,7 +1051,7 @@
             background: none;
             opacity: 1;
             /* Одна мягкая проекция по реальной PNG-альфе. */
-            filter: brightness(0) blur(14px);
+            filter: brightness(0) blur(var(--projection-blur, 14px));
             transform: translate3d(
                 var(--projection-shift-x, 0px),
                 var(--projection-shift-y, -3px),
@@ -2163,11 +2163,20 @@ function updateCandleEffectGeometry() {
     const shadowWidth = iconRect.width * 1.03;
     const shadowHeight = iconRect.height * 1.05;
     const shadowFramePadding = Math.max(28, Math.min(42, iconRect.height * 0.04));
+    const shadowImageLeft = iconLeft - iconRect.width * 0.015;
+    const shadowImageRight = shadowImageLeft + shadowWidth;
+    /* На узком телефоне blur не имеет права касаться боковой границы экрана.
+       На широких устройствах сохраняется исходный мягкий радиус 14 px. */
+    const availableShadowBlur = Math.max(0,
+        Math.min(shadowImageLeft, sceneRect.width - shadowImageRight) - 2
+    );
+    const shadowBlur = Math.min(14, availableShadowBlur);
     detailScreen.style.setProperty('--projection-frame-padding', `${shadowFramePadding.toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-left', `${(iconLeft - iconRect.width * 0.015 - shadowFramePadding).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-left', `${(shadowImageLeft - shadowFramePadding).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.028 - shadowFramePadding).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${(shadowWidth + shadowFramePadding * 2).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${(shadowHeight + shadowFramePadding * 2).toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-blur', `${shadowBlur.toFixed(2)}px`);
 
     const flameUnit = Math.max(flameRect.width, 28);
     detailScreen.style.setProperty('--flame-halo-width', `${(flameUnit * 6).toFixed(2)}px`);
