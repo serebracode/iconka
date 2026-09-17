@@ -1063,6 +1063,20 @@
             will-change: transform, filter;
         }
 
+        /* Верх тени остаётся воздушным, нижний край — вдвое собраннее.
+           Градиентные маски дополняют друг друга, поэтому на стыке нет полосы. */
+        #iconProjection .projection-shape-top {
+            filter: brightness(0) blur(var(--projection-blur, 14px));
+            mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 55%);
+            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 55%);
+        }
+
+        #iconProjection .projection-shape-bottom {
+            filter: brightness(0) blur(var(--projection-bottom-blur, 7px));
+            mask-image: linear-gradient(to bottom, transparent 45%, #000 55%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 45%, #000 55%, #000 100%);
+        }
+
         #detailScreen.scene-active #iconProjection {
             opacity: var(--shadow-opacity, 0.46);
             transform: none;
@@ -1318,7 +1332,8 @@
     <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
     <div id="sceneAmbient" aria-hidden="true"></div>
     <div id="iconProjection" aria-hidden="true">
-        <img class="projection-shape" alt="">
+        <img class="projection-shape projection-shape-top" alt="">
+        <img class="projection-shape projection-shape-bottom" alt="">
     </div>
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
@@ -2161,7 +2176,8 @@ function updateCandleEffectGeometry() {
 
     // Сам силуэт немного больше иконы, а запас нужен только для мягкого края.
     const shadowWidth = iconRect.width * 1.03;
-    const shadowHeight = iconRect.height * 1.05;
+    /* Нижняя граница прежняя; тень растягивается только вверх на 6%. */
+    const shadowHeight = iconRect.height * 1.11;
     const shadowFramePadding = Math.max(28, Math.min(42, iconRect.height * 0.04));
     const shadowImageLeft = iconLeft - iconRect.width * 0.015;
     const shadowImageRight = shadowImageLeft + shadowWidth;
@@ -2173,10 +2189,11 @@ function updateCandleEffectGeometry() {
     const shadowBlur = Math.min(14, availableShadowBlur);
     detailScreen.style.setProperty('--projection-frame-padding', `${shadowFramePadding.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-left', `${(shadowImageLeft - shadowFramePadding).toFixed(2)}px`);
-    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.028 - shadowFramePadding).toFixed(2)}px`);
+    detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.088 - shadowFramePadding).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${(shadowWidth + shadowFramePadding * 2).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-height', `${(shadowHeight + shadowFramePadding * 2).toFixed(2)}px`);
     detailScreen.style.setProperty('--projection-blur', `${shadowBlur.toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-bottom-blur', `${(shadowBlur * 0.5).toFixed(2)}px`);
 
     const flameUnit = Math.max(flameRect.width, 28);
     detailScreen.style.setProperty('--flame-halo-width', `${(flameUnit * 6).toFixed(2)}px`);
