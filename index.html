@@ -1089,8 +1089,10 @@
             display: block;
             opacity: 0.82;
             filter: blur(6px);
-            mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 78%, #000 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 78%, #000 100%);
+            /* До края слой плавно растворяется: иначе WebKit отрезает blur
+               горизонтальной полосой по нижней границе контейнера. */
+            mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 76%, rgba(0, 0, 0, 0.64) 87%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 76%, rgba(0, 0, 0, 0.64) 87%, transparent 100%);
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -1705,12 +1707,14 @@ function populateIconDetails(icon) {
     const detailScreen = document.getElementById('detailScreen');
     const displayImagePath = icon.image;
     const candleImagePath = icon.candle_image || icon.image;
+    /* PNG хранит настоящую alpha-обтравку; WebP остаётся лёгкой картинкой сцены. */
+    const alphaImagePath = icon.cutout_master || candleImagePath;
     const iconImage = document.getElementById('iconImage');
     const iconLight = document.getElementById('iconLight');
 
-    const alphaMaskUrl = `url("${new URL(candleImagePath, document.baseURI).href}")`;
+    const alphaMaskUrl = `url("${new URL(alphaImagePath, document.baseURI).href}")`;
     detailScreen.style.setProperty('--icon-alpha-mask', alphaMaskUrl);
-    applyIconAlphaMask(candleImagePath);
+    applyIconAlphaMask(alphaImagePath);
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
     iconImage.src = displayImagePath;
