@@ -1034,65 +1034,26 @@
             transition: opacity var(--candle-transition-duration) var(--candle-transition-easing);
         }
 
-        #iconProjection .projection-band {
-            inset: 0;
-            overflow: visible;
-            mask-image: none;
-            -webkit-mask-image: none;
-        }
-
         #iconProjection .projection-shape {
-            /* Контейнер шире силуэта: фильтру есть куда расходиться без отсечки. */
+            /* Один реальный PNG-силуэт. Без вложенных CSS-масок: iOS Safari
+               периодически съедал их и оставлял либо ноль, либо прямоугольник. */
             inset: var(--projection-frame-padding, 0px);
-            /* Одна трапеция: верх живо повторяет огонь, низ лишь слегка дрейфует. */
-            clip-path: polygon(
-                calc(0% + var(--shadow-top-shift-x, 0px))
-                    calc(0% + var(--shadow-top-shift-y, -18px)),
-                calc(100% + var(--shadow-top-shift-x, 0px))
-                    calc(0% + var(--shadow-top-shift-y, -18px)),
-                calc(92% + var(--shadow-bottom-shift-x, 0px))
-                    calc(100% + var(--shadow-bottom-shift-y, -18px)),
-                calc(8% + var(--shadow-bottom-shift-x, 0px))
-                    calc(100% + var(--shadow-bottom-shift-y, -18px))
-            );
-            border-radius: 2px;
+            clip-path: none;
+            border-radius: 0;
             display: block;
             object-fit: fill;
-            /* Прозрачный WebP рисует сам силуэт: Telegram WebView больше не
-               зависит от CSS mask-image, который в нём давал прямоугольник. */
             background: none;
-            filter: brightness(0);
+            opacity: 1;
+            filter: brightness(0) blur(17px);
+            transform: translate3d(
+                var(--projection-shift-x, 0px),
+                var(--projection-shift-y, -26px),
+                0
+            );
+            transform-origin: 50% 52%;
             mask-image: none;
             -webkit-mask-image: none;
-            will-change: transform;
-        }
-
-        /* Один и тот же силуэт делится лишь по оптике: далеко сверху — мягче,
-           к нижнему краю — собраннее. Перекрывающиеся маски убирают ступени. */
-        #iconProjection .projection-band-top {
-            display: block;
-            opacity: 0.58;
-            filter: blur(15px);
-            mask-image: linear-gradient(to bottom, #000 0%, #000 24%, rgba(0, 0, 0, 0.74) 42%, transparent 61%);
-            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 24%, rgba(0, 0, 0, 0.74) 42%, transparent 61%);
-        }
-
-        #iconProjection .projection-band-middle {
-            display: block;
-            opacity: 0.66;
-            filter: blur(10px);
-            mask-image: linear-gradient(to bottom, transparent 21%, rgba(0, 0, 0, 0.78) 39%, #000 52%, rgba(0, 0, 0, 0.60) 68%, transparent 82%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 21%, rgba(0, 0, 0, 0.78) 39%, #000 52%, rgba(0, 0, 0, 0.60) 68%, transparent 82%);
-        }
-
-        #iconProjection .projection-band-bottom {
-            display: block;
-            opacity: 0.82;
-            filter: blur(6px);
-            /* До края слой плавно растворяется: иначе WebKit отрезает blur
-               горизонтальной полосой по нижней границе контейнера. */
-            mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 76%, rgba(0, 0, 0, 0.64) 87%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 42%, rgba(0, 0, 0, 0.72) 61%, #000 76%, rgba(0, 0, 0, 0.64) 87%, transparent 100%);
+            will-change: transform, filter;
         }
 
         #detailScreen.scene-active #iconProjection {
@@ -1350,9 +1311,7 @@
     <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
     <div id="sceneAmbient" aria-hidden="true"></div>
     <div id="iconProjection" aria-hidden="true">
-        <div class="projection-band projection-band-top"><img class="projection-shape" alt=""></div>
-        <div class="projection-band projection-band-middle"><img class="projection-shape" alt=""></div>
-        <div class="projection-band projection-band-bottom"><img class="projection-shape" alt=""></div>
+        <img class="projection-shape" alt="">
     </div>
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
@@ -2449,6 +2408,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--shadow-top-shift-y', `${(-18 - shadowMotionY * 52).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-bottom-shift-x', `${(-shadowMotionX * 14).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-bottom-shift-y', `${(-18 - shadowMotionY * 8).toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-shift-x', `${(-shadowMotionX * 62).toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-shift-y', `${(-26 - shadowMotionY * 28).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-opacity', ((0.68 + intensity * 0.26) * 0.5).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
