@@ -1061,7 +1061,8 @@
                 var(--projection-shift-y, -3px),
                 0
             );
-            transform-origin: 50% 52%;
+            /* Нижняя грань альфы — неподвижная опора перспективы. */
+            transform-origin: 50% calc(100% - var(--projection-layer-padding, 0px));
             mask-image: none;
             -webkit-mask-image: none;
             will-change: transform, filter;
@@ -1072,6 +1073,11 @@
         #iconProjection .projection-shape-top {
             filter: brightness(0) blur(var(--projection-blur, 14px));
             opacity: 0.86;
+            transform: translate3d(
+                var(--projection-top-shift-x, 0px),
+                var(--projection-top-shift-y, -3px),
+                0
+            ) perspective(var(--projection-perspective, 2400px)) rotateX(-23.1deg);
             mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 55%);
             -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 55%);
         }
@@ -1079,6 +1085,11 @@
         #iconProjection .projection-shape-bottom {
             filter: brightness(0) blur(var(--projection-bottom-blur, 4px));
             opacity: 1;
+            transform: translate3d(
+                var(--projection-shift-x, 0px),
+                var(--projection-shift-y, -3px),
+                0
+            ) perspective(var(--projection-perspective, 2400px)) rotateX(-23.1deg);
             mask-image: linear-gradient(to bottom, transparent 45%, #000 55%, #000 100%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 45%, #000 55%, #000 100%);
         }
@@ -1898,6 +1909,9 @@ function resetDetailScreenUI() {
         '--projection-layer-padding',
         '--projection-blur',
         '--projection-bottom-blur',
+        '--projection-perspective',
+        '--projection-top-shift-x',
+        '--projection-top-shift-y',
         '--surface-light-x',
         '--surface-light-y',
         '--surface-light-width',
@@ -2197,9 +2211,11 @@ function updateCandleEffectGeometry() {
     );
     const shadowBlur = Math.min(14, availableShadowBlur);
     // Для CSS blur нужно не менее трёх радиусов прозрачного поля по краям.
-    const shadowLayerPadding = shadowBlur * 3 + 4;
+    // Верх трапеции расширяется на 7%; этому расширению тоже нужно место.
+    const shadowLayerPadding = shadowBlur * 3 + 4 + shadowWidth * 0.035;
     detailScreen.style.setProperty('--projection-frame-padding', `${shadowFramePadding.toFixed(2)}px`);
     detailScreen.style.setProperty('--projection-layer-padding', `${shadowLayerPadding.toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-perspective', `${(shadowHeight * 6).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-left', `${(shadowImageLeft - shadowFramePadding).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-top', `${(iconTop - iconRect.height * 0.088 - shadowFramePadding).toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-shadow-width', `${(shadowWidth + shadowFramePadding * 2).toFixed(2)}px`);
@@ -2450,6 +2466,8 @@ function applyCandleAtmosphereFrame(time) {
     detailScreen.style.setProperty('--shadow-bottom-shift-y', `${(-18 - shadowMotionY * 8).toFixed(2)}px`);
     detailScreen.style.setProperty('--projection-shift-x', `${(-shadowMotionX * 18).toFixed(2)}px`);
     detailScreen.style.setProperty('--projection-shift-y', `${(-3 - shadowMotionY * 12).toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-top-shift-x', `${(-shadowMotionX * 22.5).toFixed(2)}px`);
+    detailScreen.style.setProperty('--projection-top-shift-y', `${(-3 - shadowMotionY * 15).toFixed(2)}px`);
     detailScreen.style.setProperty('--shadow-opacity', (0.56 + intensity * 0.08).toFixed(4));
 
     /* Разные периоды не дают слоям дышать как единому механическому glow. */
