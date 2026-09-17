@@ -2560,7 +2560,7 @@ function showCandle() {
     const iconBounds = iconImage.getBoundingClientRect();
     const stage = getArtStageMetrics();
     const iconScale = iconBounds.width > 0
-        ? stage.width * 0.9 / iconBounds.width
+        ? stage.width * 0.873 / iconBounds.width
         : 1.10;
     detailContent.style.setProperty('--candle-icon-scale', iconScale.toFixed(4));
     detailContent.style.setProperty('--candle-shadow-scale', (iconScale * 1.18).toFixed(4));
