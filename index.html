@@ -1037,7 +1037,13 @@
         #iconProjection .projection-shape {
             /* Один реальный PNG-силуэт. Без вложенных CSS-масок: iOS Safari
                периодически съедал их и оставлял либо ноль, либо прямоугольник. */
-            inset: var(--projection-frame-padding, 0px);
+            /* У img натуральный размер 900×1134. Без явных width/height Safari
+               ставит его от левого верхнего угла и уводит низ вправо за экран. */
+            inset: auto;
+            left: var(--projection-frame-padding, 0px);
+            top: var(--projection-frame-padding, 0px);
+            width: calc(100% - var(--projection-frame-padding, 0px) - var(--projection-frame-padding, 0px));
+            height: calc(100% - var(--projection-frame-padding, 0px) - var(--projection-frame-padding, 0px));
             clip-path: none;
             border-radius: 0;
             display: block;
