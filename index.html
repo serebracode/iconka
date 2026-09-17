@@ -1670,7 +1670,7 @@ function renderIconsList(searchQuery = '') {
 
     list.innerHTML = filtered.map((icon, index) => `
         <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative;">
-            <img src="${icon.image.replace('icons/', 'icons/preview/').replace('.jpg', '_preview.jpg')}" 
+            <img src="${icon.preview_image || icon.image.replace('icons/', 'icons/preview/').replace('.jpg', '_preview.jpg')}"
                  onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDMyIiBoZWlnaHQ9IjQzMiIgdmlld0JveD0iMCAwIDQzMiA0MzIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQzMSIgaGVpZ2h0PSI0MzEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvc3ZnPg=='" 
                  alt="${icon.title}" 
                  style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: #3A3A3C; flex-shrink: 0;">
@@ -1713,12 +1713,19 @@ function applyIconAlphaMask(imagePath) {
 function populateIconDetails(icon) {
     selectedIcon = icon;
     const detailScreen = document.getElementById('detailScreen');
+    const displayImagePath = icon.image;
+    const candleImagePath = icon.candle_image || icon.image;
+    const iconImage = document.getElementById('iconImage');
+    const iconLight = document.getElementById('iconLight');
 
-    const alphaMaskUrl = `url("${new URL(selectedIcon.image, document.baseURI).href}")`;
+    const alphaMaskUrl = `url("${new URL(candleImagePath, document.baseURI).href}")`;
     detailScreen.style.setProperty('--icon-alpha-mask', alphaMaskUrl);
-    applyIconAlphaMask(selectedIcon.image);
-    document.getElementById('iconImage').src = selectedIcon.image;
-    document.getElementById('iconLight').src = selectedIcon.image;
+    applyIconAlphaMask(candleImagePath);
+    iconImage.dataset.displayImage = displayImagePath;
+    iconImage.dataset.candleImage = candleImagePath;
+    iconImage.src = displayImagePath;
+    /* Прозрачная версия загружается в фоне, пока пользователь смотрит икону. */
+    iconLight.src = candleImagePath;
         document.getElementById('iconTitleText').textContent = selectedIcon.title_short || selectedIcon.title;
     document.getElementById('iconDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
     
@@ -2534,7 +2541,10 @@ function showCandle() {
     const detailContent = document.getElementById('detailContent');
     const candleLayer = document.getElementById('candleLayer');
     const candleFlame = document.getElementById('candleFlame');
-    const iconBounds = document.getElementById('iconImage').getBoundingClientRect();
+    const iconImage = document.getElementById('iconImage');
+    const candleImagePath = iconImage.dataset.candleImage;
+    if (candleImagePath) iconImage.src = candleImagePath;
+    const iconBounds = iconImage.getBoundingClientRect();
     const stage = getArtStageMetrics();
     const iconScale = iconBounds.width > 0
         ? stage.width * 0.9 / iconBounds.width
@@ -2621,6 +2631,9 @@ function closeCandle() {
     
     candleTransitionTimer = setTimeout(() => {
         if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
+        const iconImage = document.getElementById('iconImage');
+        const displayImagePath = iconImage?.dataset.displayImage;
+        if (displayImagePath) iconImage.src = displayImagePath;
         detailContent.classList.remove('candle-transition');
         detailContent.classList.remove('candle-closing');
         document.body.classList.remove('candle-transition');
