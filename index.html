@@ -1757,6 +1757,8 @@ function getSwipePreviewRecord(icon) {
     if (cached) return cached;
 
     const image = new Image();
+    // Нужен для canvas и не мешает same-origin файлам Vercel.
+    image.crossOrigin = 'anonymous';
     image.decoding = 'async';
     let settled = false;
     let resolveReady;
@@ -1829,8 +1831,14 @@ function createPixelPreviewDataUrl(image, longSide) {
     const context = canvas.getContext('2d');
     if (!context) return null;
     context.imageSmoothingEnabled = true;
-    context.drawImage(image, 0, 0, width, height);
-    return canvas.toDataURL('image/png');
+    try {
+        context.drawImage(image, 0, 0, width, height);
+        return canvas.toDataURL('image/png');
+    } catch (_) {
+        // Сервер без CORS всё равно может отрисовать исходный JPEG напрямую,
+        // но не разрешает превратить его в data URL.
+        return null;
+    }
 }
 
 function waitForPixelStage(delay) {
@@ -1848,7 +1856,10 @@ async function renderPixelPreviewStages(icon, iconImage, token) {
     for (let index = 0; index < stages.length; index += 1) {
         if (token !== pixelPreviewStageToken) return false;
         const previewDataUrl = createPixelPreviewDataUrl(previewRecord.image, stages[index]);
-        if (previewDataUrl) iconImage.src = previewDataUrl;
+        // Не держим пустой экран до конца последовательности, если canvas
+        // недоступен: showIconProgressively сразу включит прямой fallback.
+        if (!previewDataUrl) return false;
+        iconImage.src = previewDataUrl;
         if (index < stages.length - 1) await waitForPixelStage(90);
     }
     return token === pixelPreviewStageToken;
