@@ -262,7 +262,7 @@
       "image": "./icons/andrey.jpg",
       "preview_image": "./icons/preview/andrey_preview.jpg",
       "candle_image": "./icons/candle/andrey.webp",
-      "cutout_master": "./icons/png/andrey.png",
+      "cutout_master": "./icons/png/andrey.png?v=c1f01b4c97",
       "image_source": "https://commons.wikimedia.org/wiki/File:Greek_-_Saint_Andrew_-_Walters_37559.jpg",
       "image_credit": "Неизвестный автор · Public Domain · Walters Art Museum",
       "author_full": "Неизвестно",

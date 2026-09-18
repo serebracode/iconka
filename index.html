@@ -1191,7 +1191,7 @@
             background: none;
             opacity: 1;
             /* Одна мягкая проекция по реальной PNG-альфе. */
-            filter: brightness(0) blur(var(--projection-blur, 14px));
+            filter: blur(var(--projection-blur, 14px));
             transform: translate3d(
                 var(--projection-shift-x, 0px),
                 var(--projection-shift-y, -3px),
@@ -1207,7 +1207,7 @@
         /* Верх тени остаётся воздушным, нижний край — вдвое собраннее.
            Градиентные маски дополняют друг друга, поэтому на стыке нет полосы. */
         #iconProjection .projection-shape-top {
-            filter: brightness(0) blur(var(--projection-blur, 14px));
+            filter: blur(var(--projection-blur, 14px));
             opacity: 1;
             transform: translate3d(
                 var(--projection-top-shift-x, 0px),
@@ -1219,7 +1219,7 @@
         }
 
         #iconProjection .projection-shape-bottom {
-            filter: brightness(0) blur(var(--projection-bottom-blur, 4px));
+            filter: blur(var(--projection-bottom-blur, 4px));
             opacity: 1;
             transform: translate3d(
                 var(--projection-shift-x, 0px),
