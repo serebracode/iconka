@@ -26,6 +26,7 @@
         :root {
             --app-height: 100svh;
             --art-stage-width: 100vw;
+            --content-column-width: 560px;
         }
 
         body {
@@ -1286,15 +1287,21 @@
 
         /* На широких экранах интерфейс остаётся собранным в центральную колонку. */
         #listHeader,
-        #iconsList {
-            width: min(100%, 600px);
+        #iconsList,
+        #aboutScreen > div,
+        #detailContent .info-section {
+            width: min(100%, var(--content-column-width));
             margin-left: auto;
             margin-right: auto;
         }
 
         #aboutScreen > div {
-            width: min(100%, 560px);
             min-height: var(--app-height, 100svh) !important;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #detailContent .info-section {
             margin-left: auto;
             margin-right: auto;
         }
@@ -1338,7 +1345,7 @@
 </div>
 
 <!-- ГЛОБАЛЬНЫЙ ЛОГОТИП (для списка и иконы) -->
-<div id="globalLogo" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 100; cursor: pointer; display: none; transition: opacity 0.3s ease-out;" onclick="goBackToLoading()">
+<div id="globalLogo" style="position: fixed; top: calc(var(--tg-safe-area-inset-top, 0px) + 14px); left: 50%; transform: translateX(-50%); z-index: 100; cursor: pointer; display: none; transition: opacity 0.3s ease-out;" onclick="goBackToList()">
     <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 122px; height: 18px;">
 </div>
 
@@ -1351,18 +1358,14 @@
          style="width: 183px; height: 27px; opacity: 0; transition: opacity 0.3s ease-out; animation: fadeIn 2.5s ease-out 1.5s forwards;">
 
     <div id="launchHint" aria-hidden="true"
-         style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #FFFFFF; font-size: 20px; font-weight: 400; line-height: 1.3; white-space: nowrap; opacity: 0; pointer-events: none; animation: launchHintFadeIn 0.8s ease-out 4s forwards, launchHintPulse 3.8s ease-in-out 4.8s infinite;">
-        Нажмите для запуска
+         style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 24px); left: 50%; transform: translateX(-50%); color: #FFFFFF; font-size: 16px; font-weight: 400; line-height: 1.3; white-space: nowrap; opacity: 0; pointer-events: none; animation: launchHintFadeIn 0.8s ease-out 2.8s forwards, launchHintPulse 3.8s ease-in-out 3.6s infinite;">
+        Коснитесь, чтобы начать
     </div>
-    
-    <button id="aboutBtn" onclick="event.stopPropagation(); showAboutScreen();" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 24px); left: 50%; transform: translateX(-50%); background: transparent; border: none; color: #8E8E93; font-size: 16px; font-weight: 400; font-family: inherit; cursor: pointer; padding: 12px 24px; opacity: 1; transition: opacity 0.3s ease-out;">
-        О проекте
-    </button>
 </div>
 
 <!-- ЭКРАН СО СПИСКОМ -->
 <div id="listScreen" class="screen">
-    <div id="listHeader" style="padding: 16px 16px 12px 16px; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 56px); position: sticky; top: 0; z-index: 50; background-color: #000000; opacity: 0;">
+    <div id="listHeader" style="padding: 16px 24px 12px 24px; padding-top: calc(var(--tg-safe-area-inset-top, 0px) + 56px); position: sticky; top: 0; z-index: 50; background-color: #000000; opacity: 0;">
         <div id="searchContainer" style="background-color: #1C1C1E; border-radius: 10px; padding: 8px 12px; display: flex; align-items: center;">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 8px; flex-shrink: 0;">
                 <circle cx="7" cy="7" r="5.5" stroke="var(--tg-theme-hint-color, #8E8E93)" stroke-width="1.5"/>
@@ -1387,7 +1390,7 @@
         <img src="./id/iconka_logotype.svg" alt="Iconka" style="width: 183px; height: 27px;">
         <div style="color: #8E8E93; font-size: 14px; margin-top: 8px;">Версия 1.0</div>
         
-        <div style="margin-top: 30px; max-width: 400px; text-align: left;">
+        <div style="margin-top: 30px; width: 100%; text-align: left;">
             <p style="color: #FFFFFF; font-size: 16px; line-height: 1.5; margin: 0;">Проект «Иконка» это не история про фанатизм или крайности — это спокойный просветительский проект, созданный с уважением к культурному наследию христиан. Его цель — вернуть слову «иконка» исходный смысл, вместо того чтобы называть им всё подряд. Здесь собраны подлинные образцы иконописи, к которым можно обратиться без суеты и лишних интерпретаций.</p>
         </div>
         
@@ -1594,16 +1597,9 @@ function updateResponsiveStage() {
 }
 
 function positionLaunchHint() {
-    const logotype = document.getElementById('loadingLogotype');
-    const aboutButton = document.getElementById('aboutBtn');
+    // Подсказка теперь занимает нижнюю служебную позицию стартового экрана.
     const hint = document.getElementById('launchHint');
-    if (!logotype || !aboutButton || !hint) return;
-
-    const logotypeRect = logotype.getBoundingClientRect();
-    const aboutRect = aboutButton.getBoundingClientRect();
-    if (!logotypeRect.height || !aboutRect.height) return;
-
-    hint.style.top = `${((logotypeRect.bottom + aboutRect.top) * 0.5).toFixed(2)}px`;
+    hint?.style.removeProperty('top');
 }
 
 window.addEventListener('resize', updateResponsiveStage);
@@ -1692,9 +1688,27 @@ function activateListScreen() {
     tg?.BackButton?.show();
 }
 
+let launchAutoEnterTimer = null;
+
+function clearLaunchAutoEnter() {
+    window.clearTimeout(launchAutoEnterTimer);
+    launchAutoEnterTimer = null;
+}
+
+function scheduleLaunchAutoEnter() {
+    clearLaunchAutoEnter();
+    launchAutoEnterTimer = window.setTimeout(() => {
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen?.classList.contains('active')) showListScreen();
+    }, 5000);
+}
+
 function showListScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
+    if (!loadingScreen?.classList.contains('active')
+        || loadingScreen.classList.contains('loading-fadeout')) return;
 
+    clearLaunchAutoEnter();
     loadingScreen.classList.add('loading-fadeout');
 
     setTimeout(() => {
@@ -1704,7 +1718,6 @@ function showListScreen() {
 
         document.getElementById('loadingIcon').style.opacity = '1';
         document.getElementById('loadingLogotype').style.opacity = '1';
-        document.getElementById('aboutBtn').style.opacity = '1';
 
         activateListScreen();
     }, 300);
@@ -1716,20 +1729,30 @@ function renderIconsList(searchQuery = '') {
         icon.title.toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => a.title.localeCompare(b.title));
 
-    list.innerHTML = filtered.map((icon, index) => `
-        <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative;">
+    const iconRows = filtered.map((icon, index) => `
+        <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 24px; cursor: pointer; background-color: #000000; position: relative;">
             <div style="width: 48px; height: 48px; margin-right: 12px; border-radius: 12px; overflow: hidden; background-color: #3A3A3C; flex-shrink: 0;">
                 <img src="${icon.preview_image || icon.image.replace('icons/', 'icons/preview/').replace('.jpg', '_preview.jpg')}"
                      loading="lazy"
                      decoding="async"
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDMyIiBoZWlnaHQ9IjQzMiIgdmlld0JveD0iMCAwIDQzMiA0MzIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI0MzEiIGhlaWdodD0iNDMxIiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjEiLz48L3N2Zz4='" 
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDMyIiBoZWlnaHQ9IjQzMiIgdmlld0JveD0iMCAwIDQzMiIgaGVpZ2h0PSI0MzIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI0MzEiIGhlaWdodD0iNDMxIiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjEiLz48L3N2Zz4='" 
                      alt="${icon.title}" 
                      style="display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); transform-origin: center;">
             </div>
             <div style="flex: 1; color: #FFFFFF; font-size: 16px; font-weight: 400; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${icon.title_short || icon.title}</div>
-            ${index < filtered.length - 1 ? '<div style="position: absolute; bottom: 0; left: 72px; right: 0; height: 0.5px; background-color: #38383A;"></div>' : ''}
+            ${index < filtered.length - 1 ? '<div style="position: absolute; bottom: 0; left: 84px; right: 0; height: 0.5px; background-color: #38383A;"></div>' : ''}
         </div>
     `).join('');
+
+    const aboutLink = searchQuery ? '' : `
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px auto calc(var(--tg-safe-area-inset-bottom, 0px) + 16px); padding: 4px 24px; color: #8E8E93; font-size: 16px; line-height: 1.6;">
+            <button type="button" onclick="showAboutFromList()" style="padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">
+                О проекте
+            </button>
+            <span aria-hidden="true">·</span>
+            <span>Версия 1.0</span>
+        </div>`;
+    list.innerHTML = iconRows + aboutLink;
 }
 
 document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -1979,11 +2002,19 @@ function populateIconDetails(icon, { clearStaleFrame = false } = {}) {
         ? `<div class="info-credits" style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
                 <a href="${selectedIcon.image_source}" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #8E8E93; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px;">${selectedIcon.image_source_label || 'Изображение: Wikimedia Commons'}</a>
                 <p style="margin: 6px 0 0; font-size: 16px; color: #8E8E93; line-height: 1.6;">${selectedIcon.image_credit}</p>
-                <button type="button" onclick="showAboutFromInfo()" style="display: inline-block; margin-top: 20px; padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; color: #8E8E93; font-size: 16px; line-height: 1.6;">
+                    <button type="button" onclick="showAboutFromInfo()" style="padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                    <span aria-hidden="true">·</span>
+                    <span>Версия 1.0</span>
+                </div>
             </div>`
         : `<div class="info-credits" style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
                 <p style="margin: 0; font-size: 16px; color: #8E8E93; line-height: 1.6;">${selectedIcon.rights || 'Изображение предоставлено для некоммерческого использования.'}</p>
-                <button type="button" onclick="showAboutFromInfo()" style="display: inline-block; margin-top: 20px; padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; color: #8E8E93; font-size: 16px; line-height: 1.6;">
+                    <button type="button" onclick="showAboutFromInfo()" style="padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                    <span aria-hidden="true">·</span>
+                    <span>Версия 1.0</span>
+                </div>
             </div>`;
 
     const infoContent = `
@@ -2289,95 +2320,41 @@ function resetDetailScreenUI() {
 function goBack() {
     const listScreen = document.getElementById('listScreen');
     const detailScreen = document.getElementById('detailScreen');
-    const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
-    const globalLogo = document.getElementById('globalLogo');
-    
+
     if (detailScreen.classList.contains('active')) {
-        detailScreen.classList.add('loading-fadeout');
-        setTimeout(() => {
-            detailScreen.classList.remove('active');
-            detailScreen.classList.remove('loading-fadeout');
-            listScreen.classList.add('active');
-            document.getElementById('listHeader').style.opacity = '1';
-            document.getElementById('iconsList').style.opacity = '1';
-            candleVisible = false;
-            infoPanelVisible = false;
-        }, 300);
+        goBackToList();
     } else if (aboutScreen.classList.contains('active')) {
         closeAboutScreen();
     } else if (listScreen.classList.contains('active')) {
-        listScreen.classList.add('loading-fadeout');
-        globalLogo.style.opacity = '0';
-        setTimeout(() => {
-            listScreen.classList.remove('active');
-            listScreen.classList.remove('loading-fadeout');
-            globalLogo.style.display = 'none';
-            globalLogo.style.opacity = '1';
-            loadingScreen.classList.remove('loading-fadeout');
-            loadingScreen.style.display = 'flex';
-            loadingScreen.classList.add('active');
-            requestAnimationFrame(positionLaunchHint);
-            tg?.BackButton?.hide();
-        }, 300);
-    } else if (loadingScreen.classList.contains('active')) {
+        // Стартовый экран не является уровнем навигации после запуска.
         tg?.close?.();
     }
 }
 
-function goBackToLoading() {
+function goBackToList() {
     const listScreen = document.getElementById('listScreen');
     const detailScreen = document.getElementById('detailScreen');
-    const loadingScreen = document.getElementById('loadingScreen');
     const aboutScreen = document.getElementById('aboutScreen');
-    const globalLogo = document.getElementById('globalLogo');
-    const loadingIcon = document.getElementById('loadingIcon');
-    const loadingLogotype = document.getElementById('loadingLogotype');
-    const launchHint = document.getElementById('launchHint');
-    
-    let currentScreen = null;
-    if (detailScreen.classList.contains('active')) currentScreen = detailScreen;
-    else if (listScreen.classList.contains('active')) currentScreen = listScreen;
-    else if (aboutScreen.classList.contains('active')) currentScreen = aboutScreen;
-    
-    if (!currentScreen) return;
-    
-    currentScreen.classList.add('loading-fadeout');
-    globalLogo.style.opacity = '0';
-    
-    setTimeout(() => {
-        currentScreen.classList.remove('active');
-        currentScreen.classList.remove('loading-fadeout');
-        globalLogo.style.display = 'none';
-        globalLogo.style.opacity = '1';
-        
-        // Сброс и перезапуск анимаций loadingScreen
-        loadingIcon.style.animation = 'none';
-        loadingLogotype.style.animation = 'none';
-        launchHint.style.animation = 'none';
-        loadingIcon.style.opacity = '0';
-        loadingIcon.style.borderRadius = '0';
-        loadingLogotype.style.opacity = '0';
-        launchHint.style.opacity = '0';
-        
-        loadingScreen.classList.remove('loading-fadeout');
-        loadingScreen.style.display = 'flex';
-        loadingScreen.classList.add('active');
-        
-        // Перезапуск анимаций
-        requestAnimationFrame(() => {
-            positionLaunchHint();
-            loadingIcon.style.animation = 'fadeIn 1.2s ease-out forwards, roundCorners 1.2s ease-out 1.5s forwards';
-            loadingLogotype.style.animation = 'fadeIn 2.5s ease-out 1.5s forwards';
-            launchHint.style.animation = 'launchHintFadeIn 0.8s ease-out 4s forwards, launchHintPulse 3.8s ease-in-out 4.8s infinite';
-        });
-        
-        tg?.BackButton?.hide();
+
+    if (listScreen.classList.contains('active')) return;
+
+    if (aboutScreen.classList.contains('active')) {
+        closeAboutScreen();
+        return;
+    }
+
+    if (!detailScreen.classList.contains('active')) return;
+
+    detailScreen.classList.add('loading-fadeout');
+    window.setTimeout(() => {
+        detailScreen.classList.remove('active', 'loading-fadeout');
+        resetDetailScreenUI();
         candleVisible = false;
         infoPanelVisible = false;
+        activateListScreen();
     }, 300);
 }
-
 tg?.BackButton?.onClick(goBack);
 
 let candleVisible = false;
@@ -3296,20 +3273,18 @@ async function shareIcon() {
     } catch (e) {}
 }
 
-function showAboutScreen() {
-    const loadingScreen = document.getElementById('loadingScreen');
+function showAboutFromList() {
+    const listScreen = document.getElementById('listScreen');
     const aboutScreen = document.getElementById('aboutScreen');
-    
-    document.getElementById('loadingIcon').style.opacity = '0';
-    document.getElementById('loadingLogotype').style.opacity = '0';
-    document.getElementById('aboutBtn').style.opacity = '0';
-    
-    setTimeout(() => {
-        loadingScreen.classList.remove('active');
-        loadingScreen.style.display = 'none';
-        document.getElementById('loadingIcon').style.opacity = '1';
-        document.getElementById('loadingLogotype').style.opacity = '1';
-        document.getElementById('aboutBtn').style.opacity = '1';
+    const globalLogo = document.getElementById('globalLogo');
+    if (!listScreen.classList.contains('active')) return;
+
+    listScreen.classList.add('loading-fadeout');
+    globalLogo.style.opacity = '0';
+    window.setTimeout(() => {
+        listScreen.classList.remove('active', 'loading-fadeout');
+        globalLogo.style.display = 'none';
+        globalLogo.style.opacity = '1';
         aboutScreen.classList.add('active');
         tg?.BackButton?.show();
     }, 300);
@@ -3350,6 +3325,7 @@ document.getElementById('detailContent').addEventListener('click', (e) => {
 // Инициализация
 (async function init() {
     await loadIconsData();
+    scheduleLaunchAutoEnter();
     console.log('Iconka loaded:', ICONS_DATA.length, 'icons');
 })();
 </script>
