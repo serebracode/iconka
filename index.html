@@ -782,6 +782,35 @@
             opacity: 0 !important;
         }
 
+        /* Верхняя шторка прячет прокручиваемую карточку под фиксированным
+           логотипом «Иконка». Появляется только после ухода контента вверх. */
+        #infoTopFade {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: calc(var(--tg-safe-area-inset-top, 0px) + 92px);
+            z-index: 70;
+            pointer-events: none;
+            opacity: 0;
+            background: linear-gradient(
+                to bottom,
+                #020201 0%,
+                #020201 43%,
+                rgba(2, 2, 1, 0.92) 63%,
+                rgba(2, 2, 1, 0) 100%
+            );
+            transition: opacity 160ms ease-out;
+        }
+
+        #detailScreen.info-top-fade-visible #infoTopFade {
+            opacity: 1;
+        }
+
+        #detailScreen.scene-active #infoTopFade {
+            opacity: 0 !important;
+        }
+
         /* Информационный экран никогда не просачивается в сцену со свечой. */
         #detailContent.candle-transition .info-section,
         #detailContent.candle-active .info-section {
@@ -1412,6 +1441,7 @@
         </div>
     </div>
 
+    <div id="infoTopFade" aria-hidden="true"></div>
     <div id="infoBottomFade" aria-hidden="true"></div>
 
     <div id="iconDarkeningEffect" class="icon-bound-effect" aria-hidden="true"></div>
@@ -1819,13 +1849,13 @@ function populateIconDetails(icon) {
     
     const imageAttribution = selectedIcon.image_source
         ? `<div class="info-credits" style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
-                <a href="${selectedIcon.image_source}" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #8E8E93; font-size: 14px; line-height: 1.5; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px;">${selectedIcon.image_source_label || 'Изображение: Wikimedia Commons'}</a>
-                <p style="margin: 6px 0 0; font-size: 13px; color: #8E8E93; line-height: 1.5;">${selectedIcon.image_credit}</p>
-                <button type="button" onclick="showAboutFromInfo()" style="display: inline-block; margin-top: 20px; padding: 0; border: 0; background: transparent; color: #FFFFFF; font: inherit; font-size: 14px; line-height: 1.5; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                <a href="${selectedIcon.image_source}" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #8E8E93; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px;">${selectedIcon.image_source_label || 'Изображение: Wikimedia Commons'}</a>
+                <p style="margin: 6px 0 0; font-size: 16px; color: #8E8E93; line-height: 1.6;">${selectedIcon.image_credit}</p>
+                <button type="button" onclick="showAboutFromInfo()" style="display: inline-block; margin-top: 20px; padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
             </div>`
         : `<div class="info-credits" style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
-                <p style="margin: 0; font-size: 14px; color: #8E8E93; line-height: 1.5;">${selectedIcon.rights || 'Изображение предоставлено для некоммерческого использования.'}</p>
-                <button type="button" onclick="showAboutFromInfo()" style="display: inline-block; margin-top: 20px; padding: 0; border: 0; background: transparent; color: #FFFFFF; font: inherit; font-size: 14px; line-height: 1.5; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                <p style="margin: 0; font-size: 16px; color: #8E8E93; line-height: 1.6;">${selectedIcon.rights || 'Изображение предоставлено для некоммерческого использования.'}</p>
+                <button type="button" onclick="showAboutFromInfo()" style="display: inline-block; margin-top: 20px; padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
             </div>`;
 
     const infoContent = `
@@ -2782,23 +2812,26 @@ function closeCandle() {
     }, CANDLE_SCENE_TRANSITION_MS);
 }
 
-function updateInfoBottomFade() {
+function updateInfoScrollFades() {
     const detailContent = document.getElementById('detailContent');
     const detailScreen = document.getElementById('detailScreen');
     if (!detailContent || !detailScreen) return;
 
     const scrollable = infoPanelVisible
         && detailContent.scrollHeight > detailContent.clientHeight + 2;
+    const atTop = detailContent.scrollTop <= 2;
     const atBottom = detailContent.scrollTop + detailContent.clientHeight
         >= detailContent.scrollHeight - 2;
+
+    detailScreen.classList.toggle('info-top-fade-visible', scrollable && !atTop);
     detailScreen.classList.toggle('info-bottom-fade-visible', scrollable && !atBottom);
 }
 
 document.getElementById('detailContent').addEventListener('scroll', () => {
-    if (infoPanelVisible) updateInfoBottomFade();
+    if (infoPanelVisible) updateInfoScrollFades();
 }, { passive: true });
 
-window.addEventListener('resize', updateInfoBottomFade);
+window.addEventListener('resize', updateInfoScrollFades);
 
 function setInfoPanel(open, animate = true) {
     if (candleVisible) return;
@@ -2824,7 +2857,7 @@ function setInfoPanel(open, animate = true) {
         infoSettleTimer = window.setTimeout(() => {
             detailContent.classList.remove('is-settling');
             infoSettleTimer = null;
-            updateInfoBottomFade();
+            updateInfoScrollFades();
         }, 380);
     }
     
