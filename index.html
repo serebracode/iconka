@@ -1618,6 +1618,7 @@ requestAnimationFrame(updateResponsiveStage);
 let ICONS_DATA = [];
 let selectedIcon = null;
 let progressiveIconLoadToken = 0;
+const swipePreviewCache = new Map();
 
 async function loadIconsData() {
     try {
@@ -1747,20 +1748,90 @@ function getIconLoadingPath(icon) {
     return icon.loading_image || icon.preview_image || icon.image;
 }
 
+/* Соседние 48 px-миниатюры живут в памяти: свайп не должен въезжать
+   старым декодированным кадром, пока новая миниатюра ещё в пути. */
+function getSwipePreviewRecord(icon) {
+    const previewUrl = new URL(getIconLoadingPath(icon), document.baseURI).href;
+    const cached = swipePreviewCache.get(previewUrl);
+    if (cached) return cached;
+
+    const image = new Image();
+    image.decoding = 'async';
+    let settled = false;
+    let resolveReady;
+    const ready = new Promise(resolve => {
+        resolveReady = resolve;
+    });
+    const settle = async (success) => {
+        if (settled) return;
+        settled = true;
+        if (success) {
+            try {
+                await image.decode?.();
+            } catch (_) {
+                // load всё равно даёт браузеру пригодный для показа кадр.
+            }
+        }
+        resolveReady(success);
+    };
+
+    image.addEventListener('load', () => settle(true), { once: true });
+    image.addEventListener('error', () => settle(false), { once: true });
+    image.src = previewUrl;
+    if (image.complete) settle(Boolean(image.naturalWidth));
+
+    const record = { image, ready };
+    swipePreviewCache.set(previewUrl, record);
+    return record;
+}
+
+function warmSwipePreviews(icon) {
+    const orderedIcons = getOrderedIcons();
+    const index = orderedIcons.findIndex(item => item.id === icon?.id);
+    if (index < 0 || orderedIcons.length < 2) return;
+
+    getSwipePreviewRecord(orderedIcons[(index - 1 + orderedIcons.length) % orderedIcons.length]);
+    getSwipePreviewRecord(orderedIcons[(index + 1) % orderedIcons.length]);
+}
+
+async function waitForSwipePreview(icon, timeoutMs = 420) {
+    const record = getSwipePreviewRecord(icon);
+    if (record.image.complete && record.image.naturalWidth) {
+        try {
+            await record.image.decode?.();
+        } catch (_) {}
+        return true;
+    }
+
+    let timeoutId;
+    const timeout = new Promise(resolve => {
+        timeoutId = window.setTimeout(() => resolve(false), timeoutMs);
+    });
+    const ready = await Promise.race([record.ready, timeout]);
+    window.clearTimeout(timeoutId);
+    return ready === true;
+}
+
 function cancelProgressiveIconLoad() {
     progressiveIconLoadToken += 1;
     const iconImage = document.getElementById('iconImage');
     iconImage?.classList.remove('is-pixel-loading', 'is-detail-upgrading');
 }
 
-function showIconProgressively(icon, displayImagePath) {
+function showIconProgressively(icon, displayImagePath, { clearStaleFrame = false } = {}) {
     const iconImage = document.getElementById('iconImage');
     if (!iconImage) return;
 
     const token = ++progressiveIconLoadToken;
     const loadingImagePath = getIconLoadingPath(icon);
+    const loadingImageUrl = new URL(loadingImagePath, document.baseURI).href;
     iconImage.classList.remove('is-detail-upgrading');
     iconImage.classList.add('is-pixel-loading');
+    // Если миниатюра не успела подготовиться, лучше короткий нейтральный
+    // кадр, чем чужая старая икона в точке прибытия новой.
+    if (clearStaleFrame && iconImage.currentSrc !== loadingImageUrl) {
+        iconImage.removeAttribute('src');
+    }
     iconImage.src = loadingImagePath;
 
     const fullImage = new Image();
@@ -1817,7 +1888,7 @@ function applyIconAlphaMask(imagePath) {
     });
 }
 
-function populateIconDetails(icon) {
+function populateIconDetails(icon, { clearStaleFrame = false } = {}) {
     selectedIcon = icon;
     const detailScreen = document.getElementById('detailScreen');
     const displayImagePath = icon.image;
@@ -1832,7 +1903,7 @@ function populateIconDetails(icon) {
     applyIconAlphaMask(alphaImagePath);
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
-    showIconProgressively(icon, displayImagePath);
+    showIconProgressively(icon, displayImagePath, { clearStaleFrame });
     /* Прозрачная версия загружается в фоне, пока пользователь смотрит икону. */
     iconLight.src = candleImagePath;
         document.getElementById('iconTitleText').textContent = selectedIcon.title_short || selectedIcon.title;
@@ -1862,6 +1933,7 @@ function populateIconDetails(icon) {
         ${imageAttribution}
     `;
     document.getElementById('infoContentText').innerHTML = infoContent;
+    warmSwipePreviews(icon);
 }
 
 function selectIcon(id) {
@@ -1899,7 +1971,7 @@ function getOrderedIcons() {
     return [...ICONS_DATA].sort((a, b) => a.title.localeCompare(b.title));
 }
 
-function switchIconBySwipe(direction) {
+async function switchIconBySwipe(direction) {
     if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed || iconSwipeInProgress) return;
 
     const orderedIcons = getOrderedIcons();
@@ -1913,6 +1985,15 @@ function switchIconBySwipe(direction) {
     iconSwipeInProgress = true;
     resetIconZoom();
     const transitionToken = ++iconSwipeTransitionToken;
+
+    // Миниатюра должна быть декодирована до того, как живая карточка
+    // начнёт въезжать. Это устраняет сохранённый браузером старый кадр.
+    const previewReady = await waitForSwipePreview(nextIcon);
+    if (transitionToken !== iconSwipeTransitionToken || candleVisible) {
+        if (transitionToken === iconSwipeTransitionToken) iconSwipeInProgress = false;
+        return;
+    }
+
     const rect = iconSection.getBoundingClientRect();
     const distance = Math.max(window.innerWidth, rect.width) + 24;
     const outgoingX = direction > 0 ? -distance : distance;
@@ -1937,16 +2018,13 @@ function switchIconBySwipe(direction) {
     });
     document.body.appendChild(outgoingCopy);
 
-    // Сначала уводим живой слой за границу кадра. Затем меняем его
-    // содержимое: браузер не сможет показать старую икону повторно
-    // между подменой src и стартом Web Animations.
+    // Живая карточка сначала оказывается за границей кадра, затем получает
+    // новый src. Если сеть не успела, старый src очищается до въезда.
     iconSection.style.transform = `translate3d(${incomingX}px, 0, 0)`;
     iconSection.style.opacity = '1';
     iconSection.style.willChange = 'transform';
-
-    populateIconDetails(nextIcon);
+    populateIconDetails(nextIcon, { clearStaleFrame: !previewReady });
     resetIconZoom();
-    // Фиксируем подготовленное положение до следующего кадра.
     void iconSection.offsetWidth;
 
     const timing = {
