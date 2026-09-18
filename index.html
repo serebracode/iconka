@@ -789,17 +789,11 @@
             left: 0;
             right: 0;
             top: 0;
-            height: calc(var(--tg-safe-area-inset-top, 0px) + 92px);
+            height: clamp(72px, 14svh, 124px);
             z-index: 70;
             pointer-events: none;
             opacity: 0;
-            background: linear-gradient(
-                to bottom,
-                #020201 0%,
-                #020201 43%,
-                rgba(2, 2, 1, 0.92) 63%,
-                rgba(2, 2, 1, 0) 100%
-            );
+            background: linear-gradient(to top, rgba(2, 2, 1, 0), #020201 88%);
             transition: opacity 160ms ease-out;
         }
 
