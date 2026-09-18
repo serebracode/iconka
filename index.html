@@ -1240,17 +1240,13 @@
             top: var(--effect-icon-top, 0px);
             width: var(--effect-icon-width, 0px);
             height: var(--effect-icon-height, 0px);
+            /* Границы совпадают с фактическим прямоугольником иконы, этого
+               достаточно для обрезки. Alpha-маска по PNG здесь не используется:
+               без пары -webkit-mask-mode старый WebKit в Telegram трактует
+               -webkit-mask-image по яркости, а не по альфа-каналу, и градиент
+               затемнения/подсветки ложится сильнее всего на самые светлые
+               участки иконы вместо равномерного затемнения. */
             overflow: hidden;
-            /* Свет и затемнение существуют только на непрозрачных пикселях иконы. */
-            mask-image: var(--icon-alpha-mask, none);
-            -webkit-mask-image: var(--icon-alpha-mask, none);
-            mask-mode: alpha;
-            mask-position: center;
-            -webkit-mask-position: center;
-            mask-size: 100% 100%;
-            -webkit-mask-size: 100% 100%;
-            mask-repeat: no-repeat;
-            -webkit-mask-repeat: no-repeat;
         }
 
         #iconDarkeningEffect {
@@ -1918,21 +1914,14 @@ function showSwipeImageProgressively(icon) {
 
 function applyIconAlphaMask(imagePath) {
     const absoluteImageUrl = new URL(imagePath, document.baseURI).href;
-    const maskValue = `url("${absoluteImageUrl}")`;
-    const maskedLayers = [
-        document.getElementById('iconDarkeningEffect'),
-        document.getElementById('iconSurfaceLight')
-    ];
-
-    maskedLayers.forEach(layer => {
-        if (!layer) return;
-        /* Прямое свойство надёжнее наследуемой CSS-переменной в Telegram WebView. */
-        layer.style.maskImage = maskValue;
-        layer.style.setProperty('-webkit-mask-image', maskValue);
-    });
 
     /* Проекция — это три настоящие прозрачные копии иконы, а не CSS-маска.
-       Так прозрачный фон сохраняется и в Telegram WebView. */
+       Так прозрачный фон сохраняется и в Telegram WebView. Затемнение и
+       подсветку (#iconDarkeningEffect, #iconSurfaceLight) по той же причине
+       больше не обрезаем через mask-image: без -webkit-mask-mode старый
+       WebKit маскирует растровый PNG по яркости, а не по альфа-каналу, и
+       градиент ложится неравномерно. Прямоугольной обрезки overflow: hidden
+       достаточно — маска убирала только скруглённые уголки доски. */
     document.querySelectorAll('#iconProjection .projection-shape').forEach(layer => {
         if (layer.src !== absoluteImageUrl) layer.src = absoluteImageUrl;
     });
@@ -1940,7 +1929,6 @@ function applyIconAlphaMask(imagePath) {
 
 function populateIconDetails(icon) {
     selectedIcon = icon;
-    const detailScreen = document.getElementById('detailScreen');
     const displayImagePath = icon.image;
     const candleImagePath = icon.candle_image || icon.image;
     /* PNG хранит настоящую alpha-обтравку; WebP остаётся лёгкой картинкой сцены. */
@@ -1948,8 +1936,6 @@ function populateIconDetails(icon) {
     const iconImage = document.getElementById('iconImage');
     const iconLight = document.getElementById('iconLight');
 
-    const alphaMaskUrl = `url("${new URL(alphaImagePath, document.baseURI).href}")`;
-    detailScreen.style.setProperty('--icon-alpha-mask', alphaMaskUrl);
     applyIconAlphaMask(alphaImagePath);
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
