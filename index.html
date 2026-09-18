@@ -1618,6 +1618,7 @@ requestAnimationFrame(updateResponsiveStage);
 let ICONS_DATA = [];
 let selectedIcon = null;
 let progressiveIconLoadToken = 0;
+let pixelPreviewStageToken = 0;
 const swipePreviewCache = new Map();
 
 async function loadIconsData() {
@@ -1812,7 +1813,49 @@ async function waitForSwipePreview(icon, timeoutMs = 420) {
     return ready === true;
 }
 
+/* Один и тот же 48 px-файл проходит через три размера сетки.
+   Канвас нужен здесь вместо blur/scale: пиксели остаются квадратными. */
+function createPixelPreviewDataUrl(image, longSide) {
+    const sourceWidth = image.naturalWidth || image.width;
+    const sourceHeight = image.naturalHeight || image.height;
+    if (!sourceWidth || !sourceHeight) return null;
+
+    const scale = longSide / Math.max(sourceWidth, sourceHeight);
+    const width = Math.max(1, Math.round(sourceWidth * scale));
+    const height = Math.max(1, Math.round(sourceHeight * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+    context.imageSmoothingEnabled = true;
+    context.drawImage(image, 0, 0, width, height);
+    return canvas.toDataURL('image/png');
+}
+
+function waitForPixelStage(delay) {
+    return new Promise(resolve => window.setTimeout(resolve, delay));
+}
+
+async function renderPixelPreviewStages(icon, iconImage, token) {
+    const previewRecord = getSwipePreviewRecord(icon);
+    const previewReady = await previewRecord.ready;
+    if (token !== pixelPreviewStageToken || !previewReady) return false;
+
+    // 12 px — крупная мозаика; 24 px — читается силуэт; 48 px — исходная
+    // миниатюра. Полноразмерный JPEG показывается только после них.
+    const stages = [12, 24, 48];
+    for (let index = 0; index < stages.length; index += 1) {
+        if (token !== pixelPreviewStageToken) return false;
+        const previewDataUrl = createPixelPreviewDataUrl(previewRecord.image, stages[index]);
+        if (previewDataUrl) iconImage.src = previewDataUrl;
+        if (index < stages.length - 1) await waitForPixelStage(90);
+    }
+    return token === pixelPreviewStageToken;
+}
+
 function cancelProgressiveIconLoad() {
+    pixelPreviewStageToken += 1;
     progressiveIconLoadToken += 1;
     const iconImage = document.getElementById('iconImage');
     iconImage?.classList.remove('is-pixel-loading', 'is-detail-upgrading');
@@ -1823,16 +1866,24 @@ function showIconProgressively(icon, displayImagePath, { clearStaleFrame = false
     if (!iconImage) return;
 
     const token = ++progressiveIconLoadToken;
+    const pixelToken = ++pixelPreviewStageToken;
     const loadingImagePath = getIconLoadingPath(icon);
     const loadingImageUrl = new URL(loadingImagePath, document.baseURI).href;
     iconImage.classList.remove('is-detail-upgrading');
     iconImage.classList.add('is-pixel-loading');
-    // Если миниатюра не успела подготовиться, лучше короткий нейтральный
-    // кадр, чем чужая старая икона в точке прибытия новой.
+
+    // Входной кадр — не уже готовые 48 px, а сначала 12 px-мозаика.
+    // Если миниатюра недоступна, оставляем обычную лёгкую загрузку как fallback.
     if (clearStaleFrame && iconImage.currentSrc !== loadingImageUrl) {
         iconImage.removeAttribute('src');
     }
-    iconImage.src = loadingImagePath;
+    const pixelStages = renderPixelPreviewStages(icon, iconImage, pixelToken)
+        .then(rendered => {
+            if (!rendered && token === progressiveIconLoadToken) {
+                iconImage.src = loadingImagePath;
+            }
+            return rendered;
+        });
 
     const fullImage = new Image();
     fullImage.decoding = 'async';
@@ -1846,6 +1897,7 @@ function showIconProgressively(icon, displayImagePath, { clearStaleFrame = false
         } catch (_) {
             // load уже означает, что браузер может показать готовый кадр.
         }
+        await pixelStages;
         if (token !== progressiveIconLoadToken || selectedIcon?.id !== icon.id || candleVisible) return;
 
         iconImage.classList.add('is-detail-upgrading');
