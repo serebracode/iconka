@@ -1823,7 +1823,9 @@ async function switchIconBySwipe(direction) {
     const rect = iconSection.getBoundingClientRect();
     const outgoingCopy = iconSection.cloneNode(true);
     outgoingCopy.setAttribute('aria-hidden', 'true');
-    outgoingCopy.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+    // Keep descendant IDs for the 320 ms visual clone: the current stylesheet
+    // uses ID selectors for exact image and caption sizing. The clone is appended
+    // after the live section, has no copied listeners and cannot receive input.
     Object.assign(outgoingCopy.style, {
         position: 'fixed',
         left: `${rect.left}px`,
