@@ -2872,7 +2872,7 @@ function setInfoPanel(open, animate = true) {
     detailContent.classList.toggle('info-open', open);
     applyInfoProgress(open ? 1 : 0);
     detailContent.style.removeProperty('overflow');
-    requestAnimationFrame(updateInfoBottomFade);
+    requestAnimationFrame(updateInfoScrollFades);
 
     if (animate) {
         infoSettleTimer = window.setTimeout(() => {
