@@ -2002,11 +2002,19 @@ function populateIconDetails(icon, { clearStaleFrame = false } = {}) {
         ? `<div class="info-credits" style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
                 <a href="${selectedIcon.image_source}" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #8E8E93; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px;">${selectedIcon.image_source_label || 'Изображение: Wikimedia Commons'}</a>
                 <p style="margin: 6px 0 0; font-size: 16px; color: #8E8E93; line-height: 1.6;">${selectedIcon.image_credit}</p>
-                <button type="button" onclick="showAboutFromInfo()" style="display: inline-block; margin-top: 20px; padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; color: #8E8E93; font-size: 16px; line-height: 1.6;">
+                    <button type="button" onclick="showAboutFromInfo()" style="padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                    <span aria-hidden="true">·</span>
+                    <span>Версия 1.0</span>
+                </div>
             </div>`
         : `<div class="info-credits" style="margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
                 <p style="margin: 0; font-size: 16px; color: #8E8E93; line-height: 1.6;">${selectedIcon.rights || 'Изображение предоставлено для некоммерческого использования.'}</p>
-                <button type="button" onclick="showAboutFromInfo()" style="display: inline-block; margin-top: 20px; padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; color: #8E8E93; font-size: 16px; line-height: 1.6;">
+                    <button type="button" onclick="showAboutFromInfo()" style="padding: 0; border: 0; background: transparent; color: #8E8E93; font: inherit; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">О проекте</button>
+                    <span aria-hidden="true">·</span>
+                    <span>Версия 1.0</span>
+                </div>
             </div>`;
 
     const infoContent = `
