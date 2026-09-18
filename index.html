@@ -213,11 +213,22 @@
             object-fit: contain;
             transform-origin: 50% 52%;
             filter: brightness(1) contrast(1) blur(0px);
-            transition-property: transform, filter;
-            transition-duration: 180ms, 800ms;
+            transition-property: transform, filter, opacity;
+            transition-duration: 180ms, 800ms, 150ms;
             transition-timing-function: ease-out, ease;
             touch-action: none;
             cursor: zoom-in;
+        }
+
+        /* Полноформатная микрокопия 48 px показывается сразу и намеренно
+           масштабируется крупными пикселями до декодирования экранного JPEG. */
+        #iconImage.is-pixel-loading {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        #iconImage.is-detail-upgrading {
+            opacity: 0.82;
         }
 
         #iconImage.zoomed {
@@ -1557,6 +1568,7 @@ requestAnimationFrame(updateResponsiveStage);
 // ============================================
 let ICONS_DATA = [];
 let selectedIcon = null;
+let progressiveIconLoadToken = 0;
 
 async function loadIconsData() {
     try {
@@ -1656,6 +1668,8 @@ function renderIconsList(searchQuery = '') {
     list.innerHTML = filtered.map((icon, index) => `
         <div onclick="selectIcon(${icon.id})" style="display: flex; align-items: center; padding: 12px 16px; cursor: pointer; background-color: #000000; position: relative;">
             <img src="${icon.preview_image || icon.image.replace('icons/', 'icons/preview/').replace('.jpg', '_preview.jpg')}"
+                 loading="lazy"
+                 decoding="async"
                  onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDMyIiBoZWlnaHQ9IjQzMiIgdmlld0JveD0iMCAwIDQzMiA0MzIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQzMSIgaGVpZ2h0PSI0MzEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvc3ZnPg=='" 
                  alt="${icon.title}" 
                  style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 12px; background-color: #3A3A3C; flex-shrink: 0;">
@@ -1677,6 +1691,58 @@ document.getElementById('clearSearch').addEventListener('click', () => {
     document.getElementById('searchInput').blur();
     renderIconsList();
 });
+
+function getIconLoadingPath(icon) {
+    return icon.loading_image || icon.preview_image || icon.image;
+}
+
+function cancelProgressiveIconLoad() {
+    progressiveIconLoadToken += 1;
+    const iconImage = document.getElementById('iconImage');
+    iconImage?.classList.remove('is-pixel-loading', 'is-detail-upgrading');
+}
+
+function showIconProgressively(icon, displayImagePath) {
+    const iconImage = document.getElementById('iconImage');
+    if (!iconImage) return;
+
+    const token = ++progressiveIconLoadToken;
+    const loadingImagePath = getIconLoadingPath(icon);
+    iconImage.classList.remove('is-detail-upgrading');
+    iconImage.classList.add('is-pixel-loading');
+    iconImage.src = loadingImagePath;
+
+    const fullImage = new Image();
+    fullImage.decoding = 'async';
+    let upgraded = false;
+
+    const upgrade = async () => {
+        if (upgraded) return;
+        upgraded = true;
+        try {
+            await fullImage.decode?.();
+        } catch (_) {
+            // load уже означает, что браузер может показать готовый кадр.
+        }
+        if (token !== progressiveIconLoadToken || selectedIcon?.id !== icon.id || candleVisible) return;
+
+        iconImage.classList.add('is-detail-upgrading');
+        iconImage.src = displayImagePath;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (token !== progressiveIconLoadToken || candleVisible) return;
+            iconImage.classList.remove('is-pixel-loading', 'is-detail-upgrading');
+        }));
+    };
+
+    fullImage.addEventListener('load', upgrade, { once: true });
+    fullImage.addEventListener('error', () => {
+        if (token === progressiveIconLoadToken) {
+            iconImage.classList.remove('is-detail-upgrading');
+        }
+    }, { once: true });
+    fullImage.src = displayImagePath;
+    if (fullImage.complete && fullImage.naturalWidth) upgrade();
+}
 
 function applyIconAlphaMask(imagePath) {
     const absoluteImageUrl = new URL(imagePath, document.baseURI).href;
@@ -1715,7 +1781,7 @@ function populateIconDetails(icon) {
     applyIconAlphaMask(alphaImagePath);
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
-    iconImage.src = displayImagePath;
+    showIconProgressively(icon, displayImagePath);
     /* Прозрачная версия загружается в фоне, пока пользователь смотрит икону. */
     iconLight.src = candleImagePath;
         document.getElementById('iconTitleText').textContent = selectedIcon.title_short || selectedIcon.title;
@@ -1780,27 +1846,7 @@ function getOrderedIcons() {
     return [...ICONS_DATA].sort((a, b) => a.title.localeCompare(b.title));
 }
 
-function preloadIconForSwipe(imagePath) {
-    return new Promise(resolve => {
-        const image = new Image();
-        let resolved = false;
-        const complete = () => {
-            if (resolved) return;
-            resolved = true;
-            if (image.decode) {
-                image.decode().catch(() => {}).finally(resolve);
-            } else {
-                resolve();
-            }
-        };
-        image.onload = complete;
-        image.onerror = complete;
-        image.src = imagePath;
-        if (image.complete) complete();
-    });
-}
-
-async function switchIconBySwipe(direction) {
+function switchIconBySwipe(direction) {
     if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed || iconSwipeInProgress) return;
 
     const orderedIcons = getOrderedIcons();
@@ -1814,12 +1860,6 @@ async function switchIconBySwipe(direction) {
     iconSwipeInProgress = true;
     resetIconZoom();
     const transitionToken = ++iconSwipeTransitionToken;
-    await preloadIconForSwipe(nextIcon.image);
-    if (transitionToken !== iconSwipeTransitionToken || candleVisible || infoPanelVisible || iconZoomed) {
-        iconSwipeInProgress = false;
-        return;
-    }
-
     const rect = iconSection.getBoundingClientRect();
     const outgoingCopy = iconSection.cloneNode(true);
     outgoingCopy.setAttribute('aria-hidden', 'true');
@@ -2597,6 +2637,7 @@ function startCandleAtmosphereAnimation() {
 }
 
 function showCandle() {
+    if (iconSwipeInProgress) return;
     if (infoPanelVisible) {
         toggleInfo();
         setTimeout(showCandle, 350);
@@ -2613,6 +2654,7 @@ function showCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const iconImage = document.getElementById('iconImage');
     const candleImagePath = iconImage.dataset.candleImage;
+    cancelProgressiveIconLoad();
     if (candleImagePath) iconImage.src = candleImagePath;
     const iconBounds = iconImage.getBoundingClientRect();
     const stage = getArtStageMetrics();
