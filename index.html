@@ -1938,6 +1938,10 @@ function switchIconBySwipe(direction) {
     resetIconZoom();
     const transitionToken = ++iconSwipeTransitionToken;
     const rect = iconSection.getBoundingClientRect();
+    const distance = Math.max(window.innerWidth, rect.width) + 24;
+    const outgoingX = direction > 0 ? -distance : distance;
+    const incomingX = -outgoingX;
+
     const outgoingCopy = iconSection.cloneNode(true);
     outgoingCopy.setAttribute('aria-hidden', 'true');
     // Keep descendant IDs for the 320 ms visual clone: the current stylesheet
@@ -1952,16 +1956,23 @@ function switchIconBySwipe(direction) {
         margin: '0',
         pointerEvents: 'none',
         zIndex: '90',
+        willChange: 'transform',
         transform: 'translate3d(0, 0, 0)'
     });
     document.body.appendChild(outgoingCopy);
 
+    // Сначала уводим живой слой за границу кадра. Затем меняем его
+    // содержимое: браузер не сможет показать старую икону повторно
+    // между подменой src и стартом Web Animations.
+    iconSection.style.transform = `translate3d(${incomingX}px, 0, 0)`;
+    iconSection.style.opacity = '1';
+    iconSection.style.willChange = 'transform';
+
     populateIconDetails(nextIcon);
-    // New content always starts with neutral transform and gesture state.
     resetIconZoom();
-    const distance = Math.max(window.innerWidth, rect.width) + 24;
-    const outgoingX = direction > 0 ? -distance : distance;
-    const incomingX = -outgoingX;
+    // Фиксируем подготовленное положение до следующего кадра.
+    void iconSection.offsetWidth;
+
     const timing = {
         duration: 320,
         easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -1970,31 +1981,47 @@ function switchIconBySwipe(direction) {
 
     if (!iconSection.animate || !outgoingCopy.animate) {
         outgoingCopy.remove();
+        iconSection.style.removeProperty('transform');
+        iconSection.style.removeProperty('opacity');
+        iconSection.style.removeProperty('will-change');
         iconSwipeInProgress = false;
         return;
     }
 
-    const outgoingAnimation = outgoingCopy.animate(
-        [
-            { opacity: 1, transform: 'translate3d(0, 0, 0)' },
-            { opacity: 1, transform: `translate3d(${outgoingX}px, 0, 0)` }
-        ],
-        timing
-    );
-    const incomingAnimation = iconSection.animate(
-        [
-            { opacity: 1, transform: `translate3d(${incomingX}px, 0, 0)` },
-            { opacity: 1, transform: 'translate3d(0, 0, 0)' }
-        ],
-        timing
-    );
+    requestAnimationFrame(() => {
+        if (transitionToken !== iconSwipeTransitionToken) {
+            outgoingCopy.remove();
+            iconSection.style.removeProperty('transform');
+            iconSection.style.removeProperty('opacity');
+            iconSection.style.removeProperty('will-change');
+            return;
+        }
 
-    Promise.allSettled([outgoingAnimation.finished, incomingAnimation.finished]).then(() => {
-        if (transitionToken === iconSwipeTransitionToken) {
+        const outgoingAnimation = outgoingCopy.animate(
+            [
+                { opacity: 1, transform: 'translate3d(0, 0, 0)' },
+                { opacity: 1, transform: `translate3d(${outgoingX}px, 0, 0)` }
+            ],
+            timing
+        );
+        const incomingAnimation = iconSection.animate(
+            [
+                { opacity: 1, transform: `translate3d(${incomingX}px, 0, 0)` },
+                { opacity: 1, transform: 'translate3d(0, 0, 0)' }
+            ],
+            timing
+        );
+
+        Promise.allSettled([outgoingAnimation.finished, incomingAnimation.finished]).then(() => {
             outgoingCopy.remove();
             incomingAnimation.cancel();
-            iconSwipeInProgress = false;
-        }
+            iconSection.style.removeProperty('transform');
+            iconSection.style.removeProperty('opacity');
+            iconSection.style.removeProperty('will-change');
+            if (transitionToken === iconSwipeTransitionToken) {
+                iconSwipeInProgress = false;
+            }
+        });
     });
 }
 
