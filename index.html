@@ -1836,6 +1836,24 @@ function cancelProgressiveIconLoad() {
     iconImage?.classList.remove('is-pixel-loading', 'is-detail-upgrading');
 }
 
+/* Свайп резко сокращает время между открытием иконы и нажатием на свечу,
+   поэтому candle_image часто ещё не успевает догрузиться на медленной сети.
+   Сцена ждёт реальной готовности картинки, а не просто меняет src. */
+function waitForImageReady(img, timeoutMs = 2500) {
+    const decodeIfPossible = () => (img.decode ? img.decode().catch(() => {}) : Promise.resolve());
+    const ready = (img.complete && img.naturalWidth)
+        ? decodeIfPossible()
+        : new Promise(resolve => {
+            img.addEventListener('load', resolve, { once: true });
+            img.addEventListener('error', resolve, { once: true });
+        }).then(decodeIfPossible);
+
+    return Promise.race([
+        ready,
+        new Promise(resolve => window.setTimeout(resolve, timeoutMs))
+    ]);
+}
+
 function showIconProgressively(icon, displayImagePath) {
     const iconImage = document.getElementById('iconImage');
     if (!iconImage) return;
@@ -2346,6 +2364,7 @@ function goBackToLoading() {
 tg?.BackButton?.onClick(goBack);
 
 let candleVisible = false;
+let candleShowToken = 0;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
 let candleTransitionTimer = null;
@@ -2832,6 +2851,7 @@ function showCandle() {
     resetIconZoom();
     clearIconSwipePreview();
     candleVisible = true;
+    const showToken = ++candleShowToken;
     acquireCandleWakeLock();
 
     const detailScreen = document.getElementById('detailScreen');
@@ -2840,9 +2860,11 @@ function showCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const iconImage = document.getElementById('iconImage');
     const candleImagePath = iconImage.dataset.candleImage;
+    let candleImageReady = Promise.resolve();
     if (candleImagePath) {
         cancelProgressiveIconLoad();
         iconImage.src = candleImagePath;
+        candleImageReady = waitForImageReady(iconImage);
     }
     const iconBounds = iconImage.getBoundingClientRect();
     const stage = getArtStageMetrics();
@@ -2871,28 +2893,34 @@ function showCandle() {
         detailContent.classList.add('candle-transition');
         void document.getElementById('sceneAmbient').offsetWidth;
 
-        requestAnimationFrame(() => {
-            if (!candleVisible) return;
+        // Тёмные и смешанные слои включаются только когда candle_image реально
+        // отрисована — иначе на медленной сети они ложатся на пустой кадр.
+        candleImageReady.then(() => {
+            if (!candleVisible || showToken !== candleShowToken) return;
 
-            document.body.classList.add('candle-active');
-            detailScreen.classList.add('scene-active');
-            detailContent.classList.add('candle-active');
-            detailContent.classList.remove('candle-title-leaving');
-            window.clearTimeout(candleTransitionTimer);
-            candleTransitionTimer = window.setTimeout(() => {
-                if (!candleVisible) return;
-                document.body.classList.remove('candle-transition');
-                detailContent.classList.remove('candle-transition');
-                candleTransitionTimer = null;
-            }, CANDLE_SCENE_TRANSITION_MS);
-            document.getElementById('candleLayer').style.opacity = '1';
-            document.getElementById('globalLogo').style.opacity = '0';
-            document.getElementById('shareBtn').style.opacity = '0';
-            document.getElementById('candleBtn').style.opacity = '0';
-            document.getElementById('infoBtn').style.opacity = '0';
-            document.getElementById('shareBtn').style.pointerEvents = 'none';
-            document.getElementById('candleBtn').style.pointerEvents = 'none';
-            document.getElementById('infoBtn').style.pointerEvents = 'none';
+            requestAnimationFrame(() => {
+                if (!candleVisible || showToken !== candleShowToken) return;
+
+                document.body.classList.add('candle-active');
+                detailScreen.classList.add('scene-active');
+                detailContent.classList.add('candle-active');
+                detailContent.classList.remove('candle-title-leaving');
+                window.clearTimeout(candleTransitionTimer);
+                candleTransitionTimer = window.setTimeout(() => {
+                    if (!candleVisible) return;
+                    document.body.classList.remove('candle-transition');
+                    detailContent.classList.remove('candle-transition');
+                    candleTransitionTimer = null;
+                }, CANDLE_SCENE_TRANSITION_MS);
+                document.getElementById('candleLayer').style.opacity = '1';
+                document.getElementById('globalLogo').style.opacity = '0';
+                document.getElementById('shareBtn').style.opacity = '0';
+                document.getElementById('candleBtn').style.opacity = '0';
+                document.getElementById('infoBtn').style.opacity = '0';
+                document.getElementById('shareBtn').style.pointerEvents = 'none';
+                document.getElementById('candleBtn').style.pointerEvents = 'none';
+                document.getElementById('infoBtn').style.pointerEvents = 'none';
+            });
         });
     }, CANDLE_TITLE_EXIT_MS);
 }
@@ -2900,6 +2928,7 @@ function showCandle() {
 function closeCandle() {
     if (!candleVisible) return;
     candleVisible = false;
+    candleShowToken += 1;
     stopCandleAtmosphereAnimation();
     releaseCandleWakeLock();
 
