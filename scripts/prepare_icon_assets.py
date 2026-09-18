@@ -23,6 +23,7 @@ DISPLAY_MAX = 600
 CANDLE_MAX = 480
 PREVIEW_SIZE = 160
 PREVIEW_OVERSCAN = 1.10
+LOADING_MAX = 48
 
 
 def fit_max(image: Image.Image, maximum: int) -> Image.Image:
@@ -44,6 +45,18 @@ def make_preview(image: Image.Image) -> Image.Image:
     left = (resized.width - PREVIEW_SIZE) // 2
     top = (resized.height - PREVIEW_SIZE) // 2
     return resized.crop((left, top, left + PREVIEW_SIZE, top + PREVIEW_SIZE))
+
+
+def make_loading_image(image: Image.Image) -> Image.Image:
+    """Make a full-frame low-resolution image for progressive loading.
+
+    Unlike the square catalogue preview, it retains the full board and aspect
+    ratio. The UI deliberately enlarges it with `image-rendering: pixelated`.
+    """
+    width, height = image.size
+    scale = min(1.0, LOADING_MAX / max(width, height))
+    size = (max(1, round(width * scale)), max(1, round(height * scale)))
+    return image.resize(size, Image.Resampling.BOX)
 
 
 def edge_connected_black_alpha(image: Image.Image, black_threshold: int) -> Image.Image:
@@ -84,9 +97,10 @@ def edge_connected_black_alpha(image: Image.Image, black_threshold: int) -> Imag
 def write_assets(root: Path, slug: str, source: Path, black_threshold: int) -> dict[str, str]:
     display_path = root / "icons" / f"{slug}.jpg"
     preview_path = root / "icons" / "preview" / f"{slug}_preview.jpg"
+    loading_path = root / "icons" / "loading" / f"{slug}_loading.jpg"
     candle_path = root / "icons" / "candle" / f"{slug}.webp"
     alpha_path = root / "icons" / "png" / f"{slug}.png"
-    for path in (display_path, preview_path, candle_path, alpha_path):
+    for path in (display_path, preview_path, loading_path, candle_path, alpha_path):
         path.parent.mkdir(parents=True, exist_ok=True)
 
     with Image.open(source) as opened:
@@ -94,6 +108,7 @@ def write_assets(root: Path, slug: str, source: Path, black_threshold: int) -> d
 
     display.save(display_path, "JPEG", quality=60, optimize=True, progressive=True)
     make_preview(display).save(preview_path, "JPEG", quality=78, optimize=True, progressive=True)
+    make_loading_image(display).save(loading_path, "JPEG", quality=58, optimize=True)
 
     alpha = edge_connected_black_alpha(display, black_threshold)
     # The PNG is intentionally alpha-only. CSS turns it black for the shadow,
@@ -110,9 +125,22 @@ def write_assets(root: Path, slug: str, source: Path, black_threshold: int) -> d
     return {
         "image": f"./icons/{slug}.jpg",
         "preview_image": f"./icons/preview/{slug}_preview.jpg",
+        "loading_image": f"./icons/loading/{slug}_loading.jpg",
         "candle_image": f"./icons/candle/{slug}.webp",
         "cutout_master": f"./icons/png/{slug}.png",
     }
+
+
+def refresh_loading_image(root: Path, slug: str) -> dict[str, str]:
+    """Create only the progressive-loading derivative from the display JPEG."""
+    source = root / "icons" / f"{slug}.jpg"
+    if not source.is_file():
+        raise SystemExit(f"Display image not found: {source}")
+    loading_path = root / "icons" / "loading" / f"{slug}_loading.jpg"
+    loading_path.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(source) as image:
+        make_loading_image(image.convert("RGB")).save(loading_path, "JPEG", quality=58, optimize=True)
+    return {"loading_image": f"./icons/loading/{slug}_loading.jpg"}
 
 
 def add_cache_keys(root: Path, paths: dict[str, str]) -> dict[str, str]:
@@ -142,18 +170,25 @@ def update_catalog(catalog: Path, slug: str, paths: dict[str, str]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Prepare an Iconka asset set")
     parser.add_argument("--slug", required=True, help="Filename slug, e.g. troica_rublev")
-    parser.add_argument("--source", required=True, type=Path, help="Original image, kept untouched")
+    parser.add_argument("--source", type=Path, help="Original image, kept untouched")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Project root")
     parser.add_argument("--black-threshold", type=int, default=30, help="0–255; external near-black cutout threshold")
     parser.add_argument("--skip-json", action="store_true", help="Create files without changing data/icons.json")
+    parser.add_argument(
+        "--refresh-loading",
+        action="store_true",
+        help="Create only the low-resolution loading JPEG from icons/<slug>.jpg",
+    )
     args = parser.parse_args()
-    if not args.source.is_file():
+    if not args.refresh_loading and (not args.source or not args.source.is_file()):
         raise SystemExit(f"Source not found: {args.source}")
     if not 0 <= args.black_threshold <= 255:
         raise SystemExit("--black-threshold must be between 0 and 255")
 
     root = args.root.resolve()
-    paths = write_assets(root, args.slug, args.source, args.black_threshold)
+    paths = (refresh_loading_image(root, args.slug)
+             if args.refresh_loading
+             else write_assets(root, args.slug, args.source, args.black_threshold))
     if not args.skip_json:
         update_catalog(root / "data" / "icons.json", args.slug, add_cache_keys(root, paths))
     print("Created:")

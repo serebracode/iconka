@@ -264,11 +264,24 @@
             object-fit: contain;
             transform-origin: 50% 52%;
             filter: brightness(1) contrast(1) blur(0px);
-            transition-property: transform, filter;
-            transition-duration: 180ms, 800ms;
+            transition-property: transform, filter, opacity;
+            transition-duration: 180ms, 800ms, 150ms;
             transition-timing-function: ease-out, ease;
             touch-action: none;
             cursor: zoom-in;
+        }
+
+        /* Сначала показывается пропорциональная копия 48 px: не мыло, а
+           намеренный крупный растр. После декодирования экранного JPEG она
+           растворяется в нормальном изображении. */
+        #iconImage.is-pixel-loading,
+        .icon-swipe-incoming img.is-pixel-loading {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        #iconImage.is-detail-upgrading {
+            opacity: 0.78;
         }
 
         #iconImage.zoomed {
@@ -1675,6 +1688,7 @@ requestAnimationFrame(updateResponsiveStage);
 // ============================================
 let ICONS_DATA = [];
 let selectedIcon = null;
+let progressiveIconLoadToken = 0;
 
 async function loadIconsData() {
     try {
@@ -1796,6 +1810,78 @@ document.getElementById('clearSearch').addEventListener('click', () => {
     renderIconsList();
 });
 
+function getIconLoadingPath(icon) {
+    return icon.loading_image || icon.preview_image || icon.image;
+}
+
+function cancelProgressiveIconLoad() {
+    progressiveIconLoadToken += 1;
+    const iconImage = document.getElementById('iconImage');
+    iconImage?.classList.remove('is-pixel-loading', 'is-detail-upgrading');
+}
+
+function showIconProgressively(icon, displayImagePath) {
+    const iconImage = document.getElementById('iconImage');
+    if (!iconImage) return;
+
+    const token = ++progressiveIconLoadToken;
+    const loadingImagePath = getIconLoadingPath(icon);
+    iconImage.classList.remove('is-detail-upgrading');
+    iconImage.classList.add('is-pixel-loading');
+    iconImage.src = loadingImagePath;
+
+    const fullImage = new Image();
+    fullImage.decoding = 'async';
+    let upgraded = false;
+    const upgrade = async () => {
+        if (upgraded) return;
+        upgraded = true;
+        try {
+            await fullImage.decode?.();
+        } catch (_) {
+            // `load` уже гарантирует пригодное изображение; decode — только
+            // защита от мигания в браузерах, которые это поддерживают.
+        }
+        if (token !== progressiveIconLoadToken || selectedIcon?.id !== icon.id || candleVisible) return;
+        iconImage.classList.add('is-detail-upgrading');
+        iconImage.src = displayImagePath;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (token !== progressiveIconLoadToken || candleVisible) return;
+            iconImage.classList.remove('is-pixel-loading', 'is-detail-upgrading');
+        }));
+    };
+    fullImage.addEventListener('load', upgrade, { once: true });
+    fullImage.src = displayImagePath;
+    if (fullImage.complete && fullImage.naturalWidth) upgrade();
+}
+
+function showSwipeImageProgressively(icon) {
+    const image = document.getElementById('iconSwipeIncomingImage');
+    if (!image) return;
+    const token = String(icon.id);
+    const displayImagePath = icon.image;
+    image.dataset.iconId = token;
+    image.classList.add('is-pixel-loading');
+    image.src = getIconLoadingPath(icon);
+
+    const fullImage = new Image();
+    fullImage.decoding = 'async';
+    let upgraded = false;
+    const upgrade = async () => {
+        if (upgraded) return;
+        upgraded = true;
+        try {
+            await fullImage.decode?.();
+        } catch (_) {}
+        if (image.dataset.iconId !== token) return;
+        image.src = displayImagePath;
+        requestAnimationFrame(() => image.classList.remove('is-pixel-loading'));
+    };
+    fullImage.addEventListener('load', upgrade, { once: true });
+    fullImage.src = displayImagePath;
+    if (fullImage.complete && fullImage.naturalWidth) upgrade();
+}
+
 function applyIconAlphaMask(imagePath) {
     const absoluteImageUrl = new URL(imagePath, document.baseURI).href;
     const maskValue = `url("${absoluteImageUrl}")`;
@@ -1833,7 +1919,7 @@ function populateIconDetails(icon) {
     applyIconAlphaMask(alphaImagePath);
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
-    iconImage.src = displayImagePath;
+    showIconProgressively(icon, displayImagePath);
     /* Прозрачная версия загружается в фоне, пока пользователь смотрит икону. */
     iconLight.src = candleImagePath;
         document.getElementById('iconTitleText').textContent = selectedIcon.title_short || selectedIcon.title;
@@ -1914,6 +2000,8 @@ function preloadSwipeNeighbours() {
     [-1, 1].forEach(direction => {
         const icon = getSwipeTarget(direction);
         if (!icon?.image) return;
+        const loadingPreload = new Image();
+        loadingPreload.src = getIconLoadingPath(icon);
         const preload = new Image();
         preload.src = icon.image;
     });
@@ -1930,7 +2018,7 @@ function prepareIconSwipe(direction) {
 
     document.getElementById('iconSwipeIncomingTitle').textContent = nextIcon.title_short || nextIcon.title;
     document.getElementById('iconSwipeIncomingDate').textContent = (nextIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
-    incomingImage.src = nextIcon.image;
+    showSwipeImageProgressively(nextIcon);
     iconSwipePreview = { direction, nextIcon };
     iconSection.classList.add('is-swiping', 'is-swipe-dragging');
     return true;
@@ -2715,7 +2803,10 @@ function showCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const iconImage = document.getElementById('iconImage');
     const candleImagePath = iconImage.dataset.candleImage;
-    if (candleImagePath) iconImage.src = candleImagePath;
+    if (candleImagePath) {
+        cancelProgressiveIconLoad();
+        iconImage.src = candleImagePath;
+    }
     const iconBounds = iconImage.getBoundingClientRect();
     const stage = getArtStageMetrics();
     const iconScale = iconBounds.width > 0
