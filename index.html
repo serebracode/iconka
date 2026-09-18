@@ -1443,6 +1443,19 @@
 
         #detailScreen.scene-active #iconDarkeningEffect { opacity: 1; }
 
+        /* iOS Safari нестабильно композитит внешнюю WebP-альфу поверх уже
+           показанной иконы: слой начинает проявляться в переходе и оставляет
+           цветной шов. Пока сцена восстанавливается, эти два оверлея не
+           участвуют в кадре вовсе; базовая икона остаётся резкой. */
+        #detailScreen.scene-active #iconDarkeningEffect,
+        #detailScreen.scene-active #iconSurfaceLight {
+            display: none !important;
+        }
+
+        #detailContent.candle-active #iconImage {
+            filter: brightness(0.88) contrast(1.08) blur(0) !important;
+        }
+
         @media (prefers-reduced-motion: reduce) {
             #sceneAmbient,
             #iconProjection,
