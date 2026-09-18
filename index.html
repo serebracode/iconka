@@ -1191,7 +1191,7 @@
             background: none;
             opacity: 1;
             /* Одна мягкая проекция по реальной PNG-альфе. */
-            filter: blur(var(--projection-blur, 14px));
+            filter: brightness(0) blur(var(--projection-blur, 14px));
             transform: translate3d(
                 var(--projection-shift-x, 0px),
                 var(--projection-shift-y, -3px),
@@ -1207,7 +1207,7 @@
         /* Верх тени остаётся воздушным, нижний край — вдвое собраннее.
            Градиентные маски дополняют друг друга, поэтому на стыке нет полосы. */
         #iconProjection .projection-shape-top {
-            filter: blur(var(--projection-blur, 14px));
+            filter: brightness(0) blur(var(--projection-blur, 14px));
             opacity: 1;
             transform: translate3d(
                 var(--projection-top-shift-x, 0px),
@@ -1219,7 +1219,7 @@
         }
 
         #iconProjection .projection-shape-bottom {
-            filter: blur(var(--projection-bottom-blur, 4px));
+            filter: brightness(0) blur(var(--projection-bottom-blur, 4px));
             opacity: 1;
             transform: translate3d(
                 var(--projection-shift-x, 0px),
@@ -1830,6 +1830,41 @@ function getIconLoadingPath(icon) {
     return icon.loading_image || icon.preview_image || icon.image;
 }
 
+/* Кэш именно декодированных candle-изображений. Скрытый <img> не является
+   надёжной гарантией готового декодированного кадра в iOS WebView. */
+const candleImagePreloads = new Map();
+
+function preloadCandleImage(imagePath) {
+    if (!imagePath) return Promise.resolve(false);
+    if (candleImagePreloads.has(imagePath)) return candleImagePreloads.get(imagePath);
+
+    const preload = new Promise(resolve => {
+        const image = new Image();
+        image.decoding = 'async';
+        let settled = false;
+        const finish = async (loaded) => {
+            if (settled) return;
+            settled = true;
+            if (loaded) {
+                try {
+                    await image.decode?.();
+                } catch (_) {
+                    // Событие load уже означает, что браузер может показать кадр.
+                }
+            }
+            resolve(Boolean(loaded && image.naturalWidth));
+        };
+
+        image.addEventListener('load', () => finish(true), { once: true });
+        image.addEventListener('error', () => finish(false), { once: true });
+        image.src = imagePath;
+        if (image.complete) finish(image.naturalWidth > 0);
+    });
+
+    candleImagePreloads.set(imagePath, preload);
+    return preload;
+}
+
 function cancelProgressiveIconLoad() {
     progressiveIconLoadToken += 1;
     const iconImage = document.getElementById('iconImage');
@@ -1936,7 +1971,8 @@ function populateIconDetails(icon) {
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
     showIconProgressively(icon, displayImagePath);
-    /* Прозрачная версия загружается в фоне, пока пользователь смотрит икону. */
+    /* Пользователь может сразу после свайпа войти в режим свечи. */
+    void preloadCandleImage(candleImagePath);
     iconLight.src = candleImagePath;
         document.getElementById('iconTitleText').textContent = selectedIcon.title_short || selectedIcon.title;
     document.getElementById('iconDateText').textContent = (selectedIcon.date || 'Неизвестно').replace('Не известно', 'Неизвестно');
@@ -2346,6 +2382,7 @@ function goBackToLoading() {
 tg?.BackButton?.onClick(goBack);
 
 let candleVisible = false;
+let candleOpening = false;
 let infoPanelVisible = false;
 let infoSettleTimer = null;
 let candleTransitionTimer = null;
@@ -2822,7 +2859,8 @@ function startCandleAtmosphereAnimation() {
     candleAtmosphereAnimationFrame = requestAnimationFrame(animateAtmosphere);
 }
 
-function showCandle() {
+async function showCandle() {
+    if (candleVisible || candleOpening) return;
     if (infoPanelVisible) {
         toggleInfo();
         setTimeout(showCandle, 350);
@@ -2831,8 +2869,6 @@ function showCandle() {
     
     resetIconZoom();
     clearIconSwipePreview();
-    candleVisible = true;
-    acquireCandleWakeLock();
 
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
@@ -2840,10 +2876,33 @@ function showCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const iconImage = document.getElementById('iconImage');
     const candleImagePath = iconImage.dataset.candleImage;
-    if (candleImagePath) {
-        cancelProgressiveIconLoad();
-        iconImage.src = candleImagePath;
+    const selectedIconId = selectedIcon?.id;
+    candleOpening = true;
+
+    const candleImageReady = await preloadCandleImage(candleImagePath);
+    if (!detailScreen.classList.contains('active') || selectedIcon?.id !== selectedIconId) {
+        candleOpening = false;
+        return;
     }
+
+    cancelProgressiveIconLoad();
+    if (candleImageReady && candleImagePath) {
+        iconImage.src = candleImagePath;
+    } else if (iconImage.dataset.displayImage) {
+        /* Сцена остаётся корректной даже при ошибке сети: без полукадра. */
+        iconImage.src = iconImage.dataset.displayImage;
+    }
+
+    /* Применяем декодированный src до замера геометрии и включения масок. */
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    if (!detailScreen.classList.contains('active') || selectedIcon?.id !== selectedIconId) {
+        candleOpening = false;
+        return;
+    }
+
+    candleVisible = true;
+    candleOpening = false;
+    acquireCandleWakeLock();
     const iconBounds = iconImage.getBoundingClientRect();
     const stage = getArtStageMetrics();
     const iconScale = iconBounds.width > 0
