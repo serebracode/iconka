@@ -183,34 +183,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             flex: 0 0 var(--icon-section-height);
             min-height: var(--icon-section-height);
             padding: var(--icon-section-padding-top) 16px var(--icon-section-padding-bottom);
             transition-property: flex-basis, min-height, padding;
             overflow-anchor: none;
-        }
-
-        /* Постоянная сцена для изображения. Её нижняя граница не зависит от
-           пропорций конкретной иконы, поэтому блок подписи не прыгает. */
-        .icon-stage {
-            --icon-caption-top-gap: calc(var(--tg-safe-area-inset-top, 0px) + 16px);
-            --icon-caption-reserve: 96px;
-            width: 100%;
-            height: min(
-                var(--icon-max-height, 70svh),
-                calc(var(--icon-section-height) - var(--icon-caption-top-gap) - var(--icon-caption-reserve))
-            );
-            min-height: 0;
-            margin-top: var(--icon-caption-top-gap);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex: 0 0 auto;
-        }
-
-        .icon-stage #iconImage {
-            max-height: 100%;
         }
 
         #detailContent.info-open .icon-section {
@@ -1434,15 +1412,13 @@
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
         <div class="icon-section">
-            <div class="icon-stage">
-                <div class="icon-wrapper">
-                    <div id="iconShadow" class="icon-shadow" aria-hidden="true"></div>
-                    <img id="iconImage" class="icon-base" alt="Икона">
-                    <div id="iconOchreFilter" aria-hidden="true"></div>
-                    <div id="iconEdgeShade" aria-hidden="true"></div>
-                    <div id="iconTopShade" aria-hidden="true"></div>
-                    <img id="iconLight" class="icon-light" alt="" aria-hidden="true">
-                </div>
+            <div class="icon-wrapper">
+                <div id="iconShadow" class="icon-shadow" aria-hidden="true"></div>
+                <img id="iconImage" class="icon-base" alt="Икона">
+                <div id="iconOchreFilter" aria-hidden="true"></div>
+                <div id="iconEdgeShade" aria-hidden="true"></div>
+                <div id="iconTopShade" aria-hidden="true"></div>
+                <img id="iconLight" class="icon-light" alt="" aria-hidden="true">
             </div>
             <div class="icon-title">
                 <div id="iconTitleText" style="color: #FFFFFF; font-size: 16px; font-weight: 400;"></div>
