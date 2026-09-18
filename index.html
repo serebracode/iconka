@@ -1745,9 +1745,13 @@ function renderIconsList(searchQuery = '') {
     `).join('');
 
     const aboutLink = searchQuery ? '' : `
-        <button type="button" onclick="showAboutFromList()" style="display: block; margin: 28px auto calc(var(--tg-safe-area-inset-bottom, 0px) + 32px); padding: 12px 24px; border: 0; background: transparent; color: #8E8E93; font: inherit; font-size: 16px; line-height: 1.6; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">
-            О проекте
-        </button>`;
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px auto calc(var(--tg-safe-area-inset-bottom, 0px) + 16px); padding: 4px 24px; color: #8E8E93; font-size: 16px; line-height: 1.6;">
+            <button type="button" onclick="showAboutFromList()" style="padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-decoration-line: underline; text-decoration-thickness: 0.5px; text-underline-offset: 3px; cursor: pointer;">
+                О проекте
+            </button>
+            <span aria-hidden="true" style="opacity: 0.58;">·</span>
+            <span style="opacity: 0.72;">1.0</span>
+        </div>`;
     list.innerHTML = iconRows + aboutLink;
 }
 
