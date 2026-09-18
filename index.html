@@ -1456,6 +1456,26 @@
             filter: brightness(0.88) contrast(1.08) blur(0) !important;
         }
 
+        /* Затемняем саму иконку, а не отдельной альфа-маской. */
+        #detailContent.candle-active #iconImage {
+            filter: brightness(0.78) contrast(1.16) blur(0) !important;
+        }
+
+        /* Силуэт тени — та же уже загруженная прозрачная candle_image.
+           Она находится под основной иконой и не использует ни mask-image,
+           ни отдельный PNG, поэтому Safari не может дорисовать цветную кромку. */
+        #detailContent.candle-active #iconLight {
+            display: block !important;
+            z-index: 19;
+            opacity: 0.48 !important;
+            transform: translate3d(0, -5px, 0) scale(1.08) !important;
+            transform-origin: 50% 52%;
+            filter: brightness(0) blur(8px) !important;
+            mix-blend-mode: normal;
+            mask-image: none !important;
+            -webkit-mask-image: none !important;
+        }
+
         @media (prefers-reduced-motion: reduce) {
             #sceneAmbient,
             #iconProjection,
