@@ -1476,6 +1476,48 @@
             -webkit-mask-image: none !important;
         }
 
+        /* Двойная проекция: верх шире и мягче, нижняя часть собраннее.
+           Это реальные alpha-PNG, а не внешняя CSS-маска. */
+        #iconProjection .projection-shape {
+            position: absolute;
+            inset: auto;
+            left: calc(var(--projection-frame-padding, 0px) - var(--projection-layer-padding, 0px));
+            top: calc(var(--projection-frame-padding, 0px) - var(--projection-layer-padding, 0px));
+            width: calc(100% - var(--projection-frame-padding, 0px) * 2 + var(--projection-layer-padding, 0px) * 2);
+            height: calc(100% - var(--projection-frame-padding, 0px) * 2 + var(--projection-layer-padding, 0px) * 2);
+            padding: var(--projection-layer-padding, 0px);
+            box-sizing: border-box;
+            display: block;
+            object-fit: fill;
+            object-position: center;
+            background: none;
+            opacity: 1;
+            mask-image: none !important;
+            -webkit-mask-image: none !important;
+            transform-origin: 50% calc(100% - var(--projection-layer-padding, 0px));
+            will-change: transform, filter;
+        }
+
+        #iconProjection .projection-shape-top {
+            filter: brightness(0) blur(var(--projection-blur, 14px));
+            clip-path: polygon(-3.5% 0%, 103.5% 0%, 96% 100%, 4% 100%);
+            transform: translate3d(
+                var(--projection-top-shift-x, 0px),
+                var(--projection-top-shift-y, -3px),
+                0
+            ) perspective(var(--projection-perspective, 2400px)) rotateX(-26.8deg) scaleX(1.07);
+        }
+
+        #iconProjection .projection-shape-bottom {
+            filter: brightness(0) blur(4px);
+            clip-path: polygon(0% 0%, 100% 0%, 96% 100%, 4% 100%);
+            transform: translate3d(
+                var(--projection-shift-x, 0px),
+                var(--projection-shift-y, -3px),
+                0
+            ) perspective(var(--projection-perspective, 2400px)) rotateX(-26.8deg);
+        }
+
         @media (prefers-reduced-motion: reduce) {
             #sceneAmbient,
             #iconProjection,
@@ -1605,9 +1647,8 @@
     <div class="scene-background" style="position: absolute; inset: 0; z-index: 0; background: #020201;"></div>
     <div id="sceneAmbient" aria-hidden="true"></div>
     <div id="iconProjection" aria-hidden="true">
-        <div class="projection-band projection-band-top"><div class="projection-shape"></div></div>
-        <div class="projection-band projection-band-middle"><div class="projection-shape"></div></div>
-        <div class="projection-band projection-band-bottom"><div class="projection-shape"></div></div>
+        <img class="projection-shape projection-shape-top" alt="">
+        <img class="projection-shape projection-shape-bottom" alt="">
     </div>
     <!-- ЕДИНЫЙ КОНТЕЙНЕР -->
     <div id="detailContent">
@@ -2052,13 +2093,12 @@ function showSwipeImageProgressively(icon) {
     if (fullImage.complete && fullImage.naturalWidth) upgrade();
 }
 
-function applyIconAlphaMask(imagePath) {
+function applyIconAlphaMask(imagePath, shadowImagePath = imagePath) {
     const absoluteImageUrl = new URL(imagePath, document.baseURI).href;
     const maskValue = `url("${absoluteImageUrl}")`;
     const maskedLayers = [
         document.getElementById('iconDarkeningEffect'),
-        document.getElementById('iconSurfaceLight'),
-        ...document.querySelectorAll('#iconProjection .projection-shape')
+        document.getElementById('iconSurfaceLight')
     ];
 
     maskedLayers.forEach(layer => {
@@ -2066,6 +2106,11 @@ function applyIconAlphaMask(imagePath) {
         /* Прямое свойство надёжнее наследуемой CSS-переменной в Telegram WebView. */
         layer.style.maskImage = maskValue;
         layer.style.setProperty('-webkit-mask-image', maskValue);
+    });
+
+    const shadowImageUrl = new URL(shadowImagePath, document.baseURI).href;
+    document.querySelectorAll('#iconProjection .projection-shape').forEach(layer => {
+        if (layer.src !== shadowImageUrl) layer.src = shadowImageUrl;
     });
 
 }
@@ -2077,12 +2122,13 @@ function populateIconDetails(icon) {
     const candleImagePath = icon.candle_image || icon.image;
     /* Как в эталонной сборке: маска сцены — candle_image этой же иконы. */
     const alphaImagePath = candleImagePath;
+    const shadowImagePath = icon.cutout_master || candleImagePath;
     const iconImage = document.getElementById('iconImage');
     const iconLight = document.getElementById('iconLight');
 
     const alphaMaskUrl = `url("${new URL(alphaImagePath, document.baseURI).href}")`;
     detailScreen.style.setProperty('--icon-alpha-mask', alphaMaskUrl);
-    applyIconAlphaMask(alphaImagePath);
+    applyIconAlphaMask(alphaImagePath, shadowImagePath);
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
     showIconProgressively(icon, displayImagePath);
