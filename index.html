@@ -1774,54 +1774,106 @@ function selectIcon(id) {
 }
 
 let iconSwipeTransitionToken = 0;
+let iconSwipeInProgress = false;
 
 function getOrderedIcons() {
     return [...ICONS_DATA].sort((a, b) => a.title.localeCompare(b.title));
 }
 
-function switchIconBySwipe(direction) {
-    if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed) return;
+function preloadIconForSwipe(imagePath) {
+    return new Promise(resolve => {
+        const image = new Image();
+        let resolved = false;
+        const complete = () => {
+            if (resolved) return;
+            resolved = true;
+            if (image.decode) {
+                image.decode().catch(() => {}).finally(resolve);
+            } else {
+                resolve();
+            }
+        };
+        image.onload = complete;
+        image.onerror = complete;
+        image.src = imagePath;
+        if (image.complete) complete();
+    });
+}
+
+async function switchIconBySwipe(direction) {
+    if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed || iconSwipeInProgress) return;
 
     const orderedIcons = getOrderedIcons();
     const currentIndex = orderedIcons.findIndex(icon => icon.id === selectedIcon.id);
     if (currentIndex < 0 || orderedIcons.length < 2) return;
 
-    const nextIndex = (currentIndex + direction + orderedIcons.length) % orderedIcons.length;
-    const nextIcon = orderedIcons[nextIndex];
+    const nextIcon = orderedIcons[(currentIndex + direction + orderedIcons.length) % orderedIcons.length];
     const iconSection = document.querySelector('#detailContent .icon-section');
+    if (!iconSection) return;
+
+    iconSwipeInProgress = true;
     const transitionToken = ++iconSwipeTransitionToken;
-    const outgoingX = direction > 0 ? -28 : 28;
-    const incomingX = -outgoingX;
-
-    const replaceIcon = () => {
-        if (transitionToken !== iconSwipeTransitionToken) return;
-        populateIconDetails(nextIcon);
-        if (!iconSection?.animate) return;
-        iconSection.animate(
-            [
-                { opacity: 0, transform: `translate3d(${incomingX}px, 0, 0)` },
-                { opacity: 1, transform: 'translate3d(0, 0, 0)' }
-            ],
-            { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
-        );
-    };
-
-    if (!iconSection?.animate) {
-        replaceIcon();
+    await preloadIconForSwipe(nextIcon.image);
+    if (transitionToken !== iconSwipeTransitionToken || candleVisible || infoPanelVisible || iconZoomed) {
+        iconSwipeInProgress = false;
         return;
     }
 
-    const outgoing = iconSection.animate(
+    const rect = iconSection.getBoundingClientRect();
+    const outgoingCopy = iconSection.cloneNode(true);
+    outgoingCopy.setAttribute('aria-hidden', 'true');
+    outgoingCopy.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+    Object.assign(outgoingCopy.style, {
+        position: 'fixed',
+        left: `${rect.left}px`,
+        top: `${rect.top}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+        margin: '0',
+        pointerEvents: 'none',
+        zIndex: '90',
+        transform: 'translate3d(0, 0, 0)'
+    });
+    document.body.appendChild(outgoingCopy);
+
+    populateIconDetails(nextIcon);
+    const distance = Math.max(window.innerWidth, rect.width) + 24;
+    const outgoingX = direction > 0 ? -distance : distance;
+    const incomingX = -outgoingX;
+    const timing = {
+        duration: 320,
+        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        fill: 'both'
+    };
+
+    if (!iconSection.animate || !outgoingCopy.animate) {
+        outgoingCopy.remove();
+        iconSwipeInProgress = false;
+        return;
+    }
+
+    const outgoingAnimation = outgoingCopy.animate(
         [
             { opacity: 1, transform: 'translate3d(0, 0, 0)' },
-            { opacity: 0, transform: `translate3d(${outgoingX}px, 0, 0)` }
+            { opacity: 1, transform: `translate3d(${outgoingX}px, 0, 0)` }
         ],
-        { duration: 120, easing: 'ease-in', fill: 'forwards' }
+        timing
     );
-    outgoing.finished.then(() => {
-        outgoing.cancel();
-        replaceIcon();
-    }).catch(() => {});
+    const incomingAnimation = iconSection.animate(
+        [
+            { opacity: 1, transform: `translate3d(${incomingX}px, 0, 0)` },
+            { opacity: 1, transform: 'translate3d(0, 0, 0)' }
+        ],
+        timing
+    );
+
+    Promise.allSettled([outgoingAnimation.finished, incomingAnimation.finished]).then(() => {
+        if (transitionToken === iconSwipeTransitionToken) {
+            outgoingCopy.remove();
+            incomingAnimation.cancel();
+            iconSwipeInProgress = false;
+        }
+    });
 }
 
 function resetDetailScreenUI() {
