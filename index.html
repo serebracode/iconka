@@ -1930,13 +1930,17 @@ function applyIconAlphaMask(imagePath) {
 function populateIconDetails(icon) {
     selectedIcon = icon;
     const displayImagePath = icon.image;
-    const candleImagePath = icon.candle_image || icon.image;
-    /* PNG хранит настоящую alpha-обтравку; WebP остаётся лёгкой картинкой сцены. */
-    const alphaImagePath = icon.cutout_master || candleImagePath;
+    /* WebP (candle_image) декодируется ненадёжно в Telegram iOS WebView —
+       иногда браузер отдаёт битые intrinsic-размеры, и object-fit: contain
+       растягивает обрывок картинки в вертикальную полосу. PNG-обтравка
+       cutout_master уже используется для тени и декодируется без проблем,
+       поэтому она же идёт и в саму сцену свечи; candle_image остаётся
+       только резервным вариантом, если PNG почему-то нет. */
+    const candleImagePath = icon.cutout_master || icon.candle_image || icon.image;
     const iconImage = document.getElementById('iconImage');
     const iconLight = document.getElementById('iconLight');
 
-    applyIconAlphaMask(alphaImagePath);
+    applyIconAlphaMask(candleImagePath);
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
     showIconProgressively(icon, displayImagePath);
