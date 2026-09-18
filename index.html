@@ -486,9 +486,8 @@
 
         /* Режим свечи не допускает промежуточную карточку следующей иконы:
            даже прерванный свайп не должен оставлять цветную кромку сбоку. */
-        #detailContent.candle-active .icon-swipe-incoming {
-            opacity: 0 !important;
-            visibility: hidden !important;
+        #detailScreen.scene-active #iconSwipeIncoming {
+            display: none !important;
         }
 
         body.candle-active #globalLogo {
@@ -1051,7 +1050,7 @@
         /* Базовая икона, тёплый тон и подвижный отблеск сохраняют прежний порядок. */
         #detailContent.candle-active #iconImage {
             z-index: 20;
-            filter: brightness(0.78) contrast(1.22) blur(0.25px);
+            filter: brightness(0.94) contrast(1.16) blur(0.25px);
         }
 
         #detailContent.candle-active #iconOchreFilter {
@@ -1351,7 +1350,9 @@
         }
 
         #detailScreen.scene-active #sceneAmbient { opacity: var(--ambient-opacity, 0.70); }
-        #detailScreen.scene-active #iconDarkeningEffect { opacity: 1; }
+        /* База остаётся читаемой: затемнение формирует объём, а не съедает
+           сам образ, который должен быть главным слоем сцены. */
+        #detailScreen.scene-active #iconDarkeningEffect { opacity: 0.64; }
         #detailScreen.scene-active #iconSurfaceLight { opacity: var(--surface-light-opacity, 0.92); }
         #detailScreen.scene-active #flameAmbient { opacity: var(--flame-ambient-opacity, 0.72); }
         #detailScreen.scene-active #sceneVignette { opacity: 1; }
