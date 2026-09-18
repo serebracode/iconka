@@ -255,6 +255,14 @@
             transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease-out;
         }
 
+        /* После въезда входящая пара уже находится в центре. Сброс основного
+           слоя должен быть мгновенным, иначе подпись проедет второй раз. */
+        .icon-section.is-swipe-resetting .icon-wrapper,
+        .icon-section.is-swipe-resetting .icon-title,
+        .icon-section.is-swipe-resetting .icon-swipe-incoming {
+            transition: none !important;
+        }
+
         #iconImage {
             position: relative;
             z-index: 20;
@@ -2055,12 +2063,14 @@ function settleIconSwipe(commit) {
 
     window.setTimeout(() => {
         if (transitionToken !== iconSwipeTransitionToken) return;
-        if (commit) populateIconDetails(preview.nextIcon);
         iconSection.classList.remove('is-swiping', 'is-swipe-settling');
+        iconSection.classList.add('is-swipe-resetting');
+        if (commit) populateIconDetails(preview.nextIcon);
         iconSection.style.removeProperty('--icon-swipe-current-x');
         iconSection.style.removeProperty('--icon-swipe-incoming-x');
         iconSwipePreview = null;
         preloadSwipeNeighbours();
+        requestAnimationFrame(() => iconSection.classList.remove('is-swipe-resetting'));
     }, 280);
 }
 
