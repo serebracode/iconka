@@ -1812,6 +1812,7 @@ async function switchIconBySwipe(direction) {
     if (!iconSection) return;
 
     iconSwipeInProgress = true;
+    resetIconZoom();
     const transitionToken = ++iconSwipeTransitionToken;
     await preloadIconForSwipe(nextIcon.image);
     if (transitionToken !== iconSwipeTransitionToken || candleVisible || infoPanelVisible || iconZoomed) {
@@ -1837,6 +1838,8 @@ async function switchIconBySwipe(direction) {
     document.body.appendChild(outgoingCopy);
 
     populateIconDetails(nextIcon);
+    // New content always starts with neutral transform and gesture state.
+    resetIconZoom();
     const distance = Math.max(window.innerWidth, rect.width) + 24;
     const outgoingX = direction > 0 ? -distance : distance;
     const incomingX = -outgoingX;
@@ -2773,6 +2776,10 @@ let lastIconTapX = 0;
 let lastIconTapY = 0;
 
 function applyIconZoomTransform() {
+    if (iconSwipeInProgress) {
+        iconImageElement.style.removeProperty('transform');
+        return;
+    }
     if (!iconZoomed) {
         iconImageElement.style.removeProperty('transform');
         return;
@@ -2784,13 +2791,17 @@ function resetIconZoom() {
     iconZoomed = false;
     iconPanX = 0;
     iconPanY = 0;
+    iconTouchMoved = false;
+    lastIconTapAt = 0;
+    lastIconTapX = 0;
+    lastIconTapY = 0;
     document.body.classList.remove('icon-zoomed');
     iconImageElement.classList.remove('zoomed', 'zoom-dragging');
     iconImageElement.style.removeProperty('transform');
 }
 
 function toggleIconZoom() {
-    if (candleVisible || infoPanelVisible) return;
+    if (candleVisible || infoPanelVisible || iconSwipeInProgress) return;
 
     if (iconZoomed) {
         resetIconZoom();
@@ -2813,7 +2824,7 @@ function clampIconPan(value, limit) {
 }
 
 iconImageElement.addEventListener('touchstart', (event) => {
-    if (event.touches.length !== 1 || candleVisible || infoPanelVisible) return;
+    if (event.touches.length !== 1 || candleVisible || infoPanelVisible || iconSwipeInProgress) return;
     if (iconZoomed) event.stopPropagation();
     const touch = event.touches[0];
     iconTouchStartX = touch.clientX;
@@ -2825,7 +2836,7 @@ iconImageElement.addEventListener('touchstart', (event) => {
 }, { passive: false });
 
 iconImageElement.addEventListener('touchmove', (event) => {
-    if (event.touches.length !== 1 || candleVisible || infoPanelVisible) return;
+    if (event.touches.length !== 1 || candleVisible || infoPanelVisible || iconSwipeInProgress) return;
     const touch = event.touches[0];
     const deltaX = touch.clientX - iconTouchStartX;
     const deltaY = touch.clientY - iconTouchStartY;
@@ -2842,7 +2853,7 @@ iconImageElement.addEventListener('touchmove', (event) => {
 }, { passive: false });
 
 iconImageElement.addEventListener('touchend', (event) => {
-    if (candleVisible || infoPanelVisible) return;
+    if (candleVisible || infoPanelVisible || iconSwipeInProgress) return;
     if (iconZoomed) {
         event.stopPropagation();
         event.preventDefault();
@@ -2871,6 +2882,7 @@ iconImageElement.addEventListener('touchcancel', () => {
 
 iconImageElement.addEventListener('dblclick', (event) => {
     event.preventDefault();
+    if (iconSwipeInProgress) return;
     toggleIconZoom();
 });
 
@@ -2889,7 +2901,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
     const detailContent = document.getElementById('detailContent');
     
     detailScreen.addEventListener('touchstart', (e) => {
-        if (candleVisible) return;
+        if (candleVisible || iconSwipeInProgress) return;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         currentX = startX;
@@ -2904,7 +2916,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
     }, { passive: true });
 
     detailScreen.addEventListener('touchmove', (e) => {
-        if (candleVisible || !tracking) return;
+        if (candleVisible || iconSwipeInProgress || !tracking) return;
 
         currentX = e.touches[0].clientX;
         const deltaX = currentX - startX;
@@ -2942,7 +2954,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
     }, { passive: false });
     
     detailScreen.addEventListener('touchend', (e) => {
-        if (candleVisible) return;
+        if (candleVisible || iconSwipeInProgress) return;
         const endX = e.changedTouches[0].clientX;
         const endY = e.changedTouches[0].clientY;
         const endTime = Date.now();
