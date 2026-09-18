@@ -484,6 +484,13 @@
             opacity: 0;
         }
 
+        /* Режим свечи не допускает промежуточную карточку следующей иконы:
+           даже прерванный свайп не должен оставлять цветную кромку сбоку. */
+        #detailContent.candle-active .icon-swipe-incoming {
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+
         body.candle-active #globalLogo {
             opacity: 0 !important;
             animation: none !important;
@@ -2015,6 +2022,23 @@ function preloadSwipeNeighbours() {
     });
 }
 
+function clearIconSwipePreview() {
+    // Отменяет и отложенный callback завершения свайпа: иначе он способен
+    // подменить изображение уже после входа в режим свечи.
+    iconSwipeTransitionToken += 1;
+    iconSwipePreview = null;
+    const iconSection = document.querySelector('#detailContent .icon-section');
+    if (!iconSection) return;
+    iconSection.classList.remove(
+        'is-swiping',
+        'is-swipe-dragging',
+        'is-swipe-settling',
+        'is-swipe-resetting'
+    );
+    iconSection.style.removeProperty('--icon-swipe-current-x');
+    iconSection.style.removeProperty('--icon-swipe-incoming-x');
+}
+
 function prepareIconSwipe(direction) {
     if (!selectedIcon || candleVisible || infoPanelVisible || iconZoomed || iconSwipePreview?.settling) return false;
     const nextIcon = getSwipeTarget(direction);
@@ -2082,6 +2106,7 @@ function switchIconBySwipe(direction) {
 
 function resetDetailScreenUI() {
     resetIconZoom();
+    clearIconSwipePreview();
     candleEffectGeometryToken += 1;
     window.clearTimeout(candleTransitionTimer);
     window.clearTimeout(candleTitleTimer);
@@ -2804,6 +2829,7 @@ function showCandle() {
     }
     
     resetIconZoom();
+    clearIconSwipePreview();
     candleVisible = true;
     acquireCandleWakeLock();
 
