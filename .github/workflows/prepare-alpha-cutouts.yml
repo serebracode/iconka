@@ -63,7 +63,7 @@ jobs:
           root = Path(".")
           (root/"icons"/"png").mkdir(parents=True, exist_ok=True)
           (root/"icons"/"candle").mkdir(parents=True, exist_ok=True)
-          qa = root/".alpha-qa"
+          qa = root/"alpha-qa"
           qa.mkdir(exist_ok=True)
 
           def resize_for_seg(rgb, max_side=520):
@@ -194,9 +194,10 @@ jobs:
               for cfg in configs:
                   m=grab_candidate(rgb,cfg)
                   g=geom(m)
-                  candidates.append((score(g),cfg,m,g))
+                  ae=aspect_error(g, expected_ratios[slug])
+                  candidates.append((score(g, expected_ratios[slug]),cfg,m,g,ae))
               candidates.sort(key=lambda x:x[0],reverse=True)
-              best_score,best_cfg,hard,g=candidates[0]
+              best_score,best_cfg,hard,g,best_aspect_error=candidates[0]
               if best_score < -100:
                   raise RuntimeError(f"No plausible board mask for {slug}: {[(c[0],c[1],c[3]) for c in candidates]}")
 
@@ -224,6 +225,8 @@ jobs:
                   "edge_ratio":round(float(g["edge_ratio"]),4),
                   "bbox_fill":round(float(g["bbox_fill"]),4),
                   "bbox":g["bbox"],
+                  "aspect_error":round(float(best_aspect_error),4),
+                  "expected_ratio":round(float(expected_ratios[slug]),4),
                   "png_bytes":cutout_path.stat().st_size,
                   "webp_bytes":candle_path.stat().st_size,
               })
@@ -244,7 +247,7 @@ jobs:
                   else:
                       panel.paste(im.convert("RGB"),(x,y))
               d=ImageDraw.Draw(panel)
-              d.text((12,380),f"{slug} cov={g['coverage']:.3f} rect={g['rectangularity']:.3f} edge={g['edge_ratio']:.3f}",fill=(240,240,240))
+              d.text((12,380),f"{slug} cov={g['coverage']:.3f} rect={g['rectangularity']:.3f} aspect_err={best_aspect_error:.3f}",fill=(240,240,240))
               panels.append(panel)
 
           data_path=root/"data"/"icons.json"
@@ -270,7 +273,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: alpha-qa
-          path: .alpha-qa/
+          path: alpha-qa/
           retention-days: 1
 
       - name: Validate masks
@@ -278,12 +281,13 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          r=json.load(open(".alpha-qa/alpha_qa_metrics.json"))
+          r=json.load(open("alpha-qa/alpha_qa_metrics.json"))
           assert r["best_calibration"]["iou"] >= 0.82, r["best_calibration"]
           for x in r["icons"]:
               assert 0.48 <= x["coverage"] <= 0.985, x
               assert x["rectangularity"] >= 0.72, x
               assert x["edge_ratio"] <= 0.55, x
+              assert x["aspect_error"] <= 0.12, x
           print("alpha validation passed")
           PY
 
