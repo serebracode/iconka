@@ -145,16 +145,34 @@ jobs:
                   "bbox_fill":bbox_fill,
               }
 
-          def score(g):
+          expected_ratios = {
+              "blagoveshchenie": 25/29.8,
+              "rozhdestvo": 27/31.3,
+              "uspenie": 28.2/31.4,
+              "tihvinskaya": 22.7/27.8,
+              "kreshchenie": 27.7/32.7,
+              "ioann_predtecha": 26.7/31.2,
+              "antoniy_velikiy": 18.3/24.4,
+              "oplakivanie_hrista": 39.5/30.5,
+          }
+
+          def aspect_error(g, expected):
+              bw=max(1,g["bbox"][2]-g["bbox"][0])
+              bh=max(1,g["bbox"][3]-g["bbox"][1])
+              return abs(math.log((bw/bh)/expected))
+
+          def score(g, expected):
               cov=g["coverage"]
               if cov < 0.48 or cov > 0.985:
                   return -999
+              ae=aspect_error(g, expected)
               return (
                   2.2*cov
                   + 1.7*g["rectangularity"]
                   + 0.5*g["bbox_fill"]
                   - 2.5*g["edge_ratio"]
                   - 1.2*abs(cov-0.88)
+                  - 6.0*ae
               )
 
           def checkerboard(size,cell=24):
