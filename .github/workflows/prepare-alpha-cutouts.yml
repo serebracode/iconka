@@ -1,0 +1,227 @@
+name: Prepare alpha cutouts for new icons
+
+on:
+  push:
+    branches:
+      - add-orthodox-icons-batch-1
+    paths:
+      - .github/workflows/prepare-alpha-cutouts.yml
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  prepare-alpha:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: add-orthodox-icons-batch-1
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install image tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "rembg[cpu]" Pillow opencv-python-headless numpy
+
+      - name: Build transparent variants and QA sheet
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from io import BytesIO
+          import json, math
+          import numpy as np
+          import cv2
+          from PIL import Image, ImageOps, ImageDraw
+          from rembg import remove, new_session
+
+          slugs = [
+              "blagoveshchenie",
+              "rozhdestvo",
+              "uspenie",
+              "tihvinskaya",
+              "kreshchenie",
+              "ioann_predtecha",
+              "antoniy_velikiy",
+              "oplakivanie_hrista",
+          ]
+
+          root = Path(".")
+          (root / "icons" / "png").mkdir(parents=True, exist_ok=True)
+          (root / "icons" / "candle").mkdir(parents=True, exist_ok=True)
+          qa = root / ".alpha-qa"
+          qa.mkdir(exist_ok=True)
+
+          session = None
+          selected_model = None
+          errors = []
+          for model in ["birefnet-general", "isnet-general-use", "u2net"]:
+              try:
+                  session = new_session(model)
+                  selected_model = model
+                  break
+              except Exception as exc:
+                  errors.append(f"{model}: {exc}")
+          if session is None:
+              raise RuntimeError("Could not initialize rembg model: " + " | ".join(errors))
+
+          def largest_component(mask):
+              mask8 = (mask > 0).astype(np.uint8)
+              n, labels, stats, _ = cv2.connectedComponentsWithStats(mask8, 8)
+              if n <= 1:
+                  return mask8
+              idx = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+              return (labels == idx).astype(np.uint8)
+
+          def fill_holes(mask):
+              contours, _ = cv2.findContours(mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+              filled = np.zeros_like(mask, dtype=np.uint8)
+              if contours:
+                  cv2.drawContours(filled, contours, -1, 1, thickness=cv2.FILLED)
+              return filled
+
+          def checkerboard(size, cell=28):
+              w,h=size
+              bg=Image.new("RGB", (w,h), (54,54,54))
+              d=ImageDraw.Draw(bg)
+              for y in range(0,h,cell):
+                  for x in range(0,w,cell):
+                      if ((x//cell)+(y//cell))%2:
+                          d.rectangle((x,y,x+cell-1,y+cell-1), fill=(92,92,92))
+              return bg
+
+          metrics = []
+          previews = []
+
+          for slug in slugs:
+              src_path = root / "icons" / f"{slug}.jpg"
+              src = Image.open(src_path).convert("RGB")
+
+              result = remove(
+                  src,
+                  session=session,
+                  alpha_matting=True,
+                  alpha_matting_foreground_threshold=245,
+                  alpha_matting_background_threshold=12,
+                  alpha_matting_erode_size=4,
+              )
+              if not isinstance(result, Image.Image):
+                  result = Image.open(BytesIO(result))
+              rgba = result.convert("RGBA")
+              rgb = np.asarray(rgba)[...,:3]
+              alpha = np.asarray(rgba.getchannel("A"), dtype=np.uint8)
+
+              # Soft mask cleanup: discard detached specks, but keep anti-aliased edge.
+              support = largest_component((alpha >= 16).astype(np.uint8))
+              support = cv2.morphologyEx(support, cv2.MORPH_CLOSE, np.ones((5,5), np.uint8))
+              support = fill_holes(support)
+              soft = alpha.copy()
+              soft[support == 0] = 0
+
+              # Hard alpha master: one solid icon-board silhouette, like andrey.png.
+              hard = largest_component((soft >= 40).astype(np.uint8))
+              hard = cv2.morphologyEx(hard, cv2.MORPH_CLOSE, np.ones((5,5), np.uint8))
+              hard = fill_holes(hard)
+              hard_alpha = (hard * 255).astype(np.uint8)
+
+              candle = Image.fromarray(np.dstack([rgb, soft]), "RGBA")
+              candle_path = root / "icons" / "candle" / f"{slug}.webp"
+              candle.save(candle_path, "WEBP", quality=90, method=6, exact=True)
+
+              cutout = Image.fromarray(np.dstack([rgb, hard_alpha]), "RGBA")
+              cutout_path = root / "icons" / "png" / f"{slug}.png"
+              cutout.save(cutout_path, "PNG", optimize=True, compress_level=9)
+
+              h,w = hard.shape
+              ys,xs = np.where(hard > 0)
+              if len(xs) == 0:
+                  raise RuntimeError(f"Empty alpha mask for {slug}")
+              bbox = [int(xs.min()), int(ys.min()), int(xs.max()+1), int(ys.max()+1)]
+              coverage = float(hard.mean())
+              edge_fg = int(hard[0,:].sum()+hard[-1,:].sum()+hard[:,0].sum()+hard[:,-1].sum())
+              perimeter = 2*w+2*h
+              edge_ratio = edge_fg / perimeter
+
+              # Sanity guard: reject obvious failed segmentation.
+              if coverage < 0.45 or coverage > 0.995:
+                  raise RuntimeError(f"Implausible alpha coverage for {slug}: {coverage:.4f}")
+              if edge_ratio > 0.80:
+                  raise RuntimeError(f"Too much foreground touching canvas edge for {slug}: {edge_ratio:.4f}")
+
+              metrics.append({
+                  "slug": slug,
+                  "model": selected_model,
+                  "size": [w,h],
+                  "bbox": bbox,
+                  "coverage": round(coverage,4),
+                  "edge_ratio": round(edge_ratio,4),
+                  "soft_zero_pct": round(float((soft==0).mean()),4),
+                  "soft_partial_pct": round(float(((soft>0)&(soft<255)).mean()),4),
+                  "png_bytes": cutout_path.stat().st_size,
+                  "webp_bytes": candle_path.stat().st_size,
+              })
+
+              # QA panel: source / transparent result / alpha.
+              thumb_size=(360,360)
+              source_thumb=ImageOps.contain(src, thumb_size, Image.Resampling.LANCZOS)
+              trans_thumb=ImageOps.contain(candle, thumb_size, Image.Resampling.LANCZOS)
+              mask_thumb=ImageOps.contain(Image.fromarray(hard_alpha,"L").convert("RGB"), thumb_size, Image.Resampling.NEAREST)
+
+              panel=Image.new("RGB",(1080,410),(20,20,20))
+              for j,im in enumerate([source_thumb,trans_thumb,mask_thumb]):
+                  x=j*360+(360-im.width)//2
+                  y=(360-im.height)//2
+                  if j==1:
+                      cb=checkerboard(im.size)
+                      cb.paste(im,(0,0),im if im.mode=="RGBA" else None)
+                      panel.paste(cb,(x,y))
+                  else:
+                      panel.paste(im.convert("RGB"),(x,y))
+              d=ImageDraw.Draw(panel)
+              d.text((12,380), f"{slug}  coverage={coverage:.3f}  edge={edge_ratio:.3f}", fill=(240,240,240))
+              previews.append(panel)
+
+          # Update JSON exactly like Saint Andrew.
+          data_path = root / "data" / "icons.json"
+          data = json.loads(data_path.read_text(encoding="utf-8"))
+          by_id = {icon["id"]: icon for icon in data["icons"]}
+          for icon in data["icons"]:
+              if icon.get("id") in range(21,29):
+                  slug = Path(icon["image"]).stem
+                  icon["candle_image"] = f"./icons/candle/{slug}.webp"
+                  icon["cutout_master"] = f"./icons/png/{slug}.png"
+          data_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+          sheet=Image.new("RGB",(1080,410*len(previews)),(10,10,10))
+          for i,panel in enumerate(previews):
+              sheet.paste(panel,(0,i*410))
+          sheet.save(qa/"alpha_qa_contact_sheet.jpg","JPEG",quality=92,optimize=True)
+          (qa/"alpha_qa_metrics.json").write_text(json.dumps(metrics,indent=2),encoding="utf-8")
+          print(json.dumps(metrics,indent=2))
+          PY
+
+      - name: Upload QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-qa
+          path: .alpha-qa/
+          retention-days: 1
+
+      - name: Commit transparent assets
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/icons.json icons/png/ icons/candle/
+          git diff --cached --check
+          git commit -m "Add alpha cutouts for new icon batch [skip ci]"
+          git push origin HEAD:add-orthodox-icons-batch-1
