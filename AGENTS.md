@@ -33,11 +33,11 @@ When sources disagree, use this priority:
 4. `docs/icon-screen-layers.md`
 5. Other documentation
 
-`README.md` and `instructions.md` describe an older stage of the project and contain outdated assumptions such as the old 10-icon catalog and the old fallback architecture.
+`README.md` and `instructions.md` have been updated for the current 1.0 baseline and content-filling stage. They are useful documentation, but current runtime code and data remain higher-priority sources of truth.
 
-**Do not restore old behavior from README.md or instructions.md.**
+**Do not restore old behavior from historical commits or older documentation.**
 
-In particular, the current runtime loads `data/icons.json` directly and does not use the old embedded 10-icon fallback described by those files.
+In particular, the current runtime loads `data/icons.json` directly and does not use the old embedded 10-icon fallback from early versions of the project.
 
 ---
 
