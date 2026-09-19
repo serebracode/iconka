@@ -304,7 +304,9 @@
       "size": "29.8 × 25 см",
       "location": "Petit Palais, Париж",
       "description_full": "Архангел Гавриил возвещает Марии о будущем рождении Христа. Богородица сидит с раскрытыми руками в жесте слушания и принятия; между фигурами находится раскрытая книга с пророчеством Исайи. В верхней части Бог Отец посылает Святого Духа в виде голубя. Образ относится к русской школе XVI века.",
-      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais"
+      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais",
+      "candle_image": "./icons/candle/blagoveshchenie.webp",
+      "cutout_master": "./icons/png/blagoveshchenie.png"
     },
     {
       "id": 22,
@@ -321,7 +323,9 @@
       "size": "31.3 × 27 см",
       "location": "Petit Palais, Париж",
       "description_full": "Многочастная русская композиция XVII века: центральное Рождество окружено сценами пути волхвов, Благовещения пастухам, поклонения волхвов, снов волхвов и Иосифа, Бегства в Египет и Избиения младенцев. Такой развернутый повествовательный цикл был характерен для Центральной России XVII века.",
-      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais"
+      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais",
+      "candle_image": "./icons/candle/rozhdestvo.webp",
+      "cutout_master": "./icons/png/rozhdestvo.png"
     },
     {
       "id": 23,
@@ -338,7 +342,9 @@
       "size": "31.4 × 28.2 см",
       "location": "Petit Palais, Париж",
       "description_full": "Икона Успения из Центральной России, выполненная в первой четверти XVIII века в византийской иконографической традиции. На верхней кромке сохранились надписи возле Богородицы и в нимбе Христа.",
-      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais"
+      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais",
+      "candle_image": "./icons/candle/uspenie.webp",
+      "cutout_master": "./icons/png/uspenie.png"
     },
     {
       "id": 24,
@@ -355,7 +361,9 @@
       "size": "27.8 × 22.7 см",
       "location": "Petit Palais, Париж",
       "description_full": "Богородица изображена по пояс и указывает правой рукой на сидящего на её левой руке Младенца Христа. Он благословляет правой рукой и держит свиток; ноги скрещены так, что видна подошва правой стопы — характерная деталь Тихвинского иконографического типа.",
-      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais"
+      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais",
+      "candle_image": "./icons/candle/tihvinskaya.webp",
+      "cutout_master": "./icons/png/tihvinskaya.png"
     },
     {
       "id": 25,
@@ -372,7 +380,9 @@
       "size": "32.7 × 27.7 см",
       "location": "Petit Palais, Париж",
       "description_full": "Христос стоит в Иордане; Иоанн Предтеча возлагает руку на Его голову, над Христом нисходит Святой Дух в виде голубя, справа служат три ангела. Светлая палитра и монументальные лица связываются музеем с северорусской школой XVII века.",
-      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais"
+      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais",
+      "candle_image": "./icons/candle/kreshchenie.webp",
+      "cutout_master": "./icons/png/kreshchenie.png"
     },
     {
       "id": 26,
@@ -389,7 +399,9 @@
       "size": "31.2 × 26.7 см",
       "location": "Petit Palais, Париж",
       "description_full": "Поясной образ Иоанна Предтечи, написанный в Москве в последней четверти XVI века. Музей указывает, что икона была правой частью Деисуса и, вероятно, предназначалась для церковного иконостаса.",
-      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais"
+      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais",
+      "candle_image": "./icons/candle/ioann_predtecha.webp",
+      "cutout_master": "./icons/png/ioann_predtecha.png"
     },
     {
       "id": 27,
@@ -406,7 +418,9 @@
       "size": "24.4 × 18.3 см",
       "location": "Petit Palais, Париж",
       "description_full": "Антоний Великий, египетский пустынник и один из основоположников христианского монашества, представлен как старец-отшельник с посохом и свитком. Икона создана на Крите в XVII веке.",
-      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais"
+      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais",
+      "candle_image": "./icons/candle/antoniy_velikiy.webp",
+      "cutout_master": "./icons/png/antoniy_velikiy.png"
     },
     {
       "id": 28,
@@ -423,7 +437,9 @@
       "size": "30.5 × 39.5 см",
       "location": "Petit Palais, Париж",
       "description_full": "Тело Христа лежит у подножия креста; Богородица обнимает Его лицо, рядом находятся Иоанн, Иосиф Аримафейский, Никодим и Мария Магдалина. Критская икона 1600–1625 годов связана с византийской литургической традицией эпитафия.",
-      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais"
+      "rights": "CC0 1.0 Universal · Paris Musées / Petit Palais",
+      "candle_image": "./icons/candle/oplakivanie_hrista.webp",
+      "cutout_master": "./icons/png/oplakivanie_hrista.png"
     }
   ]
 }
