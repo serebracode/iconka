@@ -66,7 +66,7 @@ jobs:
           qa = root/".alpha-qa"
           qa.mkdir(exist_ok=True)
 
-          def resize_for_seg(rgb, max_side=900):
+          def resize_for_seg(rgb, max_side=520):
               h,w=rgb.shape[:2]
               scale=min(1.0,max_side/max(h,w))
               if scale == 1:
@@ -111,7 +111,7 @@ jobs:
               bg=np.zeros((1,65),np.float64)
               fg=np.zeros((1,65),np.float64)
               bgr=cv2.cvtColor(small,cv2.COLOR_RGB2BGR)
-              cv2.grabCut(bgr,mask,None,bg,fg,5,cv2.GC_INIT_WITH_MASK)
+              cv2.grabCut(bgr,mask,None,bg,fg,2,cv2.GC_INIT_WITH_MASK)
               out=np.isin(mask,[cv2.GC_FGD,cv2.GC_PR_FGD]).astype(np.uint8)
               out=largest_and_fill(out)
               if scale != 1:
