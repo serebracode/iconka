@@ -175,6 +175,29 @@ jobs:
                   - 6.0*ae
               )
 
+          def outer_edge_rect_mask(rgb):
+              # For museum photos where a decorated inner field confuses GrabCut,
+              # locate the actual outer board edges from long mean-gradient lines.
+              gray=(0.2126*rgb[:,:,0]+0.7152*rgb[:,:,1]+0.0722*rgb[:,:,2]).astype(np.float32)
+              gx=np.abs(np.diff(gray,axis=1)).mean(axis=0)
+              gy=np.abs(np.diff(gray,axis=0)).mean(axis=1)
+              kernel=np.ones(9,dtype=np.float32)/9
+              sx=np.convolve(gx,kernel,mode="same")
+              sy=np.convolve(gy,kernel,mode="same")
+              h,w=gray.shape
+              xr=max(12,int(w*0.08))
+              yr=max(12,int(h*0.08))
+              left=int(np.argmax(sx[:xr]))
+              right=int((w-1-xr)+np.argmax(sx[w-1-xr:]))
+              top=int(np.argmax(sy[:yr]))
+              bottom=int((h-1-yr)+np.argmax(sy[h-1-yr:]))
+              # Bias inward by two pixels so the photographed backdrop does not survive as a rim.
+              left=min(w-2,left+2); top=min(h-2,top+2)
+              right=max(left+2,right-1); bottom=max(top+2,bottom-1)
+              m=np.zeros((h,w),dtype=np.uint8)
+              m[top:bottom+1,left:right+1]=1
+              return m
+
           def checkerboard(size,cell=24):
               w,h=size
               bg=Image.new("RGB",(w,h),(48,48,48))
@@ -208,14 +231,21 @@ jobs:
           for slug in slugs:
               src=Image.open(root/"icons"/f"{slug}.jpg").convert("RGB")
               rgb=np.asarray(src)
-              candidates=[]
-              for cfg in configs:
-                  m=grab_candidate(rgb,cfg)
-                  g=geom(m)
-                  ae=aspect_error(g, expected_ratios[slug])
-                  candidates.append((score(g, expected_ratios[slug]),cfg,m,g,ae))
-              candidates.sort(key=lambda x:x[0],reverse=True)
-              best_score,best_cfg,hard,g,best_aspect_error=candidates[0]
+              if slug == "rozhdestvo":
+                  hard=outer_edge_rect_mask(rgb)
+                  g=geom(hard)
+                  best_cfg=("outer-edge-rect",)
+                  best_aspect_error=aspect_error(g, expected_ratios[slug])
+                  best_score=score(g, expected_ratios[slug])
+              else:
+                  candidates=[]
+                  for cfg in configs:
+                      m=grab_candidate(rgb,cfg)
+                      g=geom(m)
+                      ae=aspect_error(g, expected_ratios[slug])
+                      candidates.append((score(g, expected_ratios[slug]),cfg,m,g,ae))
+                  candidates.sort(key=lambda x:x[0],reverse=True)
+                  best_score,best_cfg,hard,g,best_aspect_error=candidates[0]
               if best_score < -100:
                   raise RuntimeError(f"No plausible board mask for {slug}: {[(c[0],c[1],c[3]) for c in candidates]}")
 
