@@ -9,13 +9,12 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 jobs:
   prepare-alpha:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -28,21 +27,17 @@ jobs:
           python-version: '3.11'
 
       - name: Install image tooling
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install "rembg[cpu]" Pillow opencv-python-headless numpy
+        run: python -m pip install --quiet Pillow opencv-python-headless numpy
 
-      - name: Build transparent variants and QA sheet
+      - name: Build board cutouts and QA sheet
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          from io import BytesIO
           import json, math
           import numpy as np
           import cv2
           from PIL import Image, ImageOps, ImageDraw
-          from rembg import remove, new_session
 
           slugs = [
               "blagoveshchenie",
@@ -54,159 +49,221 @@ jobs:
               "antoniy_velikiy",
               "oplakivanie_hrista",
           ]
+          configs = [
+              (0.012, 0.018, 0.42),
+              (0.016, 0.024, 0.42),
+              (0.020, 0.030, 0.42),
+              (0.025, 0.038, 0.42),
+              (0.030, 0.045, 0.42),
+              (0.016, 0.032, 0.34),
+              (0.022, 0.042, 0.34),
+              (0.030, 0.055, 0.34),
+          ]
 
           root = Path(".")
-          (root / "icons" / "png").mkdir(parents=True, exist_ok=True)
-          (root / "icons" / "candle").mkdir(parents=True, exist_ok=True)
-          qa = root / ".alpha-qa"
+          (root/"icons"/"png").mkdir(parents=True, exist_ok=True)
+          (root/"icons"/"candle").mkdir(parents=True, exist_ok=True)
+          qa = root/".alpha-qa"
           qa.mkdir(exist_ok=True)
 
-          session = None
-          selected_model = None
-          errors = []
-          for model in ["birefnet-general", "isnet-general-use", "u2net"]:
-              try:
-                  session = new_session(model)
-                  selected_model = model
-                  break
-              except Exception as exc:
-                  errors.append(f"{model}: {exc}")
-          if session is None:
-              raise RuntimeError("Could not initialize rembg model: " + " | ".join(errors))
+          def resize_for_seg(rgb, max_side=900):
+              h,w=rgb.shape[:2]
+              scale=min(1.0,max_side/max(h,w))
+              if scale == 1:
+                  return rgb,1.0
+              return cv2.resize(rgb,(round(w*scale),round(h*scale)),interpolation=cv2.INTER_AREA),scale
 
-          def largest_component(mask):
-              mask8 = (mask > 0).astype(np.uint8)
-              n, labels, stats, _ = cv2.connectedComponentsWithStats(mask8, 8)
-              if n <= 1:
-                  return mask8
-              idx = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
-              return (labels == idx).astype(np.uint8)
-
-          def fill_holes(mask):
-              contours, _ = cv2.findContours(mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-              filled = np.zeros_like(mask, dtype=np.uint8)
+          def largest_and_fill(mask):
+              mask=(mask>0).astype(np.uint8)
+              n,labels,stats,_=cv2.connectedComponentsWithStats(mask,8)
+              if n>1:
+                  idx=1+int(np.argmax(stats[1:,cv2.CC_STAT_AREA]))
+                  mask=(labels==idx).astype(np.uint8)
+              mask=cv2.morphologyEx(mask,cv2.MORPH_CLOSE,np.ones((3,3),np.uint8))
+              contours,_=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+              filled=np.zeros_like(mask)
               if contours:
-                  cv2.drawContours(filled, contours, -1, 1, thickness=cv2.FILLED)
+                  cv2.drawContours(filled,contours,-1,1,cv2.FILLED)
               return filled
 
-          def checkerboard(size, cell=28):
+          def grab_candidate(rgb, cfg):
+              small,scale=resize_for_seg(rgb)
+              h,w=small.shape[:2]
+              corner_frac,pbg_frac,fg_frac=cfg
+              c=max(2,round(min(h,w)*corner_frac))
+              b=max(c+1,round(min(h,w)*pbg_frac))
+
+              mask=np.full((h,w),cv2.GC_PR_FGD,np.uint8)
+              mask[:b,:]=cv2.GC_PR_BGD
+              mask[-b:,:]=cv2.GC_PR_BGD
+              mask[:,:b]=cv2.GC_PR_BGD
+              mask[:,-b:]=cv2.GC_PR_BGD
+
+              mask[:c,:c]=cv2.GC_BGD
+              mask[:c,-c:]=cv2.GC_BGD
+              mask[-c:,:c]=cv2.GC_BGD
+              mask[-c:,-c:]=cv2.GC_BGD
+
+              fw=max(8,round(w*fg_frac)); fh=max(8,round(h*fg_frac))
+              x0=(w-fw)//2; y0=(h-fh)//2
+              mask[y0:y0+fh,x0:x0+fw]=cv2.GC_FGD
+
+              bg=np.zeros((1,65),np.float64)
+              fg=np.zeros((1,65),np.float64)
+              bgr=cv2.cvtColor(small,cv2.COLOR_RGB2BGR)
+              cv2.grabCut(bgr,mask,None,bg,fg,5,cv2.GC_INIT_WITH_MASK)
+              out=np.isin(mask,[cv2.GC_FGD,cv2.GC_PR_FGD]).astype(np.uint8)
+              out=largest_and_fill(out)
+              if scale != 1:
+                  H,W=rgb.shape[:2]
+                  out=cv2.resize(out,(W,H),interpolation=cv2.INTER_NEAREST)
+                  out=largest_and_fill(out)
+              return out
+
+          def geom(mask):
+              h,w=mask.shape
+              area=float(mask.sum())
+              coverage=area/(h*w)
+              contours,_=cv2.findContours(mask.astype(np.uint8),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+              if not contours:
+                  return {"coverage":0,"rectangularity":0,"edge_ratio":1,"bbox":[0,0,0,0],"bbox_fill":0}
+              cnt=max(contours,key=cv2.contourArea)
+              rect=cv2.minAreaRect(cnt)
+              rw,rh=rect[1]
+              rect_area=max(1.0,rw*rh)
+              rectangularity=min(1.0,area/rect_area)
+              ys,xs=np.where(mask>0)
+              bbox=[int(xs.min()),int(ys.min()),int(xs.max()+1),int(ys.max()+1)]
+              bbox_fill=((bbox[2]-bbox[0])*(bbox[3]-bbox[1]))/(h*w)
+              edge=int(mask[0,:].sum()+mask[-1,:].sum()+mask[:,0].sum()+mask[:,-1].sum())
+              edge_ratio=edge/(2*w+2*h)
+              return {
+                  "coverage":coverage,
+                  "rectangularity":rectangularity,
+                  "edge_ratio":edge_ratio,
+                  "bbox":bbox,
+                  "bbox_fill":bbox_fill,
+              }
+
+          def score(g):
+              cov=g["coverage"]
+              if cov < 0.48 or cov > 0.985:
+                  return -999
+              return (
+                  2.2*cov
+                  + 1.7*g["rectangularity"]
+                  + 0.5*g["bbox_fill"]
+                  - 2.5*g["edge_ratio"]
+                  - 1.2*abs(cov-0.88)
+              )
+
+          def checkerboard(size,cell=24):
               w,h=size
-              bg=Image.new("RGB", (w,h), (54,54,54))
+              bg=Image.new("RGB",(w,h),(48,48,48))
               d=ImageDraw.Draw(bg)
               for y in range(0,h,cell):
                   for x in range(0,w,cell):
                       if ((x//cell)+(y//cell))%2:
-                          d.rectangle((x,y,x+cell-1,y+cell-1), fill=(92,92,92))
+                          d.rectangle((x,y,x+cell-1,y+cell-1),fill=(88,88,88))
               return bg
 
-          metrics = []
-          previews = []
+          # Calibration against the known Saint Andrew alpha master.
+          andrey_rgb=np.asarray(Image.open(root/"icons"/"andrey.jpg").convert("RGB"))
+          andrey_truth_img=Image.open(root/"icons"/"png"/"andrey.png").convert("RGBA")
+          truth=np.asarray(andrey_truth_img.getchannel("A").resize(
+              (andrey_rgb.shape[1],andrey_rgb.shape[0]),Image.Resampling.NEAREST
+          ))>0
+          calibration=[]
+          for cfg in configs:
+              cand=grab_candidate(andrey_rgb,cfg)>0
+              inter=np.logical_and(cand,truth).sum()
+              union=np.logical_or(cand,truth).sum()
+              iou=float(inter/union)
+              calibration.append({"cfg":cfg,"iou":iou,**geom(cand.astype(np.uint8))})
+          best_cal=max(calibration,key=lambda x:x["iou"])
+          if best_cal["iou"] < 0.82:
+              raise RuntimeError(f"GrabCut calibration against andrey.png is too weak: {best_cal}")
+
+          metrics=[]
+          panels=[]
 
           for slug in slugs:
-              src_path = root / "icons" / f"{slug}.jpg"
-              src = Image.open(src_path).convert("RGB")
+              src=Image.open(root/"icons"/f"{slug}.jpg").convert("RGB")
+              rgb=np.asarray(src)
+              candidates=[]
+              for cfg in configs:
+                  m=grab_candidate(rgb,cfg)
+                  g=geom(m)
+                  candidates.append((score(g),cfg,m,g))
+              candidates.sort(key=lambda x:x[0],reverse=True)
+              best_score,best_cfg,hard,g=candidates[0]
+              if best_score < -100:
+                  raise RuntimeError(f"No plausible board mask for {slug}: {[(c[0],c[1],c[3]) for c in candidates]}")
 
-              result = remove(
-                  src,
-                  session=session,
-                  alpha_matting=True,
-                  alpha_matting_foreground_threshold=245,
-                  alpha_matting_background_threshold=12,
-                  alpha_matting_erode_size=4,
-              )
-              if not isinstance(result, Image.Image):
-                  result = Image.open(BytesIO(result))
-              rgba = result.convert("RGBA")
-              rgb = np.asarray(rgba)[...,:3]
-              alpha = np.asarray(rgba.getchannel("A"), dtype=np.uint8)
+              # One-pixel inward bias before antialiasing removes the photographed backdrop fringe.
+              eroded=cv2.erode(hard,np.ones((3,3),np.uint8),iterations=1)
+              soft=cv2.GaussianBlur((eroded*252).astype(np.uint8),(0,0),sigmaX=1.0,sigmaY=1.0)
+              soft[hard==0]=np.minimum(soft[hard==0],96)
 
-              # Soft mask cleanup: discard detached specks, but keep anti-aliased edge.
-              support = largest_component((alpha >= 16).astype(np.uint8))
-              support = cv2.morphologyEx(support, cv2.MORPH_CLOSE, np.ones((5,5), np.uint8))
-              support = fill_holes(support)
-              soft = alpha.copy()
-              soft[support == 0] = 0
+              rgba_soft=np.dstack([rgb,soft])
+              rgba_hard=np.dstack([rgb,(hard*255).astype(np.uint8)])
 
-              # Hard alpha master: one solid icon-board silhouette, like andrey.png.
-              hard = largest_component((soft >= 40).astype(np.uint8))
-              hard = cv2.morphologyEx(hard, cv2.MORPH_CLOSE, np.ones((5,5), np.uint8))
-              hard = fill_holes(hard)
-              hard_alpha = (hard * 255).astype(np.uint8)
-
-              candle = Image.fromarray(np.dstack([rgb, soft]), "RGBA")
-              candle_path = root / "icons" / "candle" / f"{slug}.webp"
-              candle.save(candle_path, "WEBP", quality=90, method=6, exact=True)
-
-              cutout = Image.fromarray(np.dstack([rgb, hard_alpha]), "RGBA")
-              cutout_path = root / "icons" / "png" / f"{slug}.png"
-              cutout.save(cutout_path, "PNG", optimize=True, compress_level=9)
-
-              h,w = hard.shape
-              ys,xs = np.where(hard > 0)
-              if len(xs) == 0:
-                  raise RuntimeError(f"Empty alpha mask for {slug}")
-              bbox = [int(xs.min()), int(ys.min()), int(xs.max()+1), int(ys.max()+1)]
-              coverage = float(hard.mean())
-              edge_fg = int(hard[0,:].sum()+hard[-1,:].sum()+hard[:,0].sum()+hard[:,-1].sum())
-              perimeter = 2*w+2*h
-              edge_ratio = edge_fg / perimeter
-
-              # Sanity guard: reject obvious failed segmentation.
-              if coverage < 0.45 or coverage > 0.995:
-                  raise RuntimeError(f"Implausible alpha coverage for {slug}: {coverage:.4f}")
-              if edge_ratio > 0.80:
-                  raise RuntimeError(f"Too much foreground touching canvas edge for {slug}: {edge_ratio:.4f}")
+              candle=Image.fromarray(rgba_soft.astype(np.uint8),"RGBA")
+              cutout=Image.fromarray(rgba_hard.astype(np.uint8),"RGBA")
+              candle_path=root/"icons"/"candle"/f"{slug}.webp"
+              cutout_path=root/"icons"/"png"/f"{slug}.png"
+              candle.save(candle_path,"WEBP",quality=90,method=6,exact=True)
+              cutout.save(cutout_path,"PNG",optimize=True,compress_level=9)
 
               metrics.append({
-                  "slug": slug,
-                  "model": selected_model,
-                  "size": [w,h],
-                  "bbox": bbox,
-                  "coverage": round(coverage,4),
-                  "edge_ratio": round(edge_ratio,4),
-                  "soft_zero_pct": round(float((soft==0).mean()),4),
-                  "soft_partial_pct": round(float(((soft>0)&(soft<255)).mean()),4),
-                  "png_bytes": cutout_path.stat().st_size,
-                  "webp_bytes": candle_path.stat().st_size,
+                  "slug":slug,
+                  "config":list(best_cfg),
+                  "score":round(float(best_score),4),
+                  "coverage":round(float(g["coverage"]),4),
+                  "rectangularity":round(float(g["rectangularity"]),4),
+                  "edge_ratio":round(float(g["edge_ratio"]),4),
+                  "bbox_fill":round(float(g["bbox_fill"]),4),
+                  "bbox":g["bbox"],
+                  "png_bytes":cutout_path.stat().st_size,
+                  "webp_bytes":candle_path.stat().st_size,
               })
 
-              # QA panel: source / transparent result / alpha.
-              thumb_size=(360,360)
-              source_thumb=ImageOps.contain(src, thumb_size, Image.Resampling.LANCZOS)
-              trans_thumb=ImageOps.contain(candle, thumb_size, Image.Resampling.LANCZOS)
-              mask_thumb=ImageOps.contain(Image.fromarray(hard_alpha,"L").convert("RGB"), thumb_size, Image.Resampling.NEAREST)
-
-              panel=Image.new("RGB",(1080,410),(20,20,20))
-              for j,im in enumerate([source_thumb,trans_thumb,mask_thumb]):
+              # Source / transparent candle / hard alpha.
+              thumb=(360,360)
+              src_t=ImageOps.contain(src,thumb,Image.Resampling.LANCZOS)
+              can_t=ImageOps.contain(candle,thumb,Image.Resampling.LANCZOS)
+              mask_t=ImageOps.contain(Image.fromarray((hard*255).astype(np.uint8),"L").convert("RGB"),thumb,Image.Resampling.NEAREST)
+              panel=Image.new("RGB",(1080,410),(18,18,18))
+              for j,im in enumerate([src_t,can_t,mask_t]):
                   x=j*360+(360-im.width)//2
                   y=(360-im.height)//2
                   if j==1:
                       cb=checkerboard(im.size)
-                      cb.paste(im,(0,0),im if im.mode=="RGBA" else None)
+                      cb.paste(im,(0,0),im)
                       panel.paste(cb,(x,y))
                   else:
                       panel.paste(im.convert("RGB"),(x,y))
               d=ImageDraw.Draw(panel)
-              d.text((12,380), f"{slug}  coverage={coverage:.3f}  edge={edge_ratio:.3f}", fill=(240,240,240))
-              previews.append(panel)
+              d.text((12,380),f"{slug} cov={g['coverage']:.3f} rect={g['rectangularity']:.3f} edge={g['edge_ratio']:.3f}",fill=(240,240,240))
+              panels.append(panel)
 
-          # Update JSON exactly like Saint Andrew.
-          data_path = root / "data" / "icons.json"
-          data = json.loads(data_path.read_text(encoding="utf-8"))
-          by_id = {icon["id"]: icon for icon in data["icons"]}
+          data_path=root/"data"/"icons.json"
+          data=json.loads(data_path.read_text(encoding="utf-8"))
           for icon in data["icons"]:
-              if icon.get("id") in range(21,29):
-                  slug = Path(icon["image"]).stem
-                  icon["candle_image"] = f"./icons/candle/{slug}.webp"
-                  icon["cutout_master"] = f"./icons/png/{slug}.png"
-          data_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+              if 21 <= icon.get("id",0) <= 28:
+                  slug=Path(icon["image"]).stem
+                  icon["candle_image"]=f"./icons/candle/{slug}.webp"
+                  icon["cutout_master"]=f"./icons/png/{slug}.png"
+          data_path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 
-          sheet=Image.new("RGB",(1080,410*len(previews)),(10,10,10))
-          for i,panel in enumerate(previews):
-              sheet.paste(panel,(0,i*410))
+          sheet=Image.new("RGB",(1080,410*len(panels)),(10,10,10))
+          for i,panel in enumerate(panels):
+              sheet.paste(panel,(0,410*i))
           sheet.save(qa/"alpha_qa_contact_sheet.jpg","JPEG",quality=92,optimize=True)
-          (qa/"alpha_qa_metrics.json").write_text(json.dumps(metrics,indent=2),encoding="utf-8")
-          print(json.dumps(metrics,indent=2))
+
+          report={"calibration":calibration,"best_calibration":best_cal,"icons":metrics}
+          (qa/"alpha_qa_metrics.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
+          print(json.dumps(report,indent=2))
           PY
 
       - name: Upload QA
@@ -215,6 +272,20 @@ jobs:
           name: alpha-qa
           path: .alpha-qa/
           retention-days: 1
+
+      - name: Validate masks
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open(".alpha-qa/alpha_qa_metrics.json"))
+          assert r["best_calibration"]["iou"] >= 0.82, r["best_calibration"]
+          for x in r["icons"]:
+              assert 0.48 <= x["coverage"] <= 0.985, x
+              assert x["rectangularity"] >= 0.72, x
+              assert x["edge_ratio"] <= 0.55, x
+          print("alpha validation passed")
+          PY
 
       - name: Commit transparent assets
         shell: bash
