@@ -1,0 +1,248 @@
+name: Prepare Iconka icon batch 1
+
+on:
+  push:
+    branches:
+      - add-orthodox-icons-batch-1
+    paths:
+      - .github/workflows/prepare-iconka-batch1.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: add-orthodox-icons-batch-1
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: python -m pip install --quiet Pillow
+
+      - name: Download museum masters and build Iconka assets
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, re, hashlib, urllib.request, html as htmlmod
+          from pathlib import Path
+          from PIL import Image, ImageOps
+
+          items = [
+              {
+                  "id": 21,
+                  "slug": "blagoveshchenie",
+                  "page": "https://www.parismuseescollections.paris.fr/fr/petit-palais/oeuvres/l-annonciation-1",
+                  "title": "Благовещение Пресвятой Богородицы",
+                  "title_short": "Благовещение",
+                  "author_full": "Русская школа",
+                  "date": "XVI век",
+                  "material": "Неизвестно",
+                  "size": "29.8 × 25 см",
+                  "location": "Petit Palais, Париж",
+                  "description_full": "Архангел Гавриил возвещает Марии о будущем рождении Христа. Богородица сидит с раскрытыми руками в жесте слушания и принятия; между фигурами находится раскрытая книга с пророчеством Исайи. В верхней части Бог Отец посылает Святого Духа в виде голубя. Образ относится к русской школе XVI века."
+              },
+              {
+                  "id": 22,
+                  "slug": "rozhdestvo",
+                  "page": "https://www.parismuseescollections.paris.fr/fr/petit-palais/oeuvres/nativite-0",
+                  "title": "Рождество Христово",
+                  "title_short": "Рождество Христово",
+                  "author_full": "Школа Центральной России",
+                  "date": "XVII век (1600–1700)",
+                  "material": "Дерево, темпера",
+                  "size": "31.3 × 27 см",
+                  "location": "Petit Palais, Париж",
+                  "description_full": "Многочастная русская композиция XVII века: центральное Рождество окружено сценами пути волхвов, Благовещения пастухам, поклонения волхвов, снов волхвов и Иосифа, Бегства в Египет и Избиения младенцев. Такой развернутый повествовательный цикл был характерен для Центральной России XVII века."
+              },
+              {
+                  "id": 23,
+                  "slug": "uspenie",
+                  "page": "https://www.parismuseescollections.paris.fr/fr/petit-palais/oeuvres/la-dormition-de-la-vierge-0",
+                  "title": "Успение Пресвятой Богородицы",
+                  "title_short": "Успение Богородицы",
+                  "author_full": "Школа Центральной России",
+                  "date": "Первая четверть XVIII века",
+                  "material": "Дерево, темпера",
+                  "size": "31.4 × 28.2 см",
+                  "location": "Petit Palais, Париж",
+                  "description_full": "Икона Успения из Центральной России, выполненная в первой четверти XVIII века в византийской иконографической традиции. На верхней кромке сохранились надписи возле Богородицы и в нимбе Христа."
+              },
+              {
+                  "id": 24,
+                  "slug": "tihvinskaya",
+                  "page": "https://www.parismuseescollections.paris.fr/fr/petit-palais/oeuvres/la-mere-de-dieu-de-tikhvine",
+                  "title": "Тихвинская Богоматерь",
+                  "title_short": "Тихвинская Богоматерь",
+                  "author_full": "Московская школа",
+                  "date": "1500–1525 годы",
+                  "material": "Неизвестно",
+                  "size": "27.8 × 22.7 см",
+                  "location": "Petit Palais, Париж",
+                  "description_full": "Богородица изображена по пояс и указывает правой рукой на сидящего на её левой руке Младенца Христа. Он благословляет правой рукой и держит свиток; ноги скрещены так, что видна подошва правой стопы — характерная деталь Тихвинского иконографического типа."
+              },
+              {
+                  "id": 25,
+                  "slug": "kreshchenie",
+                  "page": "https://www.parismuseescollections.paris.fr/fr/petit-palais/oeuvres/le-bapteme-du-christ-0",
+                  "title": "Крещение Господне (Богоявление)",
+                  "title_short": "Крещение Господне",
+                  "author_full": "Школа Северной Руси",
+                  "date": "XVII век (1600–1700)",
+                  "material": "Неизвестно",
+                  "size": "32.7 × 27.7 см",
+                  "location": "Petit Palais, Париж",
+                  "description_full": "Христос стоит в Иордане; Иоанн Предтеча возлагает руку на Его голову, над Христом нисходит Святой Дух в виде голубя, справа служат три ангела. Светлая палитра и монументальные лица связываются музеем с северорусской школой XVII века."
+              },
+              {
+                  "id": 26,
+                  "slug": "ioann_predtecha",
+                  "page": "https://www.parismuseescollections.paris.fr/fr/petit-palais/oeuvres/saint-jean-baptiste-2",
+                  "title": "Иоанн Предтеча",
+                  "title_short": "Иоанн Предтеча",
+                  "author_full": "Московская школа",
+                  "date": "Последняя четверть XVI века",
+                  "material": "Дерево, темпера",
+                  "size": "31.2 × 26.7 см",
+                  "location": "Petit Palais, Париж",
+                  "description_full": "Поясной образ Иоанна Предтечи, написанный в Москве в последней четверти XVI века. Музей указывает, что икона была правой частью Деисуса и, вероятно, предназначалась для церковного иконостаса."
+              },
+              {
+                  "id": 27,
+                  "slug": "antoniy_velikiy",
+                  "page": "https://www.parismuseescollections.paris.fr/fr/petit-palais/oeuvres/saint-antoine-0",
+                  "title": "Антоний Великий",
+                  "title_short": "Антоний Великий",
+                  "author_full": "Критская школа",
+                  "date": "XVII век",
+                  "material": "Дерево, темпера, золото",
+                  "size": "24.4 × 18.3 см",
+                  "location": "Petit Palais, Париж",
+                  "description_full": "Антоний Великий, египетский пустынник и один из основоположников христианского монашества, представлен как старец-отшельник с посохом и свитком. Икона создана на Крите в XVII веке."
+              },
+              {
+                  "id": 28,
+                  "slug": "oplakivanie_hrista",
+                  "page": "https://www.parismuseescollections.paris.fr/fr/petit-palais/oeuvres/la-deploration-sur-le-christ-mort",
+                  "title": "Оплакивание Христа",
+                  "title_short": "Оплакивание Христа",
+                  "author_full": "Критская школа",
+                  "date": "1600–1625 годы",
+                  "material": "Дерево, темпера, золото",
+                  "size": "30.5 × 39.5 см",
+                  "location": "Petit Palais, Париж",
+                  "description_full": "Тело Христа лежит у подножия креста; Богородица обнимает Его лицо, рядом находятся Иоанн, Иосиф Аримафейский, Никодим и Мария Магдалина. Критская икона 1600–1625 годов связана с византийской литургической традицией эпитафия."
+              }
+          ]
+
+          root = Path(".")
+          (root/"icons"/"preview").mkdir(parents=True, exist_ok=True)
+          (root/"icons"/"loading").mkdir(parents=True, exist_ok=True)
+          headers = {"User-Agent": "Mozilla/5.0 Iconka/1.0"}
+
+          def get(url):
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req, timeout=60) as response:
+                  return response.read()
+
+          for item in items:
+              page_html = get(item["page"]).decode("utf-8", "ignore")
+              match = re.search(r'https://apicollections\.parismusees\.paris\.fr/iiif/\d+/manifest', page_html)
+              if not match:
+                  raise RuntimeError(f'IIIF manifest not found for {item["page"]}')
+              manifest_url = match.group(0)
+              manifest = json.loads(get(manifest_url).decode("utf-8"))
+              canvas = manifest["sequences"][0]["canvases"][0]
+              source_url = canvas["images"][0]["resource"]["@id"]
+              raw = get(source_url)
+
+              source_tmp = root / f'.{item["slug"]}_source.jpg'
+              source_tmp.write_bytes(raw)
+              image = ImageOps.exif_transpose(Image.open(source_tmp)).convert("RGB")
+
+              main = image.copy()
+              main.thumbnail((2400, 2400), Image.Resampling.LANCZOS)
+              main_path = root/"icons"/f'{item["slug"]}.jpg'
+              main.save(main_path, "JPEG", quality=90, optimize=True, progressive=True)
+
+              preview = ImageOps.fit(
+                  image,
+                  (384, 384),
+                  method=Image.Resampling.LANCZOS,
+                  centering=(0.5, 0.5)
+              )
+              preview_path = root/"icons"/"preview"/f'{item["slug"]}_preview.jpg'
+              preview.save(preview_path, "JPEG", quality=88, optimize=True, progressive=True)
+
+              loading = image.copy()
+              loading.thumbnail((48, 48), Image.Resampling.LANCZOS)
+              loading_path = root/"icons"/"loading"/f'{item["slug"]}_loading.jpg'
+              loading.save(loading_path, "JPEG", quality=76, optimize=True, progressive=True)
+              cache_key = hashlib.sha256(loading_path.read_bytes()).hexdigest()[:10]
+
+              item["image"] = f'./icons/{item["slug"]}.jpg'
+              item["loading_image"] = f'./icons/loading/{item["slug"]}_loading.jpg?v={cache_key}'
+              item["image_source"] = item["page"]
+              item["image_source_label"] = "Изображение: Paris Musées / Petit Palais"
+              item["image_credit"] = "Paris Musées / Petit Palais · CC0"
+              item["rights"] = "CC0 1.0 Universal · Paris Musées / Petit Palais"
+              source_tmp.unlink()
+
+          data_path = root/"data"/"icons.json"
+          data = json.loads(data_path.read_text(encoding="utf-8"))
+          existing_ids = {icon["id"] for icon in data["icons"]}
+          existing_images = {icon.get("image") for icon in data["icons"]}
+
+          for item in items:
+              if item["id"] in existing_ids:
+                  raise RuntimeError(f'Duplicate id: {item["id"]}')
+              if item["image"] in existing_images:
+                  raise RuntimeError(f'Duplicate image path: {item["image"]}')
+
+          fields = [
+              "id", "title", "title_short", "image", "loading_image",
+              "image_source", "image_source_label", "image_credit",
+              "author_full", "date", "material", "size", "location",
+              "description_full", "rights"
+          ]
+          for item in items:
+              data["icons"].append({key: item[key] for key in fields})
+
+          data_path.write_text(
+              json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8"
+          )
+
+          # Safety checks
+          reparsed = json.loads(data_path.read_text(encoding="utf-8"))
+          ids = [icon["id"] for icon in reparsed["icons"]]
+          if len(ids) != len(set(ids)):
+              raise RuntimeError("Duplicate IDs after write")
+          for item in items:
+              for path in [
+                  root/item["image"].removeprefix("./"),
+                  root/"icons"/"preview"/f'{item["slug"]}_preview.jpg',
+                  root/item["loading_image"].split("?")[0].removeprefix("./")
+              ]:
+                  if not path.exists() or path.stat().st_size == 0:
+                      raise RuntimeError(f"Missing asset: {path}")
+
+          print(f"Prepared {len(items)} icons; catalog now has {len(reparsed['icons'])} records.")
+          PY
+
+      - name: Commit generated content to branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/icons.json icons/
+          git diff --cached --check
+          git commit -m "Add eight Orthodox icons from Petit Palais [skip ci]"
+          git push origin HEAD:add-orthodox-icons-batch-1
