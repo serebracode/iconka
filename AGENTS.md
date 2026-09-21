@@ -45,15 +45,16 @@ In particular, the current runtime loads `data/icons.json` directly and does not
 
 Unless the user explicitly asks to change application behavior, layout, animation, navigation, loading, candle mode, gestures, or UI:
 
-### Allowed files for adding an icon
+### Allowed files for adding or replacing an icon
 
 - `data/icons.json`
 - `icons/<slug>.jpg`
 - `icons/preview/<slug>_preview.jpg`
 - `icons/loading/<slug>_loading.jpg`
-- optional icon-specific files explicitly required and supplied/prepared for candle mode:
-  - `icons/candle/<slug>.webp`
-  - `icons/png/<slug>.png`
+- `icons/candle/<slug>.webp`
+- `icons/png/<slug>.png`
+
+For every new or replaced icon, all five image assets are mandatory. Their roles, quality requirements, source policy and QA gate are defined in [`docs/icon-asset-pipeline.md`](docs/icon-asset-pipeline.md).
 
 ### Frozen by default
 
@@ -98,7 +99,7 @@ Typical record:
 }
 ```
 
-Fields such as `image_source_label`, `preview_image`, `candle_image`, and `cutout_master` are optional and should only be added when actually needed.
+For every new or replaced icon, `preview_image`, `candle_image` and `cutout_master` are required. `image_source`, `image_credit` and `rights` are also mandatory unless a factual unknown is explicitly recorded as `Неизвестно`.
 
 ### IDs
 
@@ -114,7 +115,9 @@ The UI sorts icons alphabetically by title, so JSON order is not the catalog dis
 
 ## Asset conventions
 
-For a normal new icon, create all three standard visual assets:
+The full binding specification is [`docs/icon-asset-pipeline.md`](docs/icon-asset-pipeline.md). It takes precedence for selection, individual alpha assets, output characteristics and QA.
+
+For a normal new icon, create the following standard visual assets:
 
 ### 1. Main image
 
@@ -149,15 +152,22 @@ The catalog automatically derives this path from `image` when `preview_image` is
 
 If a loading asset is wrong, fix the asset. Do not change the progressive-loading code.
 
+### 4. Candle image and cutout master
+
+Every new or replaced icon must have both `icons/candle/<slug>.webp` and `icons/png/<slug>.png`.
+
+- Each pair is created from that icon's own master and must have its own external contour.
+- `candle_image` is the visible transparent WebP; `cutout_master` is the lossless PNG alpha source.
+- Never reuse another icon's alpha/cutout asset, use a generic mask, or fall back to a rectangular crop.
+- Validate the result on gray and black backgrounds and in real Candle Mode before committing.
+
 ---
 
 ## Candle-mode assets
 
-Most icons currently work without a dedicated `candle_image`; the runtime falls back to `image`.
+Legacy records may still fall back to `image`. This exception must not be extended: all new and replaced icons require dedicated candle assets.
 
-Do not create or reference special candle assets unless they actually exist and are intentional.
-
-If supplied:
+For dedicated assets:
 
 - `candle_image` is the display asset for candle mode.
 - `cutout_master` is an alpha source for masks/projection when a separate alpha master is required.
