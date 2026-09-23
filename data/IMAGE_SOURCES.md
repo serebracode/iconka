@@ -23,7 +23,7 @@
 | Файл в проекте | Запись произведения | Кредит |
 | --- | --- | --- |
 | `icons/gruzinskaya.jpg` | [Богоматерь Одигитрия (в типе «Грузинской»)](https://www.icon-art.info/masterpiece.php?mst_id=6233) | Неизвестный мастер; Новгородская мастерская митрополита Макария |
-| `icons/eleusa.jpg` | [Богоматерь Умиление](https://collectiononline.kreml.ru/entity/OBJECT/9679) | Музеи Московского Кремля |
+| `icons/eleusa.jpg` | [Богоматерь с Младенцем (Елеуса)](https://www.clevelandart.org/art/2010.154) | Приписывается Ангелосу Акотантосу; Cleveland Museum of Art; Leonard C. Hanna Jr. Fund; CC0 |
 | `icons/nikolay.jpg` | [Никола Новодевичий](https://www.pravmir.ru/nikola-novodevichij-mudrost-svyatosti-chitaem-ikony/) | Государственная Третьяковская галерея |
 | `icons/vsekh_skorbyashih_radost.jpg` | [Богоматерь «Всех скорбящих радость»](https://www.icon-art.info/masterpiece.php?mst_id=4983) | Алексей Иванович Квашнин; Государственная Третьяковская галерея |
 
