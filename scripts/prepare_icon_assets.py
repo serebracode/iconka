@@ -185,7 +185,7 @@ def update_icon_json(slugs: list[str]) -> None:
 
     with path.open("w", encoding="utf-8") as handle:
         json.dump(data, handle, ensure_ascii=False, indent=2)
-        handle.write("\\n")
+        handle.write("\n")
 
 
 def main() -> int:
