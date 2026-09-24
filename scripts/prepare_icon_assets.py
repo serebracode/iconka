@@ -95,7 +95,8 @@ def process(slug: str) -> None:
         die(f"{slug}: PNG has no meaningful alpha channel")
 
     main = fit_long(main_src, MAIN_LONG)
-    alpha_master = cutout_src.convert("RGBA")\n    alpha_main = fit_long(alpha_master, MAIN_LONG)
+    alpha_master = cutout_src.convert("RGBA")
+    alpha_main = fit_long(alpha_master, MAIN_LONG)
     preview = square_src.resize((PREVIEW_SIZE, PREVIEW_SIZE), Image.Resampling.LANCZOS)
     loading = fit_long(main_src, LOADING_LONG)
     cutout = fit_long(alpha_master, CUTOUT_LONG)
