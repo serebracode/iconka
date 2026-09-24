@@ -95,10 +95,10 @@ def process(slug: str) -> None:
         die(f"{slug}: PNG has no meaningful alpha channel")
 
     main = fit_long(main_src, MAIN_LONG)
-    alpha_main = fit_long(cutout_src.convert("RGBA"), MAIN_LONG)
+    alpha_master = cutout_src.convert("RGBA")\n    alpha_main = fit_long(alpha_master, MAIN_LONG)
     preview = square_src.resize((PREVIEW_SIZE, PREVIEW_SIZE), Image.Resampling.LANCZOS)
     loading = fit_long(main_src, LOADING_LONG)
-    cutout = fit_long(cutout_src.convert("RGBA"), CUTOUT_LONG)
+    cutout = fit_long(alpha_master, CUTOUT_LONG)
 
     out_main = ROOT / "icons" / f"{slug}.jpg"
     out_preview = ROOT / "icons" / "preview" / f"{slug}_preview.jpg"
@@ -123,7 +123,7 @@ def process(slug: str) -> None:
         (out_main, main.size, MAIN_LIMIT),
         (out_preview, (PREVIEW_SIZE, PREVIEW_SIZE), PREVIEW_LIMIT),
         (out_loading, expected_loading, LOADING_LIMIT),
-        (out_candle, main.size, CANDLE_LIMIT),
+        (out_candle, alpha_main.size, CANDLE_LIMIT),
         (out_cutout, cutout.size, None),
     ]
     for path, expected_size, byte_limit in checks:
@@ -137,7 +137,7 @@ def process(slug: str) -> None:
     print(f"  main     {main.size[0]}x{main.size[1]}  {out_main.stat().st_size / 1024:.1f} KB  JPEG q={main_q}")
     print(f"  preview  160x160  {out_preview.stat().st_size / 1024:.1f} KB  JPEG q={preview_q}")
     print(f"  loading  {expected_loading[0]}x{expected_loading[1]}  {out_loading.stat().st_size} B  JPEG q={loading_q}")
-    print(f"  candle   {main.size[0]}x{main.size[1]}  {out_candle.stat().st_size / 1024:.1f} KB  WebP q={candle_q}")
+    print(f"  candle   {alpha_main.size[0]}x{alpha_main.size[1]}  {out_candle.stat().st_size / 1024:.1f} KB  WebP q={candle_q}")
     print(f"  cutout   {cutout.size[0]}x{cutout.size[1]}  {out_cutout.stat().st_size / 1024:.1f} KB  PNG")
 
 
