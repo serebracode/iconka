@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   prepare:
@@ -37,10 +36,8 @@ jobs:
 
       - name: Create generated branch and commit
         id: commit
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- icons/; then
+          if [ -z "$(git status --porcelain -- icons/)" ]; then
             echo "No generated asset changes."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
@@ -55,15 +52,4 @@ jobs:
           git push origin "$BRANCH"
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
-
-      - name: Open pull request
-        if: steps.commit.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BRANCH: ${{ steps.commit.outputs.branch }}
-        run: |
-          gh pr create \
-            --base main \
-            --head "$BRANCH" \
-            --title "Prepare Iconka image assets" \
-            --body "Generated automatically from source-action/. Review the visual result before merging."
+          echo "Generated assets pushed to branch: $BRANCH"
