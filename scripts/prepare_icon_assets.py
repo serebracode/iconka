@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from PIL import Image, ImageOps
@@ -155,6 +156,38 @@ def discover() -> list[str]:
     return slugs
 
 
+def update_icon_json(slugs: list[str]) -> None:
+    path = ROOT / "data" / "icons.json"
+    with path.open("r", encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    icons = data.get("icons")
+    if not isinstance(icons, list):
+        die("data/icons.json: missing icons array")
+
+    by_image_slug = {}
+    for icon in icons:
+        image = icon.get("image", "")
+        if image:
+            by_image_slug[Path(image.split("?")[0]).stem] = icon
+
+    missing = [slug for slug in slugs if slug not in by_image_slug]
+    if missing:
+        die("data/icons.json: no existing record for slug(s): " + ", ".join(missing))
+
+    for slug in slugs:
+        icon = by_image_slug[slug]
+        icon["image"] = f"./icons/{slug}.jpg"
+        icon["loading_image"] = f"./icons/loading/{slug}_loading.jpg"
+        icon["preview_image"] = f"./icons/preview/{slug}_preview.jpg"
+        icon["candle_image"] = f"./icons/candle/{slug}.webp"
+        icon["cutout_master"] = f"./icons/png/{slug}.png"
+
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, ensure_ascii=False, indent=2)
+        handle.write("\n")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Prepare Iconka assets from source-action masters")
     parser.add_argument("--slug", default="all", help="slug to process, or 'all'")
@@ -166,6 +199,8 @@ def main() -> int:
 
     for slug in slugs:
         process(slug)
+
+    update_icon_json(slugs)
 
     print(f"\nPrepared {len(slugs)} icon set(s).")
     return 0
