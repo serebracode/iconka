@@ -130,7 +130,7 @@ def process(slug: str) -> None:
         with Image.open(path) as check:
             if check.size != expected_size:
                 die(f"{path.name}: output dimensions {check.size} != expected {expected_size}")
-        if path.stat().st_size > byte_limit:
+        if byte_limit is not None and path.stat().st_size > byte_limit:
             die(f"{path.name}: output exceeds size limit")
 
     print(f"\n{slug}")
