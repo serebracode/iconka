@@ -37,7 +37,7 @@ jobs:
       - name: Create generated branch and commit
         id: commit
         run: |
-          if [ -z "$(git status --porcelain -- icons/)" ]; then
+          if [ -z "$(git status --porcelain -- icons/ data/icons.json)" ]; then
             echo "No generated asset changes."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
@@ -47,7 +47,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$BRANCH"
-          git add icons/
+          git add icons/ data/icons.json
           git commit -m "Prepare Iconka image assets"
           git push origin "$BRANCH"
           echo "changed=true" >> "$GITHUB_OUTPUT"
