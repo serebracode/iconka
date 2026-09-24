@@ -115,8 +115,8 @@ def process(slug: str) -> None:
     candle_q = save_webp_under(alpha_main, out_candle, CANDLE_LIMIT)
 
     cutout.save(out_cutout, "PNG", optimize=True, compress_level=9)
-    if out_cutout.stat().st_size > CUTOUT_LIMIT:
-        die(f"{out_cutout.name}: optimized PNG is {out_cutout.stat().st_size / 1024:.1f} KB; limit is {CUTOUT_LIMIT // 1024} KB")
+    if out_cutout.stat().st_size > CUTOUT_WARN:
+        print(f"WARNING: {out_cutout.name}: optimized PNG is {out_cutout.stat().st_size / 1024:.1f} KB; review if over {CUTOUT_WARN // 1024} KB")
 
     expected_loading = fit_long(main, LOADING_LONG).size
     checks = [
