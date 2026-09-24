@@ -1,0 +1,69 @@
+name: Prepare Icon Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Slug to process, or 'all' for every complete set in source-action"
+        required: true
+        default: "all"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check Pillow==11.3.0
+
+      - name: Prepare assets
+        run: python scripts/prepare_icon_assets.py --slug "${{ inputs.slug }}"
+
+      - name: Show generated files
+        run: git status --short
+
+      - name: Create generated branch and commit
+        id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- icons/; then
+            echo "No generated asset changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BRANCH="assets/action-${{ github.run_id }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add icons/
+          git commit -m "Prepare Iconka image assets"
+          git push origin "$BRANCH"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Open pull request
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.commit.outputs.branch }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Prepare Iconka image assets" \
+            --body "Generated automatically from source-action/. Review the visual result before merging."
