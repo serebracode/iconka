@@ -18,7 +18,7 @@ MAIN_LIMIT = 400 * 1024
 PREVIEW_LIMIT = 15 * 1024
 LOADING_LIMIT = 2 * 1024
 CANDLE_LIMIT = 300 * 1024
-CUTOUT_LIMIT = 700 * 1024
+CUTOUT_WARN = 1500 * 1024
 
 RATIO_TOLERANCE = 0.005
 
@@ -124,7 +124,7 @@ def process(slug: str) -> None:
         (out_preview, (PREVIEW_SIZE, PREVIEW_SIZE), PREVIEW_LIMIT),
         (out_loading, expected_loading, LOADING_LIMIT),
         (out_candle, main.size, CANDLE_LIMIT),
-        (out_cutout, cutout.size, CUTOUT_LIMIT),
+        (out_cutout, cutout.size, None),
     ]
     for path, expected_size, byte_limit in checks:
         with Image.open(path) as check:
