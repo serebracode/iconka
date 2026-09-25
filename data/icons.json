@@ -22,14 +22,17 @@
       "title": "Троица Андрея Рублёва",
       "title_short": "Троица Андрея Рублёва",
       "image": "./icons/troica_rublev.jpg",
-      "loading_image": "./icons/loading/troica_rublev_loading.jpg?v=1f5f171a9e",
+      "loading_image": "./icons/loading/troica_rublev_loading.jpg",
       "author_full": "Андрей Рублёв",
       "date": "Около 1425–1427 годов",
       "material": "Дерево, левкас, яичная темпера",
       "size": "142 × 114 см",
       "location": "Государственная Третьяковская галерея, Москва",
       "description_full": "На иконе изображены три ангела, явившиеся Аврааму у дуба Мамврийского. В древнерусской традиции этот ветхозаветный сюжет прочитывается как образ Троицы. Жесты и наклоны фигур замыкают композицию вокруг чаши на столе — евхаристического символа. Персонально отождествлять каждого ангела с Лицом Троицы не следует: сам образ говорит прежде всего о единстве и согласии.",
-      "rights": "Описание и изображение предназначены исключительно для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям."
+      "rights": "Описание и изображение предназначены исключительно для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.",
+      "preview_image": "./icons/preview/troica_rublev_preview.jpg",
+      "candle_image": "./icons/candle/troica_rublev.webp",
+      "cutout_master": "./icons/png/troica_rublev.png"
     },
     {
       "id": 3,
@@ -85,7 +88,7 @@
       "title": "Знамение. Новгородская Богородица",
       "title_short": "Знамение",
       "image": "./icons/znameniye.jpg",
-      "loading_image": "./icons/loading/znameniye_loading.jpg?v=63bc2a59d4",
+      "loading_image": "./icons/loading/znameniye_loading.jpg",
       "image_source": "https://commons.wikimedia.org/wiki/File:Icon_of_Our_Lady_of_the_Sign._Novgorod_icon-painting_school,_early_replica_of_11th_cent.original._Tretyakov_galley,_Russia.jpg",
       "image_credit": "Неизвестный автор · Public Domain",
       "author_full": "Неизвестно",
@@ -94,14 +97,17 @@
       "size": "Неизвестно",
       "location": "Государственная Третьяковская галерея, Москва",
       "description_full": "Одна из главных святынь Новгорода, связанная с чудесным избавлением города от осады. Богородица изображена с поднятыми руками в жесте молитвы, а на груди — Младенец-Эммануил. Композиция соединяет городской символ, защитный образ и византийское благородство линий.",
-      "rights": "Wikimedia Commons · Public Domain. Источник указан в data/IMAGE_SOURCES.md."
+      "rights": "Wikimedia Commons · Public Domain. Источник указан в data/IMAGE_SOURCES.md.",
+      "preview_image": "./icons/preview/znameniye_preview.jpg",
+      "candle_image": "./icons/candle/znameniye.webp",
+      "cutout_master": "./icons/png/znameniye.png"
     },
     {
       "id": 7,
       "title": "Воскресение Христово (Сошествие во ад)",
       "title_short": "Воскресение Христово",
       "image": "./icons/voskresenie.jpg",
-      "loading_image": "./icons/loading/voskresenie_loading.jpg?v=be24cbb7da",
+      "loading_image": "./icons/loading/voskresenie_loading.jpg",
       "image_source": "https://commons.wikimedia.org/wiki/File:Greek_-_Resurrection_of_Christ_-_Walters_37751.jpg",
       "image_credit": "Неизвестный греческий мастер · Public Domain · Walters Art Museum",
       "author_full": "Неизвестно",
@@ -110,7 +116,10 @@
       "size": "Неизвестно",
       "location": "Walters Art Museum, Балтимор",
       "description_full": "Византийская икона второй половины XIV века. Христос с крестом нисходит в ад, выводя Адама и Еву; ниже показаны жёны-мироносицы у гроба. Композиция соединяет два пасхальных сюжета — Сошествие во ад и Воскресение — в один напряжённый и торжественный образ.",
-      "rights": "Wikimedia Commons · Public Domain. Источник указан в data/IMAGE_SOURCES.md."
+      "rights": "Wikimedia Commons · Public Domain. Источник указан в data/IMAGE_SOURCES.md.",
+      "preview_image": "./icons/preview/voskresenie_preview.jpg",
+      "candle_image": "./icons/candle/voskresenie.webp",
+      "cutout_master": "./icons/png/voskresenie.png"
     },
     {
       "id": 8,
@@ -314,7 +323,10 @@
       "size": "31 × 27,5 см",
       "location": "Неизвестно",
       "description_full": "Икона представляет Рождество Христово в традиционной православной иконографии. В центре композиции — Богородица и родившийся Христос; вокруг основного события объединены эпизоды евангельского повествования о Рождестве. Такая многочастная композиция показывает событие не как отдельную бытовую сцену, а как явление Христа миру.",
-      "rights": "Wikimedia Commons · Public Domain."
+      "rights": "Wikimedia Commons · Public Domain.",
+      "preview_image": "./icons/preview/rogdestvo_preview.jpg",
+      "candle_image": "./icons/candle/rogdestvo.webp",
+      "cutout_master": "./icons/png/rogdestvo.png"
     }
   ]
 }
