@@ -68,7 +68,7 @@
       "title": "Грузинская Богоматерь",
       "title_short": "Грузинская Богоматерь",
       "image": "./icons/gruzinskaya.jpg",
-      "loading_image": "./icons/loading/gruzinskaya_loading.jpg?v=3686811000",
+      "loading_image": "./icons/loading/gruzinskaya_loading.jpg",
       "image_source": "https://www.icon-art.info/masterpiece.php?mst_id=6233",
       "image_source_label": "Изображение: Icon-Art.info",
       "image_credit": "Неизвестный мастер · изображение опубликовано Icon-Art.info",
@@ -78,7 +78,10 @@
       "size": "93.7 × 72 см",
       "location": "Частная коллекция (Москва)",
       "description_full": "Перед нами не утраченный чудотворный оригинал, а новгородская «Одигитрия в типе Грузинской». Богородица держит Христа на левой руке и указывает на Него правой; Младенец благословляет обеими руками. Высокий ковчег, крупный силуэт и плотная графика складок характерны для новгородского письма 1530-х годов.",
-      "rights": "Источник и кредит изображения указаны ниже."
+      "rights": "Источник и кредит изображения указаны ниже.",
+      "preview_image": "./icons/preview/gruzinskaya_preview.jpg",
+      "candle_image": "./icons/candle/gruzinskaya.webp",
+      "cutout_master": "./icons/png/gruzinskaya.png"
     },
     {
       "id": 6,
@@ -117,14 +120,17 @@
       "title": "Спас Нерукотворный",
       "title_short": "Спас Нерукотворный",
       "image": "./icons/spas_nerukotvorny.jpg",
-      "loading_image": "./icons/loading/spas_nerukotvorny_loading.jpg?v=374c3c23ea",
+      "loading_image": "./icons/loading/spas_nerukotvorny_loading.jpg",
       "author_full": "Неизвестно",
       "date": "Вторая половина XII века (около 1191 года)",
       "material": "Дерево, яичная темпера; двусторонняя икона",
       "size": "77 × 71 см",
       "location": "Государственная Третьяковская галерея, Москва",
       "description_full": "На лицевой стороне — Мандилион, Лик Христа на убрусе. Это двусторонняя новгородская икона: на обороте находится не отдельный «портретный» сюжет, а композиция «Прославление Креста». Сочетание образа Нерукотворного Спаса и Креста связано с литургическим назначением памятника и его процессуальным использованием.",
-      "rights": "Описание и изображение предназначены исключительно для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям."
+      "rights": "Описание и изображение предназначены исключительно для некоммерческого использования. Все права принадлежат соответствующим авторам и правообладателям.",
+      "preview_image": "./icons/preview/spas_nerukotvorny_preview.jpg",
+      "candle_image": "./icons/candle/spas_nerukotvorny.webp",
+      "cutout_master": "./icons/png/spas_nerukotvorny.png"
     },
     {
       "id": 9,
@@ -267,7 +273,7 @@
       "title": "Богоматерь «Всех скорбящих Радость»",
       "title_short": "Богоматерь «Всех скорбящих Радость»",
       "image": "./icons/vsekh_skorbyashih_radost.jpg",
-      "loading_image": "./icons/loading/vsekh_skorbyashih_radost_loading.jpg?v=8dac7be689",
+      "loading_image": "./icons/loading/vsekh_skorbyashih_radost_loading.jpg",
       "image_source": "https://www.icon-art.info/masterpiece.php?mst_id=4983",
       "image_source_label": "Изображение: Icon-Art.info",
       "image_credit": "Алексей Иванович Квашнин · Государственная Третьяковская галерея",
@@ -277,7 +283,10 @@
       "size": "152 × 109 см",
       "location": "Государственная Третьяковская галерея, Москва",
       "description_full": "Это не чудотворный ордынский образ 1688 года, а его позднейшая иконописная версия, созданная Алексеем Квашниным в 1707 году. В центре — Богородица с Младенцем; вокруг — скорбящие, ангелы и святые. Сюжет сложился в XVII веке и соединяет молитвенное заступничество с образами утешения страждущих.",
-      "rights": "Источник и кредит изображения указаны ниже."
+      "rights": "Источник и кредит изображения указаны ниже.",
+      "preview_image": "./icons/preview/vsekh_skorbyashih_radost_preview.jpg",
+      "candle_image": "./icons/candle/vsekh_skorbyashih_radost.webp",
+      "cutout_master": "./icons/png/vsekh_skorbyashih_radost.png"
     },
     {
       "id": 20,
