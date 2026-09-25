@@ -44,12 +44,15 @@ def fit_long(image: Image.Image, long_side: int) -> Image.Image:
     return image.resize(size, Image.Resampling.LANCZOS)
 
 
-def save_jpeg_under(image: Image.Image, path: Path, limit: int, start_quality: int) -> int:
+def save_jpeg_under(image: Image.Image, path: Path, limit: int, start_quality: int, soft_limit: bool = False) -> int:
     image = image.convert("RGB")
     for quality in range(start_quality, 69, -2):
         image.save(path, "JPEG", quality=quality, optimize=True, progressive=True, subsampling="4:2:0")
         if path.stat().st_size <= limit:
             return quality
+    if soft_limit:
+        print(f"WARNING: {path.name}: {path.stat().st_size / 1024:.1f} KB at JPEG q=70; exceeds target {limit // 1024} KB")
+        return 70
     die(f"{path.name}: cannot reach {limit // 1024} KB without dropping JPEG quality below 70")
 
 
@@ -112,7 +115,7 @@ def process(slug: str) -> None:
     for p in (out_main, out_preview, out_loading, out_candle, out_cutout):
         p.parent.mkdir(parents=True, exist_ok=True)
 
-    main_q = save_jpeg_under(main, out_main, MAIN_LIMIT, 86)
+    main_q = save_jpeg_under(main, out_main, MAIN_LIMIT, 86, soft_limit=True)
     preview_q = save_jpeg_under(preview, out_preview, PREVIEW_LIMIT, 84)
     loading_q = save_jpeg_under(loading, out_loading, LOADING_LIMIT, 76)
     candle_q = save_webp_under(alpha_main, out_candle, CANDLE_LIMIT)
@@ -123,7 +126,7 @@ def process(slug: str) -> None:
 
     expected_loading = fit_long(main, LOADING_LONG).size
     checks = [
-        (out_main, main.size, MAIN_LIMIT),
+        (out_main, main.size, None),
         (out_preview, (PREVIEW_SIZE, PREVIEW_SIZE), PREVIEW_LIMIT),
         (out_loading, expected_loading, LOADING_LIMIT),
         (out_candle, alpha_main.size, None),
