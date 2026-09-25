@@ -283,8 +283,8 @@
       "id": 20,
       "title": "Ярославская икона Божией Матери",
       "title_short": "Ярославская Богоматерь",
-      "image": "./icons/yaroslavskaya_oranta.jpg",
-      "loading_image": "./icons/loading/yaroslavskaya_oranta_loading.jpg?v=70efe04c29",
+      "image": "./icons/yaroslavskaya.jpg",
+      "loading_image": "./icons/loading/yaroslavskaya_loading.jpg",
       "image_source": "https://ru.wikipedia.org/wiki/Ярославская_икона_Божией_Матери",
       "image_credit": "Ярославская икона Божией Матери · оригинал утрачен",
       "author_full": "Неизвестно",
@@ -294,7 +294,10 @@
       "location": "Оригинал утрачен",
       "description_full": "Почитаемый образ Богородицы типа «Умиление» (Елеуса), сложившийся в XIII веке. Богомладенец находится справа от Богородицы; их лики соприкасаются, Христос правой рукой касается её подбородка, а левой — края мафория. По преданию, икону принесли в Ярославль князья Василий и Константин. Оригинал утрачен, но образ известен по многочисленным спискам; самые ранние сохранившиеся списки XV века находятся в Государственной Третьяковской галерее.",
       "rights": "Сведения об образе: Википедия. Права на используемое изображение указываются отдельно по его источнику.",
-      "image_source_label": "Сведения об образе: Википедия"
+      "image_source_label": "Сведения об образе: Википедия",
+      "preview_image": "./icons/preview/yaroslavskaya_preview.jpg",
+      "candle_image": "./icons/candle/yaroslavskaya.webp",
+      "cutout_master": "./icons/png/yaroslavskaya.png"
     },
     {
       "id": 21,
