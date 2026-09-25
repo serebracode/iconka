@@ -50,7 +50,10 @@ def save_jpeg_under(image: Image.Image, path: Path, limit: int, start_quality: i
         image.save(path, "JPEG", quality=quality, optimize=True, progressive=True, subsampling="4:2:0")
         if path.stat().st_size <= limit:
             return quality
-    if soft_limit:\n        print(f"WARNING: {path.name}: {path.stat().st_size / 1024:.1f} KB at JPEG q=70; exceeds target {limit // 1024} KB")\n        return 70\n    die(f"{path.name}: cannot reach {limit // 1024} KB without dropping JPEG quality below 70")
+    if soft_limit:
+        print(f"WARNING: {path.name}: {path.stat().st_size / 1024:.1f} KB at JPEG q=70; exceeds target {limit // 1024} KB")
+        return 70
+    die(f"{path.name}: cannot reach {limit // 1024} KB without dropping JPEG quality below 70")
 
 
 def save_webp_under(image: Image.Image, path: Path, limit: int) -> int:
