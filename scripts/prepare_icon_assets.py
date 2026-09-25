@@ -58,7 +58,8 @@ def save_webp_under(image: Image.Image, path: Path, limit: int) -> int:
         image.save(path, "WEBP", quality=quality, method=6)
         if path.stat().st_size <= limit:
             return quality
-    print(f"WARNING: {path.name}: {path.stat().st_size / 1024:.1f} KB at WebP q=70; exceeds target {limit // 1024} KB")\n    return 70
+    print(f"WARNING: {path.name}: {path.stat().st_size / 1024:.1f} KB at WebP q=70; exceeds target {limit // 1024} KB")
+    return 70
 
 
 def has_real_alpha(image: Image.Image) -> bool:
