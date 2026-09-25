@@ -23,9 +23,6 @@ CUTOUT_WARN = 1500 * 1024
 
 RATIO_TOLERANCE = 0.005
 
-# Source filenames may differ from the stable runtime/card slug.
-SOURCE_SLUG_ALIASES = {"yaroslavskaya": "yaroslavskaya_oranta"}
-
 
 def die(message: str) -> None:
     raise RuntimeError(message)
@@ -205,7 +202,7 @@ def main() -> int:
     if not slugs:
         die("No complete source sets found in source-action/")
 
-    resolved_slugs = [SOURCE_SLUG_ALIASES.get(slug, slug) for slug in slugs]
+    resolved_slugs = slugs
     if len(set(resolved_slugs)) != len(resolved_slugs):
         die("Multiple source sets resolve to the same output slug")
 
