@@ -23,6 +23,9 @@ CUTOUT_WARN = 1500 * 1024
 
 RATIO_TOLERANCE = 0.005
 
+# Source filenames may differ from the stable runtime/card slug.
+SOURCE_SLUG_ALIASES = {"yaroslavskaya": "yaroslavskaya_oranta"}
+
 
 def die(message: str) -> None:
     raise RuntimeError(message)
@@ -73,10 +76,11 @@ def has_real_alpha(image: Image.Image) -> bool:
     return lo < 255 and hi > 0
 
 
-def process(slug: str) -> None:
-    jpg_path = SOURCE / f"{slug}.jpg"
-    png_path = SOURCE / f"{slug}.png"
-    square_path = SOURCE / f"{slug}_square.jpg"
+def process(source_slug: str, output_slug: str | None = None) -> None:
+    slug = output_slug or source_slug
+    jpg_path = SOURCE / f"{source_slug}.jpg"
+    png_path = SOURCE / f"{source_slug}.png"
+    square_path = SOURCE / f"{source_slug}_square.jpg"
 
     missing = [p.name for p in (jpg_path, png_path, square_path) if not p.exists()]
     if missing:
@@ -201,10 +205,14 @@ def main() -> int:
     if not slugs:
         die("No complete source sets found in source-action/")
 
-    for slug in slugs:
-        process(slug)
+    resolved_slugs = [SOURCE_SLUG_ALIASES.get(slug, slug) for slug in slugs]
+    if len(set(resolved_slugs)) != len(resolved_slugs):
+        die("Multiple source sets resolve to the same output slug")
 
-    update_icon_json(slugs)
+    for source_slug, output_slug in zip(slugs, resolved_slugs):
+        process(source_slug, output_slug)
+
+    update_icon_json(resolved_slugs)
 
     print(f"\nPrepared {len(slugs)} icon set(s).")
     return 0
