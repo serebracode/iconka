@@ -572,15 +572,74 @@
             z-index: 2;
             pointer-events: none;
             filter: brightness(0);
-            opacity: 0.50;
-            mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.16) 52%, rgba(0, 0, 0, 0.66) 82%, #000 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.16) 52%, rgba(0, 0, 0, 0.66) 82%, #000 100%);
+            opacity: 0.42;
+            mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.12) 52%, rgba(0, 0, 0, 0.54) 82%, #000 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.12) 52%, rgba(0, 0, 0, 0.54) 82%, #000 100%);
+        }
+
+        /* Световая оболочка поверх bitmap: края цилиндра уходят от зрителя,
+           а фронтальная полоса света следует за пламенем. */
+        #candleCylinderShade,
+        #candleCylinderLight {
+            position: absolute;
+            pointer-events: none;
+            mask-image: url('./video/candle-body.png');
+            -webkit-mask-image: url('./video/candle-body.png');
+            mask-size: 100% 100%;
+            -webkit-mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
+        }
+
+        #candleCylinderShade {
+            z-index: 3;
+            opacity: 0.64;
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(0, 0, 0, 0.72) 0%,
+                    rgba(0, 0, 0, 0.42) 10%,
+                    rgba(0, 0, 0, 0.13) 28%,
+                    rgba(0, 0, 0, 0.015) 46%,
+                    rgba(0, 0, 0, 0.02) 58%,
+                    rgba(0, 0, 0, 0.18) 76%,
+                    rgba(0, 0, 0, 0.48) 91%,
+                    rgba(0, 0, 0, 0.76) 100%
+                ),
+                linear-gradient(
+                    to bottom,
+                    rgba(0, 0, 0, 0.03) 8%,
+                    rgba(0, 0, 0, 0.02) 54%,
+                    rgba(0, 0, 0, 0.16) 100%
+                );
+            mix-blend-mode: multiply;
+        }
+
+        #candleCylinderLight {
+            z-index: 4;
+            opacity: 0.44;
+            background:
+                radial-gradient(
+                    ellipse 31% 88% at var(--candle-cylinder-light-x, 53%) 54%,
+                    rgba(255, 250, 220, 0.66) 0%,
+                    rgba(255, 205, 120, 0.34) 30%,
+                    rgba(255, 142, 54, 0.13) 58%,
+                    transparent 82%
+                ),
+                linear-gradient(
+                    to bottom,
+                    rgba(255, 219, 153, 0.13) 4%,
+                    rgba(255, 150, 56, 0.055) 42%,
+                    transparent 78%
+                );
+            mix-blend-mode: screen;
+            will-change: opacity, background;
         }
 
         /* Узкий максимум света начинается на верхней кромке воска, фитиль не затрагивается. */
         #candleWaxHighlight {
             position: absolute;
-            z-index: 3;
+            z-index: 5;
             pointer-events: none;
             opacity: 0.68;
             overflow: hidden;
@@ -1487,6 +1546,8 @@
     <div id="candleLayer">
         <img id="candleBody" src="./video/candle-body.png" alt="Свеча">
         <img id="candleBodyShade" src="./video/candle-body.png" alt="" aria-hidden="true">
+        <div id="candleCylinderShade" aria-hidden="true"></div>
+        <div id="candleCylinderLight" aria-hidden="true"></div>
         <div id="candleWaxHighlight" aria-hidden="true"></div>
     </div>
     <div id="candleFlameViewport" aria-hidden="true">
@@ -2512,6 +2573,8 @@ function updateCandleEffectGeometry() {
     const icon = document.getElementById('iconImage');
     const flame = document.getElementById('candleFlameViewport');
     const candleBody = document.getElementById('candleBody');
+    const candleCylinderShade = document.getElementById('candleCylinderShade');
+    const candleCylinderLight = document.getElementById('candleCylinderLight');
     const candleWaxHighlight = document.getElementById('candleWaxHighlight');
     if (!detailScreen || !icon || !flame || !candleBody) return;
 
@@ -2534,12 +2597,17 @@ function updateCandleEffectGeometry() {
     detailScreen.style.setProperty('--effect-icon-top', `${iconTop.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-width', `${iconRect.width.toFixed(2)}px`);
     detailScreen.style.setProperty('--effect-icon-height', `${iconRect.height.toFixed(2)}px`);
-    if (candleWaxHighlight) {
-        candleWaxHighlight.style.left = `${(candleBodyRect.left - sceneRect.left).toFixed(2)}px`;
-        candleWaxHighlight.style.top = `${(candleBodyRect.top - sceneRect.top).toFixed(2)}px`;
-        candleWaxHighlight.style.width = `${candleBodyRect.width.toFixed(2)}px`;
-        candleWaxHighlight.style.height = `${candleBodyRect.height.toFixed(2)}px`;
-    }
+    const candleBodyLeft = `${(candleBodyRect.left - sceneRect.left).toFixed(2)}px`;
+    const candleBodyTop = `${(candleBodyRect.top - sceneRect.top).toFixed(2)}px`;
+    const candleBodyWidth = `${candleBodyRect.width.toFixed(2)}px`;
+    const candleBodyHeight = `${candleBodyRect.height.toFixed(2)}px`;
+    [candleCylinderShade, candleCylinderLight, candleWaxHighlight].forEach(layer => {
+        if (!layer) return;
+        layer.style.left = candleBodyLeft;
+        layer.style.top = candleBodyTop;
+        layer.style.width = candleBodyWidth;
+        layer.style.height = candleBodyHeight;
+    });
     // Ореол сцены измеряется высотой иконы, а не шириной телефона.
     // Поэтому на узких и широких иконах он сохраняет одну и ту же физическую логику.
     const sceneAmbientWidth = iconRect.height * 2.4;
@@ -2836,6 +2904,8 @@ function applyCandleAtmosphereFrame(time) {
     const haloEffect = document.getElementById('flameHaloEffect');
     const haloPosition = document.getElementById('flameHaloPosition');
     const candleWaxHighlight = document.getElementById('candleWaxHighlight');
+    const candleCylinderShade = document.getElementById('candleCylinderShade');
+    const candleCylinderLight = document.getElementById('candleCylinderLight');
     const candleBody = document.getElementById('candleBody');
     if (sceneAmbient) {
         /* Светлое пятно на дальней плоскости движется вместе с источником света. */
@@ -2850,9 +2920,23 @@ function applyCandleAtmosphereFrame(time) {
     if (haloPosition) {
         haloPosition.style.transform = `translate(calc(-50% + ${(sceneMotionX * 14).toFixed(2)}px), calc(-50% + ${(sceneMotionY * 10).toFixed(2)}px))`;
     }
+    if (candleCylinderLight) {
+        /* Свет движется по поверхности, но сама маска остаётся неподвижной:
+           это сохраняет реальный контур свечи и создаёт ощущение цилиндра. */
+        const cylinderLightX = 53 + sceneMotionX * 12;
+        candleCylinderLight.style.setProperty('--candle-cylinder-light-x', `${cylinderLightX.toFixed(2)}%`);
+        candleCylinderLight.style.opacity = (0.34 + intensity * 0.18).toFixed(4);
+    }
+    if (candleCylinderShade) {
+        /* При отклонении огня противоположный бок становится чуть тяжелее.
+           Сдвиг минимальный, чтобы не превращать фактуру в CGI. */
+        const shadeBias = sceneMotionX * 5.5;
+        candleCylinderShade.style.transform = `translateX(${shadeBias.toFixed(2)}px)`;
+        candleCylinderShade.style.opacity = (0.58 + (1 - intensity) * 0.10).toFixed(4);
+    }
     if (candleWaxHighlight) {
-        // Воск всегда освещён; сигнал пламени меняет яркость лишь слегка.
-        candleWaxHighlight.style.opacity = (0.59 + intensity * 0.15).toFixed(4);
+        // Верхний воск остаётся отдельным материалом поверх цилиндрического света.
+        candleWaxHighlight.style.opacity = (0.52 + intensity * 0.14).toFixed(4);
     }
     if (candleBody) {
         // Всё тело реагирует едва заметно: меняются рефлексы, а не сам цвет свечи.
