@@ -495,7 +495,7 @@
         /* На входе свет появляется вместе со сценой, на выходе гаснет первым. */
         #detailContent.candle-closing #iconLight {
             opacity: 0 !important;
-            transition: opacity 100ms linear;
+            transition: opacity 50ms linear;
         }
 
         #detailContent.candle-active .icon-wrapper {
@@ -2516,6 +2516,7 @@ let shadowMotionX = 0;
 let shadowMotionY = 0;
 let candleEffectGeometryToken = 0;
 const CANDLE_SCENE_TRANSITION_MS = 3000;
+const CANDLE_SCENE_EXIT_TRANSITION_MS = CANDLE_SCENE_TRANSITION_MS / 2;
 const CANDLE_TITLE_EXIT_MS = 480;
 const CANDLE_SESSION_MS = 2 * 60 * 1000;
 const CANDLE_VIDEO_WIDTH = 1080;
@@ -3145,12 +3146,14 @@ function closeCandle() {
     candleSessionTimer = null;
     detailContent.classList.remove('candle-title-leaving');
     detailContent.classList.add('candle-closing');
+    document.body.style.setProperty('--candle-transition-duration', `${CANDLE_SCENE_EXIT_TRANSITION_MS}ms`);
+    document.body.style.setProperty('--candle-icon-transition-duration', `${CANDLE_SCENE_EXIT_TRANSITION_MS}ms`);
     document.body.classList.add('candle-transition');
     detailContent.classList.add('candle-transition');
     document.body.classList.remove('candle-active');
     detailScreen.classList.remove('scene-active');
     detailContent.classList.remove('candle-active');
-    trackCandleEffectGeometry(CANDLE_SCENE_TRANSITION_MS);
+    trackCandleEffectGeometry(CANDLE_SCENE_EXIT_TRANSITION_MS);
     candleLayer.style.opacity = '0';
     stopCandleFlameWatchdog();
     candleFlame.pause();
@@ -3171,8 +3174,10 @@ function closeCandle() {
         detailContent.classList.remove('candle-transition');
         detailContent.classList.remove('candle-closing');
         document.body.classList.remove('candle-transition');
+        document.body.style.setProperty('--candle-transition-duration', `${CANDLE_SCENE_TRANSITION_MS}ms`);
+        document.body.style.setProperty('--candle-icon-transition-duration', `${CANDLE_SCENE_TRANSITION_MS}ms`);
         candleTransitionTimer = null;
-    }, CANDLE_SCENE_TRANSITION_MS);
+    }, CANDLE_SCENE_EXIT_TRANSITION_MS);
 }
 
 function updateInfoScrollFades() {
