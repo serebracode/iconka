@@ -617,20 +617,20 @@
 
         #candleCylinderLight {
             z-index: 4;
-            opacity: 0.44;
+            opacity: 0.26;
             background:
                 radial-gradient(
-                    ellipse 31% 88% at var(--candle-cylinder-light-x, 53%) 54%,
-                    rgba(255, 250, 220, 0.66) 0%,
-                    rgba(255, 205, 120, 0.34) 30%,
-                    rgba(255, 142, 54, 0.13) 58%,
-                    transparent 82%
+                    ellipse 22% 80% at var(--candle-cylinder-light-x, 53%) 54%,
+                    rgba(255, 246, 215, 0.40) 0%,
+                    rgba(255, 198, 112, 0.20) 28%,
+                    rgba(255, 138, 52, 0.08) 52%,
+                    transparent 74%
                 ),
                 linear-gradient(
                     to bottom,
-                    rgba(255, 219, 153, 0.13) 4%,
-                    rgba(255, 150, 56, 0.055) 42%,
-                    transparent 78%
+                    rgba(255, 215, 145, 0.07) 4%,
+                    rgba(255, 148, 54, 0.028) 40%,
+                    transparent 72%
                 );
             mix-blend-mode: screen;
             will-change: opacity, background;
@@ -641,21 +641,21 @@
             position: absolute;
             z-index: 5;
             pointer-events: none;
-            opacity: 0.68;
+            opacity: 0.42;
             overflow: hidden;
-            clip-path: inset(6.5% 0 0 0);
+            clip-path: inset(7.5% 0 0 0);
             background:
-                radial-gradient(ellipse 76% 23% at 50% 7.5%,
-                    rgba(255, 247, 207, 0.78) 0%,
-                    rgba(255, 207, 108, 0.72) 34%,
-                    rgba(255, 137, 37, 0.30) 68%,
+                radial-gradient(ellipse 58% 18% at 50% 7.2%,
+                    rgba(255, 244, 205, 0.42) 0%,
+                    rgba(255, 201, 108, 0.30) 32%,
+                    rgba(255, 136, 38, 0.12) 62%,
                     transparent 100%),
                 linear-gradient(to bottom,
-                    transparent 6%,
-                    rgba(255, 178, 59, 0.28) 8%,
-                    rgba(255, 112, 25, 0.10) 28%,
-                    rgba(255, 86, 18, 0.035) 46%,
-                    transparent 62%);
+                    transparent 7%,
+                    rgba(255, 174, 58, 0.12) 10%,
+                    rgba(255, 110, 24, 0.045) 28%,
+                    rgba(255, 86, 18, 0.015) 42%,
+                    transparent 58%);
             mix-blend-mode: screen;
             mask-image: url('./video/candle-body.png');
             -webkit-mask-image: url('./video/candle-body.png');
@@ -2921,11 +2921,11 @@ function applyCandleAtmosphereFrame(time) {
         haloPosition.style.transform = `translate(calc(-50% + ${(sceneMotionX * 14).toFixed(2)}px), calc(-50% + ${(sceneMotionY * 10).toFixed(2)}px))`;
     }
     if (candleCylinderLight) {
-        /* Свет движется по поверхности, но сама маска остаётся неподвижной:
-           это сохраняет реальный контур свечи и создаёт ощущение цилиндра. */
-        const cylinderLightX = 53 + sceneMotionX * 12;
+        /* Более узкий матовый рефлекс: воск реагирует на огонь,
+           но не выглядит лакированным или пластиковым. */
+        const cylinderLightX = 53 + sceneMotionX * 8;
         candleCylinderLight.style.setProperty('--candle-cylinder-light-x', `${cylinderLightX.toFixed(2)}%`);
-        candleCylinderLight.style.opacity = (0.34 + intensity * 0.18).toFixed(4);
+        candleCylinderLight.style.opacity = (0.18 + intensity * 0.10).toFixed(4);
     }
     if (candleCylinderShade) {
         /* Маска силуэта остаётся неподвижной. Движется только распределение
@@ -2937,8 +2937,8 @@ function applyCandleAtmosphereFrame(time) {
         candleCylinderShade.style.opacity = (0.58 + (1 - intensity) * 0.10).toFixed(4);
     }
     if (candleWaxHighlight) {
-        // Верхний воск остаётся отдельным материалом поверх цилиндрического света.
-        candleWaxHighlight.style.opacity = (0.52 + intensity * 0.14).toFixed(4);
+        // Верхний воск остаётся живым, но без ощущения лакированной поверхности.
+        candleWaxHighlight.style.opacity = (0.30 + intensity * 0.08).toFixed(4);
     }
     if (candleBody) {
         // Всё тело реагирует едва заметно: меняются рефлексы, а не сам цвет свечи.
