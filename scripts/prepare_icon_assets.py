@@ -91,10 +91,8 @@ def process(source_slug: str, output_slug: str | None = None) -> None:
         die(f"{slug}: main JPG is too small ({main_src.width}x{main_src.height}); long side must be at least {MAIN_LONG}px")
     if max(cutout_src.size) < MAIN_LONG:
         die(f"{slug}: alpha PNG is too small ({cutout_src.width}x{cutout_src.height}); long side must be at least {MAIN_LONG}px")
-    if square_src.width != square_src.height:
-        die(f"{slug}: square JPG must be exactly 1:1, got {square_src.width}x{square_src.height}")
     if min(square_src.size) < PREVIEW_SIZE:
-        die(f"{slug}: square JPG must be at least {PREVIEW_SIZE}x{PREVIEW_SIZE}")
+        die(f"{slug}: preview source must be at least {PREVIEW_SIZE}px on its short side")
     if abs(ratio(main_src) - ratio(cutout_src)) / ratio(main_src) > RATIO_TOLERANCE:
         die(f"{slug}: JPG and PNG aspect ratios differ by more than {RATIO_TOLERANCE * 100:.1f}%")
     if not has_real_alpha(cutout_src):
@@ -103,7 +101,12 @@ def process(source_slug: str, output_slug: str | None = None) -> None:
     main = fit_long(main_src, MAIN_LONG)
     alpha_master = cutout_src.convert("RGBA")
     alpha_main = fit_long(alpha_master, MAIN_LONG)
-    preview = square_src.resize((PREVIEW_SIZE, PREVIEW_SIZE), Image.Resampling.LANCZOS)
+    preview = ImageOps.fit(
+        square_src,
+        (PREVIEW_SIZE, PREVIEW_SIZE),
+        method=Image.Resampling.LANCZOS,
+        centering=(0.5, 0.5),
+    )
     loading = fit_long(main_src, LOADING_LONG)
     cutout = fit_long(alpha_master, CUTOUT_LONG)
 
