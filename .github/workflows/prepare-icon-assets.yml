@@ -15,9 +15,10 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Set up Python
@@ -34,22 +35,20 @@ jobs:
       - name: Show generated files
         run: git status --short
 
-      - name: Create generated branch and commit
-        id: commit
+      - name: Commit generated assets to main
         run: |
           if [ -z "$(git status --porcelain -- icons/ data/icons.json)" ]; then
             echo "No generated asset changes."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          BRANCH="assets/action-${{ github.run_id }}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$BRANCH"
           git add icons/ data/icons.json
           git commit -m "Prepare Iconka image assets"
-          git push origin "$BRANCH"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
-          echo "Generated assets pushed to branch: $BRANCH"
+
+          # main may have advanced while image processing was running.
+          # Rebase the generated commit on the latest main, then push.
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "Generated assets committed to main."
