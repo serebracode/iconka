@@ -3016,6 +3016,8 @@ function hideCandleUnavailable() {
 
 async function showCandle() {
     if (iconSwipeInProgress || candleVisible) return;
+    document.body.style.setProperty('--candle-transition-duration', `${CANDLE_SCENE_TRANSITION_MS}ms`);
+    document.body.style.setProperty('--candle-icon-transition-duration', `${CANDLE_SCENE_TRANSITION_MS}ms`);
     if (window.innerWidth > CANDLE_MAX_VIEWPORT_WIDTH
         && !isPhoneDevice()
         && !isTabletDevice()) {
