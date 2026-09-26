@@ -2384,6 +2384,9 @@ let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
 let candleAtmosphereAnimationStart = 0;
 let candleFlameVideoFrameHandle = null;
+let candleFlameWatchdogTimer = null;
+let candleFlameWatchdogTime = -1;
+let candleFlameWatchdogStalls = 0;
 let candleFlameSampleContext = null;
 let candleFlameMotionContext = null;
 let candleFlameSampleActive = false;
@@ -2908,6 +2911,7 @@ async function showCandle() {
     candleFlame.loop = true;
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     candleFlame.play().catch(() => {});
+    startCandleFlameWatchdog();
     window.clearTimeout(candleSessionTimer);
     candleSessionTimer = window.setTimeout(() => {
         if (!candleVisible) return;
@@ -2984,6 +2988,7 @@ function closeCandle() {
     detailContent.classList.remove('candle-active');
     trackCandleEffectGeometry(CANDLE_SCENE_TRANSITION_MS);
     candleLayer.style.opacity = '0';
+    stopCandleFlameWatchdog();
     candleFlame.pause();
     
     document.getElementById('globalLogo').style.opacity = '1';
@@ -3023,9 +3028,43 @@ function updateInfoScrollFades() {
 
 /* Telegram/WebView can fail to emit "ended" or restart an alpha WebM.
    Rewind just before the media reaches its end, while it is still playing. */
-function restartCandleFlame(flame) {
+function stopCandleFlameWatchdog() {
+    window.clearInterval(candleFlameWatchdogTimer);
+    candleFlameWatchdogTimer = null;
+    candleFlameWatchdogTime = -1;
+    candleFlameWatchdogStalls = 0;
+}
+
+function startCandleFlameWatchdog() {
+    stopCandleFlameWatchdog();
+    const flame = document.getElementById('candleFlame');
+    candleFlameWatchdogTime = flame.currentTime || 0;
+    candleFlameWatchdogTimer = window.setInterval(() => {
+        if (!candleVisible) {
+            stopCandleFlameWatchdog();
+            return;
+        }
+        const now = flame.currentTime || 0;
+        const nearEnd = Number.isFinite(flame.duration) && flame.duration > 0
+            && now >= flame.duration - 0.12;
+        const stalled = !flame.paused && Math.abs(now - candleFlameWatchdogTime) < 0.01;
+        candleFlameWatchdogStalls = stalled ? candleFlameWatchdogStalls + 1 : 0;
+        candleFlameWatchdogTime = now;
+
+        if (nearEnd || flame.ended || flame.paused || candleFlameWatchdogStalls >= 2) {
+            restartCandleFlame(flame, candleFlameWatchdogStalls >= 2);
+            candleFlameWatchdogStalls = 0;
+            candleFlameWatchdogTime = 0;
+        }
+    }, 250);
+}
+
+function restartCandleFlame(flame, hardReload = false) {
     if (!candleVisible || !flame) return;
     try {
+        if (hardReload) {
+            flame.load();
+        }
         flame.currentTime = 0;
         const replay = flame.play();
         if (replay && typeof replay.catch === 'function') replay.catch(() => {});
