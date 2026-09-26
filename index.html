@@ -3351,6 +3351,16 @@ iconImageElement.addEventListener('dblclick', (event) => {
 
         if (downIntent) {
             e.preventDefault();
+            // Telegram/iOS may cancel the touch sequence before touchend on a
+            // downward pull. Complete navigation during touchmove once the
+            // gesture has crossed a deliberate threshold.
+            const deltaDown = e.touches[0].clientY - startY;
+            const swipeThreshold = Math.min(64, getStableViewportHeight() * 0.08);
+            if (deltaDown >= swipeThreshold) {
+                tracking = false;
+                downIntent = false;
+                goBackToList();
+            }
             return;
         }
 
