@@ -577,7 +577,7 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.12) 52%, rgba(0, 0, 0, 0.54) 82%, #000 100%);
         }
 
-        /* Световая оболочка поверх bitmap: края цилиндра уходят от зрителя,
+        /* Световая оболочка поверх bitmap: края остаются мягко подсвеченными,
            а фронтальная полоса света следует за пламенем. */
         #candleCylinderShade,
         #candleCylinderLight {
@@ -593,26 +593,20 @@
 
         #candleCylinderShade {
             z-index: 3;
-            opacity: 0.64;
+            opacity: 0.24;
             background:
                 linear-gradient(
                     90deg,
-                    rgba(0, 0, 0, var(--candle-cylinder-left-shadow, 0.72)) 0%,
-                    rgba(0, 0, 0, 0.42) 10%,
-                    rgba(0, 0, 0, 0.13) 28%,
-                    rgba(0, 0, 0, 0.015) 46%,
-                    rgba(0, 0, 0, 0.02) 58%,
-                    rgba(0, 0, 0, 0.18) 76%,
-                    rgba(0, 0, 0, 0.48) 91%,
-                    rgba(0, 0, 0, var(--candle-cylinder-right-shadow, 0.76)) 100%
-                ),
-                linear-gradient(
-                    to bottom,
-                    rgba(0, 0, 0, 0.03) 8%,
-                    rgba(0, 0, 0, 0.02) 54%,
-                    rgba(0, 0, 0, 0.16) 100%
+                    rgba(255, 242, 207, 0.34) 0%,
+                    rgba(255, 225, 178, 0.14) 8%,
+                    rgba(255, 196, 125, 0.045) 17%,
+                    transparent 28%,
+                    transparent 72%,
+                    rgba(255, 196, 125, 0.045) 83%,
+                    rgba(255, 225, 178, 0.14) 92%,
+                    rgba(255, 242, 207, 0.34) 100%
                 );
-            mix-blend-mode: multiply;
+            mix-blend-mode: screen;
         }
 
         #candleCylinderLight {
@@ -2955,15 +2949,9 @@ function applyCandleAtmosphereFrame(time) {
         candleCylinderLight.style.setProperty('--candle-cylinder-light-x', `${cylinderLightX.toFixed(2)}%`);
         candleCylinderLight.style.opacity = (0.34 + intensity * 0.18).toFixed(4);
     }
-    if (candleCylinderShade) {
-        /* Маска силуэта остаётся неподвижной. Движется только распределение
-           света внутри неё: при уходе пламени вправо левый край тяжелее, и наоборот. */
-        const leftShadow = Math.max(0.58, Math.min(0.86, 0.72 + sceneMotionX * 0.34));
-        const rightShadow = Math.max(0.58, Math.min(0.86, 0.76 - sceneMotionX * 0.34));
-        candleCylinderShade.style.setProperty('--candle-cylinder-left-shadow', leftShadow.toFixed(4));
-        candleCylinderShade.style.setProperty('--candle-cylinder-right-shadow', rightShadow.toFixed(4));
-        candleCylinderShade.style.opacity = (0.58 + (1 - intensity) * 0.10).toFixed(4);
-    }
+    /* Боковые кромки свечи теперь статичны и светлые.
+       Мерцание остаётся только во фронтальном блике, поэтому по силуэту
+       не появляются тёмные пульсирующие границы. */
     if (candleWaxHighlight) {
         // Верхний воск остаётся отдельным материалом поверх цилиндрического света.
         candleWaxHighlight.style.opacity = (0.52 + intensity * 0.14).toFixed(4);
