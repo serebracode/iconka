@@ -3021,13 +3021,25 @@ function updateInfoScrollFades() {
     detailScreen.classList.toggle('info-bottom-fade-visible', scrollable && !atBottom);
 }
 
-/* Some Telegram/WebView builds do not reliably honor the HTML loop attribute
-   for alpha WebM. Restart explicitly when the media reaches its end. */
-document.getElementById('candleFlame').addEventListener('ended', (event) => {
+/* Telegram/WebView can fail to emit "ended" or restart an alpha WebM.
+   Rewind just before the media reaches its end, while it is still playing. */
+function restartCandleFlame(flame) {
+    if (!candleVisible || !flame) return;
+    try {
+        flame.currentTime = 0;
+        const replay = flame.play();
+        if (replay && typeof replay.catch === 'function') replay.catch(() => {});
+    } catch (_) {}
+}
+
+document.getElementById('candleFlame').addEventListener('timeupdate', (event) => {
     const flame = event.currentTarget;
-    if (!candleVisible) return;
-    flame.currentTime = 0;
-    flame.play().catch(() => {});
+    if (!candleVisible || !Number.isFinite(flame.duration) || flame.duration <= 0) return;
+    if (flame.currentTime >= flame.duration - 0.08) restartCandleFlame(flame);
+});
+
+document.getElementById('candleFlame').addEventListener('ended', (event) => {
+    restartCandleFlame(event.currentTarget);
 });
 
 document.getElementById('detailContent').addEventListener('scroll', () => {
