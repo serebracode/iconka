@@ -619,8 +619,8 @@
             z-index: 4;
             opacity: 0.44;
             background:
-                /* Центр эллипса вынесен выше тела свечи: свет широкий у верхней
-                   кромки, затем естественно сужается и исчезает к низу. */
+                /* Верх фронтального блика остаётся широким, а узкий хвост света
+                   продолжается примерно до середины тела свечи. */
                 radial-gradient(
                     ellipse 48% 105% at var(--candle-cylinder-light-x, 53%) -8%,
                     rgba(255, 250, 220, 0.66) 0%,
@@ -628,11 +628,17 @@
                     rgba(255, 142, 54, 0.13) 58%,
                     transparent 82%
                 ),
+                radial-gradient(
+                    ellipse 17% 46% at var(--candle-cylinder-light-x, 53%) 23%,
+                    rgba(255, 213, 132, 0.13) 0%,
+                    rgba(255, 163, 72, 0.065) 45%,
+                    transparent 76%
+                ),
                 linear-gradient(
                     to bottom,
                     rgba(255, 219, 153, 0.13) 4%,
-                    rgba(255, 150, 56, 0.055) 42%,
-                    transparent 78%
+                    rgba(255, 150, 56, 0.055) 46%,
+                    transparent 58%
                 );
             mix-blend-mode: screen;
             will-change: opacity, background;
@@ -1628,6 +1634,16 @@ function getArtStageMetrics() {
     return { width, height, centerX: window.innerWidth * 0.5 };
 }
 
+/* Тело свечи и пламя используют один масштаб относительно эталонной сцены.
+   Поэтому resize меняет их синхронно и не нарушает пропорцию между ними. */
+function getCandleSceneScale(stage = getArtStageMetrics()) {
+    return Math.min(
+        stage.width / CANDLE_REFERENCE_STAGE_WIDTH,
+        stage.height / CANDLE_REFERENCE_STAGE_HEIGHT,
+        1
+    );
+}
+
 function isPhoneDevice() {
     const phoneUA = /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent);
     const phoneScreen = Math.min(screen.width || window.innerWidth, screen.height || window.innerHeight) <= 600;
@@ -1677,8 +1693,9 @@ function updateResponsiveStage() {
     root.style.setProperty('--icon-default-width', `${(stage.width * 0.8).toFixed(2)}px`);
     root.style.setProperty('--info-icon-min-height', `${(stage.height * 0.42).toFixed(2)}px`);
     root.style.setProperty('--icon-max-height', `${(stage.height * 0.70).toFixed(2)}px`);
+    const candleSceneScale = getCandleSceneScale(stage);
     root.style.setProperty('--candle-body-top', `${(stage.height * 0.5937).toFixed(2)}px`);
-    root.style.setProperty('--candle-body-height', `${(Math.min(stage.height, CANDLE_REFERENCE_STAGE_HEIGHT) * 0.4275).toFixed(2)}px`);
+    root.style.setProperty('--candle-body-height', `${(CANDLE_REFERENCE_STAGE_HEIGHT * 0.4275 * candleSceneScale).toFixed(2)}px`);
     document.body.dataset.layout = window.innerWidth <= 600 ? 'phone' : (window.innerWidth <= 1024 ? 'tablet' : 'desktop');
     updateOrientationPolicy();
     positionLaunchHint();
@@ -2516,6 +2533,7 @@ const CANDLE_FLAME_CROP_TOP = 1010;
 const CANDLE_FLAME_CROP_WIDTH = 135;
 const CANDLE_FLAME_CROP_HEIGHT = 150;
 const CANDLE_FLAME_SCALE = 2.01894;
+const CANDLE_FLAME_SIZE_MULTIPLIER = 1.15;
 const CANDLE_FLAME_OFFSET_X = 4;
 const CANDLE_SHADE_BASE_VALUE = 100;
 const CANDLE_SHADE_FREQUENCY = 2.5;
@@ -2536,19 +2554,27 @@ function positionCandleAssets() {
     const flameViewport = document.getElementById('candleFlameViewport');
     const flame = document.getElementById('candleFlame');
     const stage = getArtStageMetrics();
-    const bodyHeight = Math.min(stage.height, CANDLE_REFERENCE_STAGE_HEIGHT) * CANDLE_BODY_HEIGHT_VIEWPORT;
+    const sceneScale = getCandleSceneScale(stage);
+
+    const bodyHeight = CANDLE_REFERENCE_STAGE_HEIGHT
+        * CANDLE_BODY_HEIGHT_VIEWPORT
+        * sceneScale;
     body.style.height = `${bodyHeight}px`;
     body.style.top = `${stage.height * CANDLE_WICK_VIEWPORT_Y - bodyHeight * CANDLE_WICK_TIP_Y}px`;
     bodyShade.style.height = body.style.height;
     bodyShade.style.top = body.style.top;
+
     const bodyBounds = body.getBoundingClientRect();
-    const flameScale = Math.min(stage.width, CANDLE_REFERENCE_STAGE_WIDTH)
-        / CANDLE_VIDEO_WIDTH * CANDLE_FLAME_SCALE;
+    const flameScale = CANDLE_REFERENCE_STAGE_WIDTH
+        / CANDLE_VIDEO_WIDTH
+        * CANDLE_FLAME_SCALE
+        * CANDLE_FLAME_SIZE_MULTIPLIER
+        * sceneScale;
     const flameWidth = CANDLE_VIDEO_WIDTH * flameScale;
     const flameHeight = CANDLE_VIDEO_HEIGHT * flameScale;
     const wickTipY = bodyBounds.top + bodyBounds.height * CANDLE_WICK_TIP_Y;
-    const wickOverlap = 11;
-    const flameX = stage.centerX + CANDLE_FLAME_OFFSET_X;
+    const wickOverlap = 11 * sceneScale;
+    const flameX = stage.centerX + CANDLE_FLAME_OFFSET_X * sceneScale;
     const flameY = wickTipY + wickOverlap;
 
     flameViewport.style.width = `${CANDLE_FLAME_CROP_WIDTH * flameScale}px`;
