@@ -597,14 +597,14 @@
             background:
                 linear-gradient(
                     90deg,
-                    rgba(0, 0, 0, 0.72) 0%,
+                    rgba(0, 0, 0, var(--candle-cylinder-left-shadow, 0.72)) 0%,
                     rgba(0, 0, 0, 0.42) 10%,
                     rgba(0, 0, 0, 0.13) 28%,
                     rgba(0, 0, 0, 0.015) 46%,
                     rgba(0, 0, 0, 0.02) 58%,
                     rgba(0, 0, 0, 0.18) 76%,
                     rgba(0, 0, 0, 0.48) 91%,
-                    rgba(0, 0, 0, 0.76) 100%
+                    rgba(0, 0, 0, var(--candle-cylinder-right-shadow, 0.76)) 100%
                 ),
                 linear-gradient(
                     to bottom,
@@ -2928,10 +2928,12 @@ function applyCandleAtmosphereFrame(time) {
         candleCylinderLight.style.opacity = (0.34 + intensity * 0.18).toFixed(4);
     }
     if (candleCylinderShade) {
-        /* При отклонении огня противоположный бок становится чуть тяжелее.
-           Сдвиг минимальный, чтобы не превращать фактуру в CGI. */
-        const shadeBias = sceneMotionX * 5.5;
-        candleCylinderShade.style.transform = `translateX(${shadeBias.toFixed(2)}px)`;
+        /* Маска силуэта остаётся неподвижной. Движется только распределение
+           света внутри неё: при уходе пламени вправо левый край тяжелее, и наоборот. */
+        const leftShadow = Math.max(0.58, Math.min(0.86, 0.72 + sceneMotionX * 0.34));
+        const rightShadow = Math.max(0.58, Math.min(0.86, 0.76 - sceneMotionX * 0.34));
+        candleCylinderShade.style.setProperty('--candle-cylinder-left-shadow', leftShadow.toFixed(4));
+        candleCylinderShade.style.setProperty('--candle-cylinder-right-shadow', rightShadow.toFixed(4));
         candleCylinderShade.style.opacity = (0.58 + (1 - intensity) * 0.10).toFixed(4);
     }
     if (candleWaxHighlight) {
