@@ -1989,6 +1989,7 @@ function populateIconDetails(icon, { clearStaleFrame = false } = {}) {
     applyIconAlphaMask(alphaImagePath);
     iconImage.dataset.displayImage = displayImagePath;
     iconImage.dataset.candleImage = candleImagePath;
+    iconImage.dataset.cutoutImage = alphaImagePath;
     showIconProgressively(icon, displayImagePath, { clearStaleFrame });
     /* Прозрачная версия загружается в фоне, пока пользователь смотрит икону. */
     iconLight.src = candleImagePath;
@@ -2178,8 +2179,10 @@ function resetDetailScreenUI() {
     candleEffectGeometryToken += 1;
     window.clearTimeout(candleTransitionTimer);
     window.clearTimeout(candleTitleTimer);
+    window.clearTimeout(candleSessionTimer);
     candleTransitionTimer = null;
     candleTitleTimer = null;
+    candleSessionTimer = null;
     stopCandleAtmosphereAnimation();
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
@@ -2362,6 +2365,7 @@ let infoPanelVisible = false;
 let infoSettleTimer = null;
 let candleTransitionTimer = null;
 let candleTitleTimer = null;
+let candleSessionTimer = null;
 let candleWakeLock = null;
 let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
@@ -2381,6 +2385,7 @@ let shadowMotionY = 0;
 let candleEffectGeometryToken = 0;
 const CANDLE_SCENE_TRANSITION_MS = 3000;
 const CANDLE_TITLE_EXIT_MS = 480;
+const CANDLE_SESSION_MS = 2 * 60 * 1000;
 const CANDLE_VIDEO_WIDTH = 1080;
 const CANDLE_VIDEO_HEIGHT = 1920;
 const CANDLE_FLAME_X = 540;
@@ -2852,8 +2857,15 @@ function showCandle() {
     const candleFlame = document.getElementById('candleFlame');
     const iconImage = document.getElementById('iconImage');
     const candleImagePath = iconImage.dataset.candleImage;
+    const cutoutImagePath = iconImage.dataset.cutoutImage;
     cancelProgressiveIconLoad();
-    if (candleImagePath) iconImage.src = candleImagePath;
+    /* Candle Mode must use the authoritative alpha master as the visible icon.
+       candle_image remains available as a lightweight auxiliary asset. */
+    if (cutoutImagePath) {
+        iconImage.src = cutoutImagePath;
+    } else if (candleImagePath) {
+        iconImage.src = candleImagePath;
+    }
     const iconBounds = iconImage.getBoundingClientRect();
     const stage = getArtStageMetrics();
     const iconScale = iconBounds.width > 0
@@ -2864,8 +2876,20 @@ function showCandle() {
     positionCandleAssets();
     updateCandleEffectGeometry();
     startCandleAtmosphereAnimation();
+    candleFlame.loop = true;
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     candleFlame.play().catch(() => {});
+    window.clearTimeout(candleSessionTimer);
+    candleSessionTimer = window.setTimeout(() => {
+        if (!candleVisible) return;
+        candleVisible = false;
+        stopCandleAtmosphereAnimation();
+        releaseCandleWakeLock();
+        resetDetailScreenUI();
+        document.getElementById('detailScreen').classList.remove('active', 'loading-fadeout', 'detail-fadein');
+        infoPanelVisible = false;
+        activateListScreen();
+    }, CANDLE_SESSION_MS);
     startFlameSynchronizedShade();
     document.getElementById('globalLogo').classList.remove('list-fadein');
 
@@ -2919,7 +2943,9 @@ function closeCandle() {
     const candleFlame = document.getElementById('candleFlame');
     window.clearTimeout(candleTransitionTimer);
     window.clearTimeout(candleTitleTimer);
+    window.clearTimeout(candleSessionTimer);
     candleTitleTimer = null;
+    candleSessionTimer = null;
     detailContent.classList.remove('candle-title-leaving');
     detailContent.classList.add('candle-closing');
     document.body.classList.add('candle-transition');
@@ -2965,6 +2991,15 @@ function updateInfoScrollFades() {
     detailScreen.classList.toggle('info-top-fade-visible', scrollable && !atTop);
     detailScreen.classList.toggle('info-bottom-fade-visible', scrollable && !atBottom);
 }
+
+/* Some Telegram/WebView builds do not reliably honor the HTML loop attribute
+   for alpha WebM. Restart explicitly when the media reaches its end. */
+document.getElementById('candleFlame').addEventListener('ended', (event) => {
+    const flame = event.currentTarget;
+    if (!candleVisible) return;
+    flame.currentTime = 0;
+    flame.play().catch(() => {});
+});
 
 document.getElementById('detailContent').addEventListener('scroll', () => {
     if (infoPanelVisible) updateInfoScrollFades();
