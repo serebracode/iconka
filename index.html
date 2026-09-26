@@ -2944,18 +2944,18 @@ function applyCandleAtmosphereFrame(time) {
         haloPosition.style.transform = `translate(calc(-50% + ${(sceneMotionX * 14).toFixed(2)}px), calc(-50% + ${(sceneMotionY * 10).toFixed(2)}px))`;
     }
     if (candleCylinderLight) {
-        /* Свет движется по поверхности, но сама маска остаётся неподвижной:
-           это сохраняет реальный контур свечи и создаёт ощущение цилиндра. */
-        const cylinderLightX = 53 + sceneMotionX * 12;
+        /* Огонь не гаснет, поэтому фронтальный рефлекс остаётся постоянным.
+           Амплитуда его движения и яркости снижена вдвое, средний уровень сохранён. */
+        const cylinderLightX = 53 + sceneMotionX * 6;
         candleCylinderLight.style.setProperty('--candle-cylinder-light-x', `${cylinderLightX.toFixed(2)}%`);
-        candleCylinderLight.style.opacity = (0.442 + intensity * 0.234).toFixed(4);
+        candleCylinderLight.style.opacity = (0.5005 + intensity * 0.117).toFixed(4);
     }
     /* Боковые кромки свечи теперь статичны и светлые.
        Мерцание остаётся только во фронтальном блике, поэтому по силуэту
        не появляются тёмные пульсирующие границы. */
     if (candleWaxHighlight) {
-        // Верхний воск остаётся отдельным материалом поверх цилиндрического света.
-        candleWaxHighlight.style.opacity = (0.52 + intensity * 0.14).toFixed(4);
+        // Верхний воск сохраняет постоянный рефлекс, мерцание уменьшено вдвое.
+        candleWaxHighlight.style.opacity = (0.555 + intensity * 0.07).toFixed(4);
     }
     if (candleBody) {
         // Всё тело реагирует едва заметно: меняются рефлексы, а не сам цвет свечи.
