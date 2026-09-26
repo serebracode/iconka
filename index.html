@@ -611,10 +611,10 @@
 
         #candleCylinderLight {
             z-index: 4;
-            opacity: 0.44;
+            opacity: 0.572;
             background:
                 /* Верх фронтального блика остаётся широким, а узкий хвост света
-                   продолжается примерно до середины тела свечи. */
+                   продолжается заметно ниже середины тела свечи. */
                 radial-gradient(
                     ellipse 48% 105% at var(--candle-cylinder-light-x, 53%) -8%,
                     rgba(255, 250, 220, 0.66) 0%,
@@ -623,16 +623,16 @@
                     transparent 82%
                 ),
                 radial-gradient(
-                    ellipse 17% 46% at var(--candle-cylinder-light-x, 53%) 23%,
+                    ellipse 17% 64% at var(--candle-cylinder-light-x, 53%) 29%,
                     rgba(255, 213, 132, 0.13) 0%,
-                    rgba(255, 163, 72, 0.065) 45%,
-                    transparent 76%
+                    rgba(255, 163, 72, 0.065) 52%,
+                    transparent 88%
                 ),
                 linear-gradient(
                     to bottom,
                     rgba(255, 219, 153, 0.13) 4%,
-                    rgba(255, 150, 56, 0.055) 46%,
-                    transparent 58%
+                    rgba(255, 150, 56, 0.055) 54%,
+                    transparent 72%
                 );
             mix-blend-mode: screen;
             will-change: opacity, background;
@@ -2947,7 +2947,7 @@ function applyCandleAtmosphereFrame(time) {
            это сохраняет реальный контур свечи и создаёт ощущение цилиндра. */
         const cylinderLightX = 53 + sceneMotionX * 12;
         candleCylinderLight.style.setProperty('--candle-cylinder-light-x', `${cylinderLightX.toFixed(2)}%`);
-        candleCylinderLight.style.opacity = (0.34 + intensity * 0.18).toFixed(4);
+        candleCylinderLight.style.opacity = (0.442 + intensity * 0.234).toFixed(4);
     }
     /* Боковые кромки свечи теперь статичны и светлые.
        Мерцание остаётся только во фронтальном блике, поэтому по силуэту
