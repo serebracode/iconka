@@ -1622,7 +1622,20 @@ async function loadIconsData() {
         const response = await fetch(`./data/icons.json?v=${Date.now()}`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed');
         const data = await response.json();
-        ICONS_DATA = Array.isArray(data.icons) ? data.icons : [];
+        const assetVersion = Date.now().toString(36);
+        const versionAsset = (path) => {
+            if (!path || typeof path !== 'string') return path;
+            const separator = path.includes('?') ? '&' : '?';
+            return `${path}${separator}v=${assetVersion}`;
+        };
+        ICONS_DATA = (Array.isArray(data.icons) ? data.icons : []).map(icon => ({
+            ...icon,
+            image: versionAsset(icon.image),
+            loading_image: versionAsset(icon.loading_image),
+            preview_image: versionAsset(icon.preview_image),
+            candle_image: versionAsset(icon.candle_image),
+            cutout_master: versionAsset(icon.cutout_master),
+        }));
     } catch (e) {
         ICONS_DATA = [];
     }
