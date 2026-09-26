@@ -139,6 +139,35 @@
             background-color: rgba(255, 255, 255, 0.15);
         }
 
+        #candleUnavailableOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            background: rgba(0, 0, 0, 0.86);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+            opacity: 0;
+            transition: opacity 220ms ease;
+        }
+
+        #candleUnavailableOverlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        #candleUnavailableMessage {
+            max-width: 360px;
+            color: #FFFFFF;
+            font-size: 16px;
+            line-height: 1.45;
+            font-weight: 400;
+            text-align: center;
+        }
+
         /* ========== DETAIL SCREEN STYLES ========== */
         #detailContent {
             --info-progress: 0;
@@ -1469,6 +1498,10 @@
     <div id="foregroundVeil" class="foreground-veil" aria-hidden="true"></div>
     <div id="foregroundEdgeShade" class="foreground-edge-shade" aria-hidden="true"></div>
 
+    <div id="candleUnavailableOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+        <div id="candleUnavailableMessage">Режим свечи доступен на телефонах и планшетах.</div>
+    </div>
+
     <button id="shareBtn" class="tg-round-btn" style="position: fixed; bottom: calc(var(--tg-safe-area-inset-bottom, 0px) + 6px); left: 20px; z-index: 100; width: 40px; height: 40px; opacity: 1; transition: opacity 0.3s ease-out;">
         <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
             <path d="M14 4V18M14 4L9 9M14 4L19 9" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1515,6 +1548,7 @@ const ART_STAGE_HEIGHT_RATIO = 0.50;
 /* Свеча сохраняет физический размер эталонного мобильного макета. */
 const CANDLE_REFERENCE_STAGE_WIDTH = 390;
 const CANDLE_REFERENCE_STAGE_HEIGHT = 844;
+const CANDLE_MAX_VIEWPORT_WIDTH = 1024;
 
 function getStableViewportHeight() {
     const telegramHeight = Number(window.Telegram?.WebApp?.viewportStableHeight);
@@ -2862,8 +2896,26 @@ function startCandleAtmosphereAnimation() {
     candleAtmosphereAnimationFrame = requestAnimationFrame(animateAtmosphere);
 }
 
+function showCandleUnavailable() {
+    const overlay = document.getElementById('candleUnavailableOverlay');
+    if (!overlay) return;
+    overlay.classList.add('visible');
+    overlay.setAttribute('aria-hidden', 'false');
+}
+
+function hideCandleUnavailable() {
+    const overlay = document.getElementById('candleUnavailableOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('visible');
+    overlay.setAttribute('aria-hidden', 'true');
+}
+
 async function showCandle() {
     if (iconSwipeInProgress || candleVisible) return;
+    if (window.innerWidth > CANDLE_MAX_VIEWPORT_WIDTH) {
+        showCandleUnavailable();
+        return;
+    }
     if (infoPanelVisible) {
         toggleInfo();
         setTimeout(showCandle, 350);
@@ -3432,6 +3484,10 @@ iconImageElement.addEventListener('dblclick', (event) => {
 })();
 
 document.getElementById('candleBtn').addEventListener('click', showCandle);
+document.getElementById('candleUnavailableOverlay').addEventListener('click', hideCandleUnavailable);
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') hideCandleUnavailable();
+});
 document.getElementById('infoBtn').addEventListener('click', toggleInfo);
 document.getElementById('shareBtn').addEventListener('click', shareIcon);
 
