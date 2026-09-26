@@ -2385,6 +2385,7 @@ let candleAtmosphereAnimationFrame = null;
 let candleAtmosphereAnimationStart = 0;
 let candleFlameVideoFrameHandle = null;
 let candleFlameWatchdogTimer = null;
+let candleFlameLoopFrame = null;
 let candleFlameWatchdogTime = -1;
 let candleFlameWatchdogStalls = 0;
 let candleFlameSampleContext = null;
@@ -3031,6 +3032,8 @@ function updateInfoScrollFades() {
 function stopCandleFlameWatchdog() {
     window.clearInterval(candleFlameWatchdogTimer);
     candleFlameWatchdogTimer = null;
+    if (candleFlameLoopFrame !== null) cancelAnimationFrame(candleFlameLoopFrame);
+    candleFlameLoopFrame = null;
     candleFlameWatchdogTime = -1;
     candleFlameWatchdogStalls = 0;
 }
@@ -3038,25 +3041,40 @@ function stopCandleFlameWatchdog() {
 function startCandleFlameWatchdog() {
     stopCandleFlameWatchdog();
     const flame = document.getElementById('candleFlame');
-    candleFlameWatchdogTime = flame.currentTime || 0;
-    candleFlameWatchdogTimer = window.setInterval(() => {
+
+    /* Do not let Telegram/WebView's VP9 decoder ever reach EOF.
+       Rewind while the stream is still actively decoding. */
+    const guardLoop = () => {
         if (!candleVisible) {
-            stopCandleFlameWatchdog();
+            candleFlameLoopFrame = null;
             return;
         }
+        if (Number.isFinite(flame.duration) && flame.duration > 0
+            && flame.currentTime >= Math.max(0, flame.duration - 0.35)) {
+            try {
+                flame.currentTime = 0.001;
+                const replay = flame.play();
+                if (replay && typeof replay.catch === 'function') replay.catch(() => {});
+            } catch (_) {}
+        }
+        candleFlameLoopFrame = requestAnimationFrame(guardLoop);
+    };
+    candleFlameLoopFrame = requestAnimationFrame(guardLoop);
+
+    /* Fallback only for a genuine decoder stall before the guard point. */
+    candleFlameWatchdogTime = flame.currentTime || 0;
+    candleFlameWatchdogTimer = window.setInterval(() => {
+        if (!candleVisible) return;
         const now = flame.currentTime || 0;
-        const nearEnd = Number.isFinite(flame.duration) && flame.duration > 0
-            && now >= flame.duration - 0.12;
-        const stalled = !flame.paused && Math.abs(now - candleFlameWatchdogTime) < 0.01;
+        const stalled = !flame.paused && Math.abs(now - candleFlameWatchdogTime) < 0.005;
         candleFlameWatchdogStalls = stalled ? candleFlameWatchdogStalls + 1 : 0;
         candleFlameWatchdogTime = now;
-
-        if (nearEnd || flame.ended || flame.paused || candleFlameWatchdogStalls >= 2) {
-            restartCandleFlame(flame, candleFlameWatchdogStalls >= 2);
+        if (flame.paused || flame.ended || candleFlameWatchdogStalls >= 3) {
+            restartCandleFlame(flame, true);
             candleFlameWatchdogStalls = 0;
             candleFlameWatchdogTime = 0;
         }
-    }, 250);
+    }, 200);
 }
 
 function restartCandleFlame(flame, hardReload = false) {
