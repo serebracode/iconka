@@ -3290,6 +3290,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
     let startY = 0;
     let currentX = 0;
     let horizontalIntent = false;
+    let downIntent = false;
     let startTime = 0;
     let startProgress = 0;
     let progress = 0;
@@ -3304,6 +3305,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
         startY = e.touches[0].clientY;
         currentX = startX;
         horizontalIntent = false;
+        downIntent = false;
         startTime = Date.now();
         startProgress = infoPanelVisible ? 1 : 0;
         progress = startProgress;
@@ -3331,6 +3333,23 @@ iconImageElement.addEventListener('dblclick', (event) => {
         }
 
         if (horizontalIntent) {
+            e.preventDefault();
+            return;
+        }
+
+        // На закрытой карточке вертикальный свайп вниз возвращает к списку.
+        // Он не конкурирует со свайпом вверх (Info), zoom/pan и горизонтальной навигацией.
+        if (!infoPanelVisible && !iconZoomed
+            && deltaY < -18
+            && Math.abs(deltaY) > Math.abs(deltaX) * 1.25) {
+            downIntent = true;
+            detailContent.classList.remove('is-dragging');
+            applyInfoProgress(startProgress);
+            e.preventDefault();
+            return;
+        }
+
+        if (downIntent) {
             e.preventDefault();
             return;
         }
@@ -3372,6 +3391,15 @@ iconImageElement.addEventListener('dblclick', (event) => {
             tracking = false;
             return;
         }
+        if (downIntent) {
+            applyInfoProgress(startProgress);
+            const deltaDown = endY - startY;
+            const swipeThreshold = Math.min(72, window.innerHeight * 0.10);
+            downIntent = false;
+            tracking = false;
+            if (deltaDown >= swipeThreshold) goBackToList();
+            return;
+        }
         const shouldOpen = velocity > 0.35 || (velocity > -0.35 && progress >= 0.5);
         setInfoPanel(shouldOpen);
         tracking = false;
@@ -3380,6 +3408,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
     detailScreen.addEventListener('touchcancel', () => {
         detailContent.classList.remove('is-dragging');
         horizontalIntent = false;
+        downIntent = false;
         if (!tracking) return;
         setInfoPanel(startProgress === 1);
         tracking = false;
