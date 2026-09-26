@@ -146,7 +146,7 @@
       "title": "Спас Вседержитель (Пантократор)",
       "title_short": "Спас Вседержитель",
       "image": "./icons/spas_vsedergitel.jpg",
-      "loading_image": "./icons/loading/spas_vsedergitel_loading.jpg?v=9c61766dd0",
+      "loading_image": "./icons/loading/spas_vsedergitel_loading.jpg",
       "author_full": "Неизвестно",
       "image_source": "https://commons.wikimedia.org/wiki/File:Christ_Pantocrator_Russian_icon.jpg",
       "image_credit": "Неизвестный автор · Public Domain",
@@ -155,7 +155,10 @@
       "size": "Неизвестно",
       "location": "Неизвестно",
       "description_full": "Образ Христа Вседержителя: Христос благословляет правой рукой и держит Евангелие левой. Название «Пантократор» подчёркивает образ Христа как Владыки мира; такие иконы занимают центральное место в византийской и русской традиции.",
-      "rights": "Wikimedia Commons · Public Domain. Источник указан в data/IMAGE_SOURCES.md."
+      "rights": "Wikimedia Commons · Public Domain. Источник указан в data/IMAGE_SOURCES.md.",
+      "preview_image": "./icons/preview/spas_vsedergitel_preview.jpg",
+      "candle_image": "./icons/candle/spas_vsedergitel.webp",
+      "cutout_master": "./icons/png/spas_vsedergitel.png"
     },
     {
       "id": 11,
