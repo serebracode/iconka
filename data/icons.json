@@ -174,7 +174,7 @@
       "title": "Святой Николай Чудотворец",
       "title_short": "Святой Николай Чудотворец",
       "image": "./icons/nikolay.jpg",
-      "loading_image": "./icons/loading/nikolay_loading.jpg?v=acfc28663f",
+      "loading_image": "./icons/loading/nikolay_loading.jpg",
       "image_source": "https://www.pravmir.ru/nikola-novodevichij-mudrost-svyatosti-chitaem-ikony/",
       "image_source_label": "Изображение: публикация об иконе",
       "image_credit": "«Никола Новодевичий» · Государственная Третьяковская галерея",
@@ -184,7 +184,10 @@
       "size": "145 × 94 см",
       "location": "Государственная Третьяковская галерея, Москва",
       "description_full": "На изображении — «Никола Новодевичий», поясной образ святителя с закрытым Евангелием. Серебряный фон и оклад сохраняют следы долгой истории почитания; сама живопись относится к концу XII века. Лёгкий поворот головы и взгляд в сторону отличают икону от привычных строго фронтальных изображений Николая.",
-      "rights": "Источник и кредит изображения указаны ниже."
+      "rights": "Источник и кредит изображения указаны ниже.",
+      "preview_image": "./icons/preview/nikolay_preview.jpg",
+      "candle_image": "./icons/candle/nikolay.webp",
+      "cutout_master": "./icons/png/nikolay.png"
     },
     {
       "id": 16,
