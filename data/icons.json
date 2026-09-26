@@ -210,7 +210,7 @@
       "title": "Архангел Михаил",
       "title_short": "Архангел Михаил",
       "image": "./icons/mihail.jpg",
-      "loading_image": "./icons/loading/mihail_loading.jpg?v=f03f667767",
+      "loading_image": "./icons/loading/mihail_loading.jpg",
       "image_source": "https://commons.wikimedia.org/wiki/File:Archangel_Michael_Icon.tif",
       "image_credit": "Неизвестный автор · Public Domain",
       "author_full": "Неизвестно",
@@ -219,7 +219,10 @@
       "size": "Неизвестно",
       "location": "Неизвестно",
       "description_full": "Главный воин небесного воинства, защитник и предводитель ангельских сил. Древние иконы Михаила отличаются строгим, собранным лицом и мощной вертикалью фигуры. Образ соединяет небесную власть и суровую справедливость.",
-      "rights": "Wikimedia Commons · Public Domain. Источник указан в data/IMAGE_SOURCES.md."
+      "rights": "Wikimedia Commons · Public Domain. Источник указан в data/IMAGE_SOURCES.md.",
+      "preview_image": "./icons/preview/mihail_preview.jpg",
+      "candle_image": "./icons/candle/mihail.webp",
+      "cutout_master": "./icons/png/mihail.png"
     },
     {
       "id": 18,
