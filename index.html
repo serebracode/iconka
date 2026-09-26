@@ -1619,7 +1619,7 @@ const swipePreviewCache = new Map();
 
 async function loadIconsData() {
     try {
-        const response = await fetch('./data/icons.json');
+        const response = await fetch(`./data/icons.json?v=${Date.now()}`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed');
         const data = await response.json();
         ICONS_DATA = Array.isArray(data.icons) ? data.icons : [];
