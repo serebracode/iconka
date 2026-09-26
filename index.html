@@ -2839,8 +2839,8 @@ function startCandleAtmosphereAnimation() {
     candleAtmosphereAnimationFrame = requestAnimationFrame(animateAtmosphere);
 }
 
-function showCandle() {
-    if (iconSwipeInProgress) return;
+async function showCandle() {
+    if (iconSwipeInProgress || candleVisible) return;
     if (infoPanelVisible) {
         toggleInfo();
         setTimeout(showCandle, 350);
@@ -2848,8 +2848,6 @@ function showCandle() {
     }
     
     resetIconZoom();
-    candleVisible = true;
-    acquireCandleWakeLock();
 
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
@@ -2859,13 +2857,31 @@ function showCandle() {
     const candleImagePath = iconImage.dataset.candleImage;
     const cutoutImagePath = iconImage.dataset.cutoutImage;
     cancelProgressiveIconLoad();
-    /* Candle Mode must use the authoritative alpha master as the visible icon.
-       candle_image remains available as a lightweight auxiliary asset. */
-    if (cutoutImagePath) {
-        iconImage.src = cutoutImagePath;
-    } else if (candleImagePath) {
-        iconImage.src = candleImagePath;
+
+    /* Decode the authoritative alpha master before Candle Mode starts.
+       This prevents the scene geometry/effects from being initialized from the
+       previous opaque JPG frame while the PNG is still loading. */
+    const candleVisibleImagePath = cutoutImagePath || candleImagePath;
+    if (candleVisibleImagePath) {
+        const alphaImage = new Image();
+        alphaImage.decoding = 'async';
+        const alphaReady = new Promise(resolve => {
+            alphaImage.addEventListener('load', () => resolve(true), { once: true });
+            alphaImage.addEventListener('error', () => resolve(false), { once: true });
+        });
+        alphaImage.src = candleVisibleImagePath;
+        if (alphaImage.complete && alphaImage.naturalWidth) {
+            try { await alphaImage.decode?.(); } catch (_) {}
+        } else {
+            await alphaReady;
+            try { await alphaImage.decode?.(); } catch (_) {}
+        }
+        iconImage.src = candleVisibleImagePath;
+        try { await iconImage.decode?.(); } catch (_) {}
     }
+
+    candleVisible = true;
+    acquireCandleWakeLock();
     const iconBounds = iconImage.getBoundingClientRect();
     const stage = getArtStageMetrics();
     const iconScale = iconBounds.width > 0
