@@ -1672,7 +1672,7 @@ if (tg) {
 // ЛОГИКА
 // ============================================
 
-function activateListScreen() {
+function activateListScreen(animate = true) {
     const listScreen = document.getElementById('listScreen');
     const globalLogo = document.getElementById('globalLogo');
     const listHeader = document.getElementById('listHeader');
@@ -1680,23 +1680,29 @@ function activateListScreen() {
 
     renderIconsList();
 
-    // Сброс состояния перед показом
+    // При первом/обычном входе список плавно появляется. После физического
+    // swipe-down он уже является предыдущим экраном и должен быть виден сразу.
     globalLogo.classList.remove('list-fadein');
     listHeader.classList.remove('list-fadein');
     iconsList.classList.remove('list-fadein');
-    globalLogo.style.opacity = '0';
-    listHeader.style.opacity = '0';
-    iconsList.style.opacity = '0';
 
     listScreen.classList.add('active');
     globalLogo.style.display = 'block';
 
-    // Запуск анимаций
-    requestAnimationFrame(() => {
-        globalLogo.classList.add('list-fadein');
-        listHeader.classList.add('list-fadein');
-        iconsList.classList.add('list-fadein');
-    });
+    if (animate) {
+        globalLogo.style.opacity = '0';
+        listHeader.style.opacity = '0';
+        iconsList.style.opacity = '0';
+        requestAnimationFrame(() => {
+            globalLogo.classList.add('list-fadein');
+            listHeader.classList.add('list-fadein');
+            iconsList.classList.add('list-fadein');
+        });
+    } else {
+        globalLogo.style.opacity = '1';
+        listHeader.style.opacity = '1';
+        iconsList.style.opacity = '1';
+    }
 
     tg?.BackButton?.show();
 }
@@ -2348,7 +2354,7 @@ function goBack() {
     }
 }
 
-function goBackToList() {
+function goBackToList(animateList = true) {
     const listScreen = document.getElementById('listScreen');
     const detailScreen = document.getElementById('detailScreen');
     const aboutScreen = document.getElementById('aboutScreen');
@@ -2368,7 +2374,7 @@ function goBackToList() {
         resetDetailScreenUI();
         candleVisible = false;
         infoPanelVisible = false;
-        activateListScreen();
+        activateListScreen(animateList);
     }, 300);
 }
 tg?.BackButton?.onClick(goBack);
@@ -3359,7 +3365,7 @@ iconImageElement.addEventListener('dblclick', (event) => {
             if (deltaDown >= swipeThreshold) {
                 tracking = false;
                 downIntent = false;
-                goBackToList();
+                goBackToList(false);
             }
             return;
         }
