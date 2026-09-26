@@ -2948,7 +2948,7 @@ function applyCandleAtmosphereFrame(time) {
            Амплитуда его движения и яркости снижена вдвое, средний уровень сохранён. */
         const cylinderLightX = 53 + sceneMotionX * 6;
         candleCylinderLight.style.setProperty('--candle-cylinder-light-x', `${cylinderLightX.toFixed(2)}%`);
-        candleCylinderLight.style.opacity = (0.5005 + intensity * 0.117).toFixed(4);
+        candleCylinderLight.style.opacity = (0.559 + intensity * 0.117).toFixed(4);
     }
     /* Боковые кромки свечи теперь статичны и светлые.
        Мерцание остаётся только во фронтальном блике, поэтому по силуэту
