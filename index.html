@@ -2389,6 +2389,7 @@ function goBack() {
 }
 
 function goBackToList(animateList = true) {
+    hideCandleUnavailable();
     const listScreen = document.getElementById('listScreen');
     const detailScreen = document.getElementById('detailScreen');
     const aboutScreen = document.getElementById('aboutScreen');
@@ -2912,7 +2913,9 @@ function hideCandleUnavailable() {
 
 async function showCandle() {
     if (iconSwipeInProgress || candleVisible) return;
-    if (window.innerWidth > CANDLE_MAX_VIEWPORT_WIDTH) {
+    if (window.innerWidth > CANDLE_MAX_VIEWPORT_WIDTH
+        && !isPhoneDevice()
+        && !isTabletDevice()) {
         showCandleUnavailable();
         return;
     }
