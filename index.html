@@ -8,6 +8,12 @@
         window.va = window.va || function () {
             (window.vaq = window.vaq || []).push(arguments);
         };
+        /* Android Telegram/WebView can corrupt compositing of transparent VP9
+           video layers. Keep the WebM as the decoder, but paint the visible flame
+           through a small canvas on Android. */
+        if (/Android/i.test(navigator.userAgent)) {
+            document.documentElement.classList.add('android-flame-canvas');
+        }
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -693,6 +699,30 @@
             position: absolute;
             display: block;
             max-width: none;
+        }
+
+        #candleFlameCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            pointer-events: none;
+        }
+
+        /* Android fallback: the source video still decodes and drives the sampled
+           light/shadow signal, but is no longer a visible hardware video layer. */
+        html.android-flame-canvas #candleFlameCanvas {
+            display: block;
+        }
+
+        html.android-flame-canvas #candleFlame {
+            opacity: 0 !important;
+        }
+
+        html.android-flame-canvas #candleFlameViewport {
+            isolation: isolate;
+            contain: paint;
         }
 
         #candleFlickerShade,
@@ -1560,6 +1590,7 @@
         <div id="candleWaxHighlight" aria-hidden="true"></div>
     </div>
     <div id="candleFlameViewport" aria-hidden="true">
+        <canvas id="candleFlameCanvas" width="135" height="150"></canvas>
         <video id="candleFlame" muted playsinline loop preload="auto">
             <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
         </video>
@@ -2318,6 +2349,7 @@ function resetDetailScreenUI() {
     candleTitleTimer = null;
     candleSessionTimer = null;
     stopCandleAtmosphereAnimation();
+    stopAndroidFlameCanvasRenderer();
     const detailScreen = document.getElementById('detailScreen');
     const detailContent = document.getElementById('detailContent');
     detailContent.classList.remove('info-open');
@@ -2506,6 +2538,9 @@ let candleWakeLockPending = false;
 let candleAtmosphereAnimationFrame = null;
 let candleAtmosphereAnimationStart = 0;
 let candleFlameVideoFrameHandle = null;
+let candleFlameCanvasVideoFrameHandle = null;
+let candleFlameCanvasAnimationFrame = null;
+let candleFlameCanvasContext = null;
 let candleFlameWatchdogTimer = null;
 let candleFlameLoopFrame = null;
 let candleFlameWatchdogTime = -1;
@@ -2778,6 +2813,96 @@ function applyFallbackShadeFlicker(time) {
         '--flicker-shade-opacity',
         (1 - CANDLE_SHADE_OPACITY_RANGE + shadeProgress * CANDLE_SHADE_OPACITY_RANGE).toFixed(4)
     );
+}
+
+
+function usesAndroidFlameCanvas() {
+    return document.documentElement.classList.contains('android-flame-canvas');
+}
+
+function drawAndroidFlameCanvasFrame() {
+    if (!usesAndroidFlameCanvas()) return false;
+    const flame = document.getElementById('candleFlame');
+    const canvas = document.getElementById('candleFlameCanvas');
+    if (!flame || !canvas || flame.readyState < 2 || !flame.videoWidth || !flame.videoHeight) return false;
+
+    const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+    const targetWidth = Math.max(1, Math.round(CANDLE_FLAME_CROP_WIDTH * dpr));
+    const targetHeight = Math.max(1, Math.round(CANDLE_FLAME_CROP_HEIGHT * dpr));
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        candleFlameCanvasContext = null;
+    }
+    if (!candleFlameCanvasContext) {
+        candleFlameCanvasContext = canvas.getContext('2d', { alpha: true });
+    }
+    if (!candleFlameCanvasContext) return false;
+
+    const scaleX = flame.videoWidth / CANDLE_VIDEO_WIDTH;
+    const scaleY = flame.videoHeight / CANDLE_VIDEO_HEIGHT;
+    candleFlameCanvasContext.clearRect(0, 0, canvas.width, canvas.height);
+    candleFlameCanvasContext.drawImage(
+        flame,
+        CANDLE_FLAME_CROP_LEFT * scaleX,
+        CANDLE_FLAME_CROP_TOP * scaleY,
+        CANDLE_FLAME_CROP_WIDTH * scaleX,
+        CANDLE_FLAME_CROP_HEIGHT * scaleY,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+    return true;
+}
+
+function stopAndroidFlameCanvasRenderer() {
+    const flame = document.getElementById('candleFlame');
+    if (candleFlameCanvasVideoFrameHandle !== null
+        && flame
+        && typeof flame.cancelVideoFrameCallback === 'function') {
+        flame.cancelVideoFrameCallback(candleFlameCanvasVideoFrameHandle);
+    }
+    candleFlameCanvasVideoFrameHandle = null;
+    if (candleFlameCanvasAnimationFrame !== null) {
+        cancelAnimationFrame(candleFlameCanvasAnimationFrame);
+    }
+    candleFlameCanvasAnimationFrame = null;
+}
+
+function startAndroidFlameCanvasRenderer() {
+    stopAndroidFlameCanvasRenderer();
+    if (!usesAndroidFlameCanvas()) return;
+
+    const flame = document.getElementById('candleFlame');
+    if (!flame) return;
+
+    if (typeof flame.requestVideoFrameCallback === 'function') {
+        const renderFrame = () => {
+            if (!candleVisible || !usesAndroidFlameCanvas()) {
+                candleFlameCanvasVideoFrameHandle = null;
+                return;
+            }
+            try {
+                drawAndroidFlameCanvasFrame();
+            } catch (_) {}
+            candleFlameCanvasVideoFrameHandle = flame.requestVideoFrameCallback(renderFrame);
+        };
+        candleFlameCanvasVideoFrameHandle = flame.requestVideoFrameCallback(renderFrame);
+        return;
+    }
+
+    const renderFrame = () => {
+        if (!candleVisible || !usesAndroidFlameCanvas()) {
+            candleFlameCanvasAnimationFrame = null;
+            return;
+        }
+        try {
+            drawAndroidFlameCanvasFrame();
+        } catch (_) {}
+        candleFlameCanvasAnimationFrame = requestAnimationFrame(renderFrame);
+    };
+    candleFlameCanvasAnimationFrame = requestAnimationFrame(renderFrame);
 }
 
 function sampleFlameShadeSignal() {
@@ -3085,6 +3210,7 @@ async function showCandle() {
     candleFlame.loop = true;
     if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
     candleFlame.play().catch(() => {});
+    startAndroidFlameCanvasRenderer();
     startCandleFlameWatchdog();
     window.clearTimeout(candleSessionTimer);
     candleSessionTimer = window.setTimeout(() => {
@@ -3142,6 +3268,7 @@ function closeCandle() {
     if (!candleVisible) return;
     candleVisible = false;
     stopCandleAtmosphereAnimation();
+    stopAndroidFlameCanvasRenderer();
     releaseCandleWakeLock();
 
     const detailScreen = document.getElementById('detailScreen');
