@@ -8,9 +8,9 @@
         window.va = window.va || function () {
             (window.vaq = window.vaq || []).push(arguments);
         };
-        /* Android Telegram/WebView corrupts the alpha plane of VP9 WebM on some
-           devices. Android therefore uses the original H.264/MP4 flame source and
-           paints only the cropped flame through canvas; non-Android keeps VP9 alpha. */
+        /* Android Telegram/WebView can corrupt compositing of transparent VP9
+           video layers. Keep the WebM as the decoder, but paint the visible flame
+           through a small canvas on Android. */
         if (/Android/i.test(navigator.userAgent)) {
             document.documentElement.classList.add('android-flame-canvas');
         }
@@ -710,8 +710,8 @@
             pointer-events: none;
         }
 
-        /* Android fallback: use an opaque H.264/MP4 decoder source and paint the
-           cropped flame through canvas. This avoids VP9 alpha decoding entirely. */
+        /* Android fallback: the source video still decodes and drives the sampled
+           light/shadow signal, but is no longer a visible hardware video layer. */
         html.android-flame-canvas #candleFlameCanvas {
             display: block;
         }
@@ -1591,13 +1591,9 @@
     </div>
     <div id="candleFlameViewport" aria-hidden="true">
         <canvas id="candleFlameCanvas" width="135" height="150"></canvas>
-        <video id="candleFlame"
-               muted
-               playsinline
-               loop
-               preload="auto"
-               data-alpha-src="./video/OgonALpha.webm"
-               data-android-src="./video/001.mp4"></video>
+        <video id="candleFlame" muted playsinline loop preload="auto">
+            <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
+        </video>
     </div>
 
     <div id="foregroundVeil" class="foreground-veil" aria-hidden="true"></div>
@@ -2824,35 +2820,6 @@ function usesAndroidFlameCanvas() {
     return document.documentElement.classList.contains('android-flame-canvas');
 }
 
-
-function configureCandleFlameSource() {
-    const flame = document.getElementById('candleFlame');
-    if (!flame) return;
-
-    const source = usesAndroidFlameCanvas()
-        ? flame.dataset.androidSrc
-        : flame.dataset.alphaSrc;
-
-    const sourceType = usesAndroidFlameCanvas()
-        ? 'video/mp4'
-        : 'video/webm; codecs=vp9';
-
-    if (!source) return;
-
-    if (flame.dataset.activeSource === source) return;
-
-    flame.pause();
-    flame.removeAttribute('src');
-    while (flame.firstChild) flame.removeChild(flame.firstChild);
-
-    const sourceElement = document.createElement('source');
-    sourceElement.src = source;
-    sourceElement.type = sourceType;
-    flame.appendChild(sourceElement);
-    flame.dataset.activeSource = source;
-    flame.load();
-}
-
 function drawAndroidFlameCanvasFrame() {
     if (!usesAndroidFlameCanvas()) return false;
     const flame = document.getElementById('candleFlame');
@@ -2907,7 +2874,6 @@ function startAndroidFlameCanvasRenderer() {
     stopAndroidFlameCanvasRenderer();
     if (!usesAndroidFlameCanvas()) return;
 
-    configureCandleFlameSource();
     const flame = document.getElementById('candleFlame');
     if (!flame) return;
 
@@ -3182,7 +3148,6 @@ function hideCandleUnavailable() {
 
 async function showCandle() {
     if (iconSwipeInProgress || candleVisible) return;
-    configureCandleFlameSource();
     document.body.style.setProperty('--candle-transition-duration', `${CANDLE_SCENE_TRANSITION_MS}ms`);
     document.body.style.setProperty('--candle-icon-transition-duration', `${CANDLE_SCENE_TRANSITION_MS}ms`);
     if (window.innerWidth > CANDLE_MAX_VIEWPORT_WIDTH
@@ -3427,13 +3392,6 @@ function restartCandleFlame(flame, hardReload = false) {
         if (replay && typeof replay.catch === 'function') replay.catch(() => {});
     } catch (_) {}
 }
-
-configureCandleFlameSource();
-
-document.getElementById('candleFlame').addEventListener('loadeddata', () => {
-    if (!usesAndroidFlameCanvas()) return;
-    try { drawAndroidFlameCanvasFrame(); } catch (_) {}
-});
 
 document.getElementById('candleFlame').addEventListener('timeupdate', (event) => {
     const flame = event.currentTarget;
