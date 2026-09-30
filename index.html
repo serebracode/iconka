@@ -1655,9 +1655,12 @@
     <div id="candleFlameViewport" aria-hidden="true">
         <canvas id="candleFlameCanvas" width="135" height="150"></canvas>
         <div id="androidCandleFlame"></div>
-        <video id="candleFlame" muted playsinline loop preload="none">
-            <source src="./video/OgonALpha.webm" type="video/webm; codecs=vp9">
-        </video>
+        <video id="candleFlame"
+               muted
+               playsinline
+               loop
+               preload="none"
+               data-alpha-src="./video/OgonALpha.webm"></video>
     </div>
 
     <div id="foregroundVeil" class="foreground-veil" aria-hidden="true"></div>
@@ -2884,6 +2887,19 @@ function usesAndroidFlameCanvas() {
     return document.documentElement.classList.contains('android-flame-canvas');
 }
 
+function configureCandleFlameVideo() {
+    if (usesAndroidFlameCanvas()) return;
+    const flame = document.getElementById('candleFlame');
+    if (!flame || flame.dataset.sourceConfigured === 'true') return;
+    const source = document.createElement('source');
+    source.src = flame.dataset.alphaSrc;
+    source.type = 'video/webm; codecs=vp9';
+    flame.appendChild(source);
+    flame.dataset.sourceConfigured = 'true';
+    flame.preload = 'auto';
+    flame.load();
+}
+
 function drawAndroidFlameCanvasFrame() {
     if (!usesAndroidFlameCanvas()) return false;
     const flame = document.getElementById('candleFlame');
@@ -3279,7 +3295,7 @@ async function showCandle() {
     updateCandleEffectGeometry();
     startCandleAtmosphereAnimation();
     if (!usesAndroidFlameCanvas()) {
-        candleFlame.preload = 'auto';
+        configureCandleFlameVideo();
         candleFlame.loop = true;
         if (candleFlame.readyState >= 1) candleFlame.currentTime = 0;
         candleFlame.play().catch(() => {});
@@ -3470,6 +3486,8 @@ function restartCandleFlame(flame, hardReload = false) {
         if (replay && typeof replay.catch === 'function') replay.catch(() => {});
     } catch (_) {}
 }
+
+configureCandleFlameVideo();
 
 document.getElementById('candleFlame').addEventListener('timeupdate', (event) => {
     const flame = event.currentTarget;
